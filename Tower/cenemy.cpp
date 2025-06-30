@@ -133,7 +133,9 @@ void cenemy::render(sf::RenderWindow& window) {
     }
 }
 
-// Trong tệp cenemy.cpp, thay thế hoàn toàn hàm cũ
+// Tệp: cenemy.cpp
+// Hãy thay thế hoàn toàn hàm updateMovement của bạn bằng hàm này
+
 void cenemy::updateMovement(sf::Time deltaTime) {
     if (hasReachedEnd()) {
         _isActive = false;
@@ -141,6 +143,7 @@ void cenemy::updateMovement(sf::Time deltaTime) {
     }
 
     // Tổng quãng đường có thể di chuyển trong frame này
+    // Lưu ý: Tốc độ của bạn đang được nhân 2.f, tôi giữ nguyên logic này
     float remainingMoveDistance = _speed * deltaTime.asSeconds() * 2.f;
 
     // Sử dụng vòng lặp để xử lý việc đi qua waypoint và tiếp tục di chuyển mượt mà
@@ -183,19 +186,17 @@ void cenemy::updateMovement(sf::Time deltaTime) {
                 applyDirectionalFlip(newDirectionVec);
             }
         }
-        // Nếu không đủ quãng đường để đến waypoint
         else {
             // Di chuyển về phía waypoint một đoạn bằng quãng đường còn lại
             sf::Vector2f normalizedDir = vectorToTarget / distanceToTarget;
             _currentPosition.x += normalizedDir.x * remainingMoveDistance;
             _currentPosition.y += normalizedDir.y * remainingMoveDistance;
 
-            // Đã dùng hết quãng đường di chuyển của frame này
+
             remainingMoveDistance = 0;
         }
     }
 }
-
 void cenemy::takeDamage(int damage) {
     if (!isAlive()) return;
     _health -= damage;
