@@ -176,6 +176,9 @@ private:
     void addCamp6At(int row, int col);
     void addComboBush1GrassFlowerAt(int row, int col);
     void addFence1At(int row, int col);
+    void addFence6At(int row, int col);
+    void addFence7At(int row, int col);
+    void addFence10At(int row, int col);
     void addPointer1At(int row, int col);
     void addPointer4At(int row, int col);
     void addLamp1At(int row, int col);
@@ -186,7 +189,6 @@ private:
     void addDirt6At(int row, int col);
 
 public:
-    // --- Public Interface ---
     cmap();
     void render(sf::RenderWindow& window);
     TileType getTileType(int row, int col) const;
