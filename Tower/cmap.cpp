@@ -38,7 +38,6 @@ void cmap::loadTileTextures() {
     if (!loadTextureSFML(_pathStyle56_Texture, "assets/FieldsTile_56.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_pathStyle60_Texture, "assets/FieldsTile_60.png")) _texturesLoaded = false;
 
-    // --- Decorations ---
     if (!loadTextureSFML(_bush_Texture, "assets/Bush_10.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_grass_Texture, "assets/Grass.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_bush1_Texture, "assets/BushOverlay_1.png")) _texturesLoaded = false;
@@ -99,13 +98,13 @@ void cmap::loadTileTextures() {
     if (!loadTextureSFML(_flower7_Texture, "assets/FlowerOverlay_7.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_flower8_Texture, "assets/FlowerOverlay_8.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_flower9_Texture, "assets/FlowerOverlay_9.png")) _texturesLoaded = false;
-    if (!loadTextureSFML(_flower10_Texture, "assets/FlowerOverlay_10.png")) _texturesLoaded = false; // FIX: Was loading into _flower1_Texture
+    if (!loadTextureSFML(_flower10_Texture, "assets/FlowerOverlay_10.png")) _texturesLoaded = false; 
     if (!loadTextureSFML(_grassOverlay1_Texture, "assets/GrassOverlay_1.png")) _texturesLoaded = false;
-    if (!loadTextureSFML(_grassOverlay2_Texture, "assets/GrassOverlay_2.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
-    if (!loadTextureSFML(_grassOverlay3_Texture, "assets/GrassOverlay_3.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
-    if (!loadTextureSFML(_grassOverlay4_Texture, "assets/GrassOverlay_4.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
-    if (!loadTextureSFML(_grassOverlay5_Texture, "assets/GrassOverlay_5.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
-    if (!loadTextureSFML(_grassOverlay6_Texture, "assets/GrassOverlay_6.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
+    if (!loadTextureSFML(_grassOverlay2_Texture, "assets/GrassOverlay_2.png")) _texturesLoaded = false; 
+    if (!loadTextureSFML(_grassOverlay3_Texture, "assets/GrassOverlay_3.png")) _texturesLoaded = false; 
+    if (!loadTextureSFML(_grassOverlay4_Texture, "assets/GrassOverlay_4.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_grassOverlay5_Texture, "assets/GrassOverlay_5.png")) _texturesLoaded = false; 
+    if (!loadTextureSFML(_grassOverlay6_Texture, "assets/GrassOverlay_6.png")) _texturesLoaded = false; 
     if (!loadTextureSFML(_fence1_Texture, "assets/FenceOverlay_1.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_fence2_Texture, "assets/FenceOverlay_2.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_fence3_Texture, "assets/FenceOverlay_3.png")) _texturesLoaded = false;
@@ -137,15 +136,14 @@ void cmap::initializeGridFromMapData() {
             int tileID = _mapData[r][c];
             _grid[r][c].originalMapDataValue = tileID;
 
-            // Consolidate all path-like tile IDs into a single PATH type for game logic.
-            if (tileID >= 1 && tileID < 64) { // ID 1 and various path styles
+            if (tileID >= 1 && tileID < 64) { 
                 _grid[r][c].type = TileType::PATH;
             }
             else if (tileID == 0) {
                 _grid[r][c].type = TileType::GRASS;
             }
             else {
-                _grid[r][c].type = TileType::EMPTY; // For any other IDs
+                _grid[r][c].type = TileType::EMPTY; 
             }
         }
     }
@@ -318,7 +316,6 @@ void cmap::calculateEnemyPath() {
     _enemyPath.clear();
     sf::Vector2i startPos = { -1, -1 };
 
-    // Find the starting PATH tile on the left edge (column 0).
     for (int r = 0; r < MAP_HEIGHT_TILES_FROM_MAP1; ++r) {
         if (_grid[r][0].type == TileType::PATH) {
             startPos = { 0, r };
@@ -379,14 +376,12 @@ void cmap::calculateEnemyPath() {
         return;
     }
 
-    // Convert grid coordinates to pixel waypoints for enemies.
     _enemyPath.push_back(getPixelPosition(pathGridCoords.front().y, -1));
     for (const auto& gridCoord : pathGridCoords) {
         _enemyPath.push_back(getPixelPosition(gridCoord.y, gridCoord.x));
     }
     _enemyPath.push_back(getPixelPosition(pathGridCoords.back().y, MAP_WIDTH_TILES_FROM_MAP1));
 
-    // Update the tile types for the start and end points.
     _grid[pathGridCoords.front().y][pathGridCoords.front().x].type = TileType::START;
     _grid[pathGridCoords.back().y][pathGridCoords.back().x].type = TileType::END;
 
@@ -395,12 +390,10 @@ void cmap::calculateEnemyPath() {
 
 cmap::cmap() : _texturesLoaded(false) {
     CURRENT_TILE_SIZE = MAP_TILE_SIZE_FROM_MAP1;
-
-    // Initialization sequence
     loadTileTextures();
-    initializeGridFromMapData(); // Must run before path calculation
+    initializeGridFromMapData();
     assignTileTextures();
-    calculateEnemyPath();       // Must run after grid initialization
+    calculateEnemyPath();       
 
     // Add all decorative elements to the map
     addGrassAt(1, 5);
