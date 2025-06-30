@@ -166,6 +166,7 @@ private:
     // Helper methods to add decorations
     void addBushAt(int row, int col);
     void addGrassAt(int row, int col);
+    void addBush3At(int row, int col);
     void addBush4At(int row, int col);
     void addBush5At(int row, int col);
     void addGrass1At(int row, int col);
@@ -174,6 +175,7 @@ private:
     void addLog1At(int row, int col);
     void addComboLogCampStoneFlowerGrassAt(int row, int col);
     void addCamp2At(int row, int col);
+    void addCamp4At(int row, int col);
     void addCamp5At(int row, int col);
     void addCamp6At(int row, int col);
     void addComboBush1GrassFlowerAt(int row, int col);
@@ -195,9 +197,11 @@ private:
     void addDirt2At(int row, int col);
     void addDirt6At(int row, int col);
     void addComboFlowerGrassAt(int row, int col);
+    void addBox1At(int row, int col);
     void addBox3At(int row, int col);
     void addStone7At(int row, int col);
     void addStone9At(int row, int col);
+    void addStone12At(int row, int col);
     void addTree2At(int row, int col);
 public:
     cmap();

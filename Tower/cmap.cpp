@@ -179,6 +179,11 @@ void cmap::addBushAt(int row, int col) {
     _bushes.emplace_back(_bush_Texture, row, col, scale);
 }
 
+void cmap::addBush3At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _bushes.emplace_back(_bush3_Texture, row, col, scale);
+}
+
 void cmap::addBush4At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _bushes.emplace_back(_bush4_Texture, row, col, scale);
@@ -327,6 +332,11 @@ void cmap::addCamp2At(int row, int col) {
     _camps.emplace_back(_camp2_Texture, row, col, scale);
 }
 
+void cmap::addCamp4At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _camps.emplace_back(_camp4_Texture, row, col, scale);
+}
+
 void cmap::addDirt2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _dirts.emplace_back(_dirt2_Texture, row, col, scale);
@@ -335,6 +345,11 @@ void cmap::addDirt2At(int row, int col) {
 void cmap::addDirt6At(int row, int col) {   
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;    
     _dirts.emplace_back(_dirt6_Texture, row, col, scale);
+}
+
+void cmap::addBox1At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _boxes.emplace_back(_box1_Texture, row, col, scale);
 }
 
 void cmap::addBox3At(int row, int col) {
@@ -350,6 +365,11 @@ void cmap::addStone7At(int row, int col) {
 void cmap::addStone9At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _stones.emplace_back(_stone9_Texture, row, col, scale);
+}
+
+void cmap::addStone12At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _stones.emplace_back(_stone12_Texture, row, col, scale);
 }
 
 void cmap::addTree2At(int row, int col) {
@@ -518,6 +538,7 @@ cmap::cmap() : _texturesLoaded(false) {
     addGrassAt(1, 5);
     addBushAt(2, 10);
     addGrass1At(1, 5);
+    addBush3At(14, 9);
     addBush4At(10, 3);
     addBush4At(10, 4);
     addBush4At(10, 5);
@@ -525,6 +546,8 @@ cmap::cmap() : _texturesLoaded(false) {
     addBush4At(10, 7);
     addBush5At(2, 10);
     addShadow6AndTree1At(14, 15);
+    addShadow6AndTree1At(5, 4);
+    addShadow6AndTree1At(7, 22);
     addPlaceForTower1At(5, 11);
     addPlaceForTower1At(4, 15);
     addPlaceForTower1At(12, 15);
@@ -533,6 +556,7 @@ cmap::cmap() : _texturesLoaded(false) {
     addComboLogCampStoneFlowerGrassAt(1, 20);
     addComboLogCampStoneFlowerGrassAt(12, 25);
     addCamp2At(4, 28);
+    addCamp4At(16, 2);
     addCamp5At(5, 27);
     addCamp5At(12, 23);
     addCamp6At(12, 8);
@@ -625,8 +649,10 @@ cmap::cmap() : _texturesLoaded(false) {
     addBox3At(4, 27);
     addStone7At(14, 5);
     addStone9At(13, 24);
+    addStone12At(6, 16);
     addTree2At(7, 15);
     addTree2At(11, 4);
+    addBox1At(11, 23);
 }
 
 void cmap::render(sf::RenderWindow& window) {
