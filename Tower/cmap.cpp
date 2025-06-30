@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
+#include <queue>
 
 // Initialize the global tile size variable.
 int CURRENT_TILE_SIZE = MAP_TILE_SIZE_FROM_MAP1;
@@ -132,24 +134,42 @@ void cmap::loadTileTextures() {
 
 
 void cmap::initializeGridFromMapData() {
+    bool startSet = false, endSet = false;
+
     for (int r = 0; r < MAP_HEIGHT_TILES_FROM_MAP1; ++r) {
         for (int c = 0; c < MAP_WIDTH_TILES_FROM_MAP1; ++c) {
             int tileID = _mapData[r][c];
             _grid[r][c].originalMapDataValue = tileID;
 
-            // Consolidate all path-like tile IDs into a single PATH type for game logic.
-            if (tileID >= 1 && tileID < 64) { // ID 1 and various path styles
-                _grid[r][c].type = TileType::PATH;
-            }
-            else if (tileID == 0) {
+            if (tileID == 0) {
                 _grid[r][c].type = TileType::GRASS;
             }
+            else if (tileID == 1 || (tileID >= 2 && tileID < 64)) {
+                // Nếu cột đầu tiên và chưa đặt START
+                if (c == 0 && !startSet) {
+                    _grid[r][c].type = TileType::START;
+                    startSet = true;
+                }
+                // Nếu cột cuối cùng và chưa đặt END
+                else if (c == MAP_WIDTH_TILES_FROM_MAP1 - 1 && !endSet) {
+                    _grid[r][c].type = TileType::END;
+                    endSet = true;
+                }
+                else {
+                    _grid[r][c].type = TileType::PATH;
+                }
+            }
             else {
-                _grid[r][c].type = TileType::EMPTY; // For any other IDs
+                _grid[r][c].type = TileType::EMPTY;
             }
         }
     }
+
+    if (!startSet || !endSet) {
+        std::cerr << "Warning: START hoặc END chưa được đặt tự động!" << std::endl;
+    }
 }
+
 
 void cmap::addBushAt(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
@@ -314,84 +334,99 @@ void cmap::assignTileTextures() {
     }
 }
 
+namespace std {
+    template <>
+    struct hash<sf::Vector2i> {
+        std::size_t operator()(const sf::Vector2i& v) const {
+            return std::hash<int>()(v.x) ^ (std::hash<int>()(v.y) << 1);
+        }
+    };
+}
+
 void cmap::calculateEnemyPath() {
     _enemyPath.clear();
-    sf::Vector2i startPos = { -1, -1 };
 
-    // Find the starting PATH tile on the left edge (column 0).
-    for (int r = 0; r < MAP_HEIGHT_TILES_FROM_MAP1; ++r) {
-        if (_grid[r][0].type == TileType::PATH) {
-            startPos = { 0, r };
-            break;
-        }
-    }
+    const int H = MAP_HEIGHT_TILES_FROM_MAP1;
+    const int W = MAP_WIDTH_TILES_FROM_MAP1;
 
-    if (startPos.x == -1) {
-        std::cerr << "Error: No starting point (TileType::PATH) found for enemy path." << std::endl;
-        return;
-    }
+    sf::Vector2i start(-1, -1), end(-1, -1);
 
-    std::vector<sf::Vector2i> pathGridCoords;
-    bool visited[MAP_HEIGHT_TILES_FROM_MAP1][MAP_WIDTH_TILES_FROM_MAP1] = { {false} };
-    sf::Vector2i currentPos = startPos;
-    sf::Vector2i prevPos = { startPos.x - 1, startPos.y }; // Pretend we came from the left
-
-    while (currentPos.x != -1) {
-        pathGridCoords.push_back(currentPos);
-        visited[currentPos.y][currentPos.x] = true;
-
-        // Stop if we've reached the right edge of the map.
-        if (currentPos.x == MAP_WIDTH_TILES_FROM_MAP1 - 1) {
-            break;
-        }
-
-        sf::Vector2i nextPos = { -1, -1 };
-
-        // Prioritize moving straight, then turning, then backtracking as a last resort.
-        const sf::Vector2i directionsToTry[] = {
-            currentPos - prevPos, // Forward
-            { (currentPos - prevPos).y, (currentPos - prevPos).x }, // Turn 1 (Right-hand rule)
-            { -(currentPos - prevPos).y, -(currentPos - prevPos).x },// Turn 2 (Left-hand rule)
-            { -(currentPos - prevPos).x, -(currentPos - prevPos).y },// Backward (should not happen in simple paths)
-        };
-
-        for (const auto& dir : directionsToTry) {
-            if (dir.x == 0 && dir.y == 0) continue; // Skip zero vector
-
-            sf::Vector2i candidatePos = currentPos + dir;
-
-            if (candidatePos.y >= 0 && candidatePos.y < MAP_HEIGHT_TILES_FROM_MAP1 &&
-                candidatePos.x >= 0 && candidatePos.x < MAP_WIDTH_TILES_FROM_MAP1 &&
-                _grid[candidatePos.y][candidatePos.x].type == TileType::PATH &&
-                !visited[candidatePos.y][candidatePos.x])
-            {
-                nextPos = candidatePos;
-                break;
+    // 1. Tìm START và END
+    for (int r = 0; r < H; ++r) {
+        for (int c = 0; c < W; ++c) {
+            if (_grid[r][c].type == TileType::START) {
+                start = { r, c };
+            }
+            if (_grid[r][c].type == TileType::END) {
+                end = { r, c };
             }
         }
-
-        prevPos = currentPos;
-        currentPos = nextPos;
     }
 
-    if (pathGridCoords.empty()) {
-        std::cerr << "Error: Could not generate a valid path!" << std::endl;
+    if (start == sf::Vector2i(-1, -1) || end == sf::Vector2i(-1, -1)) {
+        std::cerr << "Loi: Khong tim thay START hoac END!" << std::endl;
         return;
     }
 
-    // Convert grid coordinates to pixel waypoints for enemies.
-    _enemyPath.push_back(getPixelPosition(pathGridCoords.front().y, -1));
-    for (const auto& gridCoord : pathGridCoords) {
-        _enemyPath.push_back(getPixelPosition(gridCoord.y, gridCoord.x));
+    // 2. Duyệt BFS
+    std::queue<sf::Vector2i> q;
+    std::vector<std::vector<bool>> visited(H, std::vector<bool>(W, false));
+    std::unordered_map<sf::Vector2i, sf::Vector2i> cameFrom;
+
+    q.push(start);
+    visited[start.x][start.y] = true;
+
+    const int dr[] = { -1, 1, 0, 0 };
+    const int dc[] = { 0, 0, -1, 1 };
+
+    bool found = false;
+
+    while (!q.empty()) {
+        sf::Vector2i curr = q.front(); q.pop();
+
+        if (curr == end) {
+            found = true;
+            break;
+        }
+
+        for (int i = 0; i < 4; ++i) {
+            int nr = curr.x + dr[i];
+            int nc = curr.y + dc[i];
+
+            if (nr >= 0 && nr < H && nc >= 0 && nc < W) {
+                TileType t = _grid[nr][nc].type;
+                if (!visited[nr][nc] && (t == TileType::PATH || t == TileType::END)) {
+                    visited[nr][nc] = true;
+                    cameFrom[{nr, nc}] = curr;
+                    q.push({ nr, nc });
+                }
+            }
+        }
     }
-    _enemyPath.push_back(getPixelPosition(pathGridCoords.back().y, MAP_WIDTH_TILES_FROM_MAP1));
 
-    // Update the tile types for the start and end points.
-    _grid[pathGridCoords.front().y][pathGridCoords.front().x].type = TileType::START;
-    _grid[pathGridCoords.back().y][pathGridCoords.back().x].type = TileType::END;
+    if (!found) {
+        std::cerr << "Can't find path from START to END!" << std::endl;
+        return;
+    }
 
-    std::cout << "Successfully calculated enemy path with " << _enemyPath.size() << " waypoints." << std::endl;
+    // 3. Truy ngược đường đi
+    std::vector<cpoint> reversedPath;
+    sf::Vector2i curr = end;
+    while (curr != start) {
+        reversedPath.push_back(getPixelPosition(curr.x, curr.y));
+        curr = cameFrom[curr];
+    }
+    reversedPath.push_back(getPixelPosition(start.x, start.y));
+    std::reverse(reversedPath.begin(), reversedPath.end());
+
+    // 4. Thêm điểm ngoài map
+    _enemyPath.push_back(getPixelPosition(start.x, -1));
+    _enemyPath.insert(_enemyPath.end(), reversedPath.begin(), reversedPath.end());
+    _enemyPath.push_back(getPixelPosition(end.x, W));
+
+    std::cout << "Enemy path calculated using BFS. So diem: " << _enemyPath.size() << std::endl;
 }
+
 
 cmap::cmap() : _texturesLoaded(false) {
     CURRENT_TILE_SIZE = MAP_TILE_SIZE_FROM_MAP1;
