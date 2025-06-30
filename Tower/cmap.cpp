@@ -503,15 +503,12 @@ TileType cmap::getTileType(int row, int col) const {
     return TileType::EMPTY;
 }
 
-/**
- * @brief Checks if a tile is a valid location to build a tower.
- * @return true if the tile is GRASS, false otherwise.
- */
+
 bool cmap::isBuildable(int row, int col) const {
     if (row < 0 || row >= MAP_HEIGHT_TILES_FROM_MAP1 || col < 0 || col >= MAP_WIDTH_TILES_FROM_MAP1) {
         return false;
     }
-    return _grid[row][col].type == TileType::GRASS;
+    return (_grid[row][col].type == TileType::GRASS && !isDecorated(row, col));
 }
 
 cpoint cmap::getPixelPosition(int row, int col, PositionContext context) const {
@@ -519,7 +516,7 @@ cpoint cmap::getPixelPosition(int row, int col, PositionContext context) const {
     float xPos = static_cast<float>(col * CURRENT_TILE_SIZE) + (static_cast<float>(CURRENT_TILE_SIZE) / 2.0f);
 
     if (context == PositionContext::EnemyPath) {
-        if (col < 0) { // Off-map start position
+        if (col < 0) { 
             xPos = -static_cast<float>(CURRENT_TILE_SIZE) / 2.0f;
         }
         else if (col >= MAP_WIDTH_TILES_FROM_MAP1) { // Off-map end position
@@ -546,4 +543,27 @@ cpoint cmap::getEnemyStartLocation() const {
         return _enemyPath[0];
     }
     return getPixelPosition(MAP_HEIGHT_TILES_FROM_MAP1 / 2, -1);
+}
+
+bool cmap::isDecorated(int row, int col) const {
+    sf::Vector2i gridPos(col, row);
+
+    // Kiểm tra tất cả các vector đồ trang trí
+    for (const auto& deco : _bushes) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _grasses) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _trees) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _shadows) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _camps) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _stones) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _lamps) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _pointers) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _boxes) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _flowers) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _dirts) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _placesForTowers) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _logs) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _grassesOverlay) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _fences) if (deco.col == col && deco.row == row) return true;
+
+    return false;
 }

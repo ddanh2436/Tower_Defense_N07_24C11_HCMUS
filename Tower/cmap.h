@@ -6,35 +6,27 @@
 #include <vector>
 #include <string>
 
-// --- Global Map Constants ---
 const int MAP_TILE_SIZE_FROM_MAP1 = 60;
 const int MAP_WIDTH_TILES_FROM_MAP1 = 32;
 const int MAP_HEIGHT_TILES_FROM_MAP1 = 18;
 
-// This global variable is used to dynamically set the tile size.
 extern int CURRENT_TILE_SIZE;
 
-// --- Enums ---
 
-// Specifies the context for position calculations to handle edge cases like enemy paths.
 enum class PositionContext {
     TowerPlacement,
     EnemyPath
 };
 
-// Defines the different types of tiles on the map for game logic (e.g., buildable, path).
 enum class TileType {
-    GRASS,  // Buildable area
-    PATH,   // Path for enemies
-    START,  // Start point of the path
-    END,    // End point of the path
-    EMPTY   // Out of bounds or unhandled tile
+    GRASS,  
+    PATH,   
+    START,  
+    END,    
+    EMPTY   
 };
 
 
-// --- Decoration Structs ---
-// These structs represent various decorative objects on the map.
-// Each holds a sprite and its grid position.
 
 struct Decoration {
     sf::Sprite sprite;
@@ -47,7 +39,6 @@ struct Decoration {
     }
 };
 
-// Using Decoration as a base to avoid repetition
 struct Bush : public Decoration { using Decoration::Decoration; };
 struct Grass : public Decoration { using Decoration::Decoration; };
 struct Log : public Decoration { using Decoration::Decoration; };
@@ -65,8 +56,6 @@ struct Box : public Decoration { using Decoration::Decoration; };
 struct PlaceForTower : public Decoration { using Decoration::Decoration; };
 
 
-// --- MapTile Struct ---
-// Represents a single tile in the map grid.
 struct MapTile {
     sf::Sprite sprite;
     TileType type;
@@ -77,16 +66,10 @@ struct MapTile {
 };
 
 
-// --- CMap Class ---
-// Manages the game map, including tiles, decorations, enemy path, and rendering.
 class cmap {
 private:
-    // --- Member Variables ---
-
-    // 2D array representing the logical grid of the map.
     MapTile _grid[MAP_HEIGHT_TILES_FROM_MAP1][MAP_WIDTH_TILES_FROM_MAP1];
 
-    // Vectors to hold all decorative objects on the map.
     std::vector<Bush> _bushes;
     std::vector<Grass> _grasses;
     std::vector<Tree> _trees;
@@ -125,7 +108,6 @@ private:
         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
     };
 
-    // Textures for all map tiles and decorations.
     sf::Texture _grassTexture, _wallTexture, _pathDefaultTexture, _pathStyle2_Texture,
         _pathStyle3_Texture, _pathStyle5_Texture, _pathStyle6_Texture, _pathStyle20_Texture,
         _pathStyle21_Texture, _pathStyle24_Texture, _pathStyle28_Texture, _pathStyle56_Texture,
@@ -154,7 +136,7 @@ private:
         _dirt3_Texture, _dirt4_Texture, _dirt5_Texture, _dirt6_Texture;
 
     bool _texturesLoaded;
-    std::vector<cpoint> _enemyPath; // A series of waypoints for enemies to follow.
+    std::vector<cpoint> _enemyPath; 
 
     // --- Private Methods ---
     void loadTileTextures();
@@ -186,7 +168,6 @@ private:
     void addDirt6At(int row, int col);
 
 public:
-    // --- Public Interface ---
     cmap();
     void render(sf::RenderWindow& window);
     TileType getTileType(int row, int col) const;
@@ -197,6 +178,7 @@ public:
     cpoint getEnemyStartLocation() const;
     int getMapWidthTiles() const { return MAP_WIDTH_TILES_FROM_MAP1; }
     int getMapHeightTiles() const { return MAP_HEIGHT_TILES_FROM_MAP1; }
+    bool isDecorated(int row, int col) const;
 };
 
 #endif // CMAP_H
