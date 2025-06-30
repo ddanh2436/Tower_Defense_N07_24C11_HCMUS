@@ -1,0 +1,202 @@
+﻿#ifndef CMAP_H
+#define CMAP_H
+
+#include "cpoint.h"
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include <string>
+
+// --- Global Map Constants ---
+const int MAP_TILE_SIZE_FROM_MAP1 = 60;
+const int MAP_WIDTH_TILES_FROM_MAP1 = 32;
+const int MAP_HEIGHT_TILES_FROM_MAP1 = 18;
+
+// This global variable is used to dynamically set the tile size.
+extern int CURRENT_TILE_SIZE;
+
+// --- Enums ---
+
+// Specifies the context for position calculations to handle edge cases like enemy paths.
+enum class PositionContext {
+    TowerPlacement,
+    EnemyPath
+};
+
+// Defines the different types of tiles on the map for game logic (e.g., buildable, path).
+enum class TileType {
+    GRASS,  // Buildable area
+    PATH,   // Path for enemies
+    START,  // Start point of the path
+    END,    // End point of the path
+    EMPTY   // Out of bounds or unhandled tile
+};
+
+
+// --- Decoration Structs ---
+// These structs represent various decorative objects on the map.
+// Each holds a sprite and its grid position.
+
+struct Decoration {
+    sf::Sprite sprite;
+    int row, col;
+
+    Decoration(const sf::Texture& texture, int r, int c, float scale) : row(r), col(c) {
+        sprite.setTexture(texture);
+        sprite.setScale(scale, scale);
+        sprite.setPosition(static_cast<float>(c * CURRENT_TILE_SIZE), static_cast<float>(r * CURRENT_TILE_SIZE));
+    }
+};
+
+// Using Decoration as a base to avoid repetition
+struct Bush : public Decoration { using Decoration::Decoration; };
+struct Grass : public Decoration { using Decoration::Decoration; };
+struct Log : public Decoration { using Decoration::Decoration; };
+struct Fence : public Decoration { using Decoration::Decoration; };
+struct GrassOverlay : public Decoration { using Decoration::Decoration; };
+struct Stone : public Decoration { using Decoration::Decoration; };
+struct Tree : public Decoration { using Decoration::Decoration; };
+struct Flower : public Decoration { using Decoration::Decoration; };
+struct Shadow : public Decoration { using Decoration::Decoration; };
+struct Pointer : public Decoration { using Decoration::Decoration; };
+struct Lamp : public Decoration { using Decoration::Decoration; };
+struct Dirt : public Decoration { using Decoration::Decoration; };
+struct Camp : public Decoration { using Decoration::Decoration; };
+struct Box : public Decoration { using Decoration::Decoration; };
+struct PlaceForTower : public Decoration { using Decoration::Decoration; };
+
+
+// --- MapTile Struct ---
+// Represents a single tile in the map grid.
+struct MapTile {
+    sf::Sprite sprite;
+    TileType type;
+    bool textureSpecificallyLoaded;
+    int originalMapDataValue;
+
+    MapTile() : type(TileType::EMPTY), textureSpecificallyLoaded(false), originalMapDataValue(-1) {}
+};
+
+
+// --- CMap Class ---
+// Manages the game map, including tiles, decorations, enemy path, and rendering.
+class cmap {
+private:
+    // --- Member Variables ---
+
+    // 2D array representing the logical grid of the map.
+    MapTile _grid[MAP_HEIGHT_TILES_FROM_MAP1][MAP_WIDTH_TILES_FROM_MAP1];
+
+    // Vectors to hold all decorative objects on the map.
+    std::vector<Bush> _bushes;
+    std::vector<Grass> _grasses;
+    std::vector<Tree> _trees;
+    std::vector<Shadow> _shadows;
+    std::vector<Camp> _camps;
+    std::vector<Stone> _stones;
+    std::vector<Lamp> _lamps;
+    std::vector<Pointer> _pointers;
+    std::vector<Box> _boxes;
+    std::vector<Flower> _flowers;
+    std::vector<Dirt> _dirts;
+    std::vector<PlaceForTower> _placesForTowers;
+    std::vector<Log> _logs;
+    std::vector<GrassOverlay> _grassesOverlay;
+    std::vector<Fence> _fences;
+
+    // Hardcoded map layout data.
+    int _mapData[MAP_HEIGHT_TILES_FROM_MAP1][MAP_WIDTH_TILES_FROM_MAP1] = {
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 6, 60, 56, 20, 56, 56, 20, 8, 0, 0, 0, 0, 6, 56, 60, 20, 56, 20, 20, 8, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 29, 1, 2, 3, 3, 2, 1, 17, 0, 0, 0, 0, 50, 1, 2, 2, 3, 2, 1, 1, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 50, 16, 0, 0, 0, 0, 13, 16, 0, 0, 0, 0, 29, 16, 0, 0, 0, 0, 29, 16, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 13, 16, 0, 0, 0, 0, 29, 16, 0, 0, 0, 0, 50, 17, 0, 0, 0, 0, 13, 17, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 21, 17, 0, 0, 0, 0, 21, 17, 0, 0, 0, 0, 29, 16, 0, 0, 0, 0, 50, 16, 0, 0, 0, 0, 0, 0 },
+        { 60, 56, 20, 56, 60, 20, 1, 16, 0, 0, 0, 0, 50, 17, 0, 0, 0, 0, 13, 16, 0, 0, 0, 0, 50, 1, 60, 60, 56, 60, 20, 56 },
+        { 2, 2, 3, 5, 24, 2, 2, 28, 0, 0, 0, 0, 13, 16, 0, 0, 0, 0, 21, 17, 0, 0, 0, 0, 22, 3, 2, 24, 2, 3, 2, 2 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 17, 0, 0, 0, 0, 50, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 16, 0, 0, 0, 0, 21, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 17, 0, 0, 0, 0, 29, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 1,20, 56, 60, 56, 1, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 2, 24, 2, 3, 2, 2, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    };
+
+    // Textures for all map tiles and decorations.
+    sf::Texture _grassTexture, _wallTexture, _pathDefaultTexture, _pathStyle2_Texture,
+        _pathStyle3_Texture, _pathStyle5_Texture, _pathStyle6_Texture, _pathStyle20_Texture,
+        _pathStyle21_Texture, _pathStyle24_Texture, _pathStyle28_Texture, _pathStyle56_Texture,
+        _pathStyle60_Texture, _pathStyle50_Texture, _pathStyle13_Texture, _pathStyle29_Texture,
+        _pathStyle16_Texture, _pathStyle17_Texture, _pathStyle8_Texture, _pathStyle22_Texture,
+        _bush_Texture, _grass_Texture, _bush1_Texture, _bush2_Texture, _bush3_Texture,
+        _bush4_Texture, _bush5_Texture, _bush6_Texture, _grass1_Texture, _grass2_Texture,
+        _grass3_Texture, _tree1_Texture, _tree2_Texture, _placeForTower1_Texture,
+        _shadow1_Texture, _shadow2_Texture, _shadow3_Texture, _shadow4_Texture,
+        _shadow5_Texture, _shadow6_Texture, _lamp1_Texture, _lamp2_Texture, _lamp3_Texture,
+        _lamp4_Texture, _lamp5_Texture, _lamp6_Texture, _log1_Texture, _log2_Texture,
+        _log3_Texture, _log4_Texture, _stone1_Texture, _stone2_Texture, _stone3_Texture,
+        _stone4_Texture, _stone5_Texture, _stone6_Texture, _stone7_Texture, _stone8_Texture,
+        _stone9_Texture, _stone10_Texture, _stone11_Texture, _stone12_Texture,
+        _stone13_Texture, _stone14_Texture, _stone15_Texture, _stone16_Texture,
+        _camp1_Texture, _camp2_Texture, _camp3_Texture, _camp4_Texture, _camp5_Texture,
+        _camp6_Texture, _flower1_Texture, _flower2_Texture, _flower3_Texture,
+        _flower4_Texture, _flower5_Texture, _flower6_Texture, _flower7_Texture,
+        _flower8_Texture, _flower9_Texture, _flower10_Texture, _grassOverlay1_Texture,
+        _grassOverlay2_Texture, _grassOverlay3_Texture, _grassOverlay4_Texture,
+        _grassOverlay5_Texture, _grassOverlay6_Texture, _fence1_Texture, _fence2_Texture,
+        _fence3_Texture, _fence4_Texture, _fence5_Texture, _fence6_Texture,
+        _fence7_Texture, _fence8_Texture, _fence9_Texture, _fence10_Texture,
+        _pointer1_Texture, _pointer2_Texture, _pointer3_Texture, _pointer4_Texture,
+        _pointer5_Texture, _pointer6_Texture, _dirt1_Texture, _dirt2_Texture,
+        _dirt3_Texture, _dirt4_Texture, _dirt5_Texture, _dirt6_Texture;
+
+    bool _texturesLoaded;
+    std::vector<cpoint> _enemyPath; // A series of waypoints for enemies to follow.
+
+    // --- Private Methods ---
+    void loadTileTextures();
+    void initializeGridFromMapData();
+    void assignTileTextures();
+    void calculateEnemyPath();
+
+    // Helper methods to add decorations
+    void addBushAt(int row, int col);
+    void addGrassAt(int row, int col);
+    void addBush5At(int row, int col);
+    void addGrass1At(int row, int col);
+    void addShadow6AndTree1At(int row, int col);
+    void addPlaceForTower1At(int row, int col);
+    void addLog1At(int row, int col);
+    void addComboLogCampStoneFlowerGrassAt(int row, int col);
+    void addCamp2At(int row, int col);
+    void addCamp5At(int row, int col);
+    void addCamp6At(int row, int col);
+    void addComboBush1GrassFlowerAt(int row, int col);
+    void addFence1At(int row, int col);
+    void addPointer1At(int row, int col);
+    void addPointer4At(int row, int col);
+    void addLamp1At(int row, int col);
+    void addLamp2At(int row, int col);
+    void addLamp3At(int row, int col);
+    void addLamp4At(int row, int col);
+    void addDirt2At(int row, int col);
+    void addDirt6At(int row, int col);
+
+public:
+    // --- Public Interface ---
+    cmap();
+    void render(sf::RenderWindow& window);
+    TileType getTileType(int row, int col) const;
+    bool isBuildable(int row, int col) const;
+    cpoint getPixelPosition(int row, int col, PositionContext context = PositionContext::EnemyPath) const;
+    sf::Vector2i getGridCoordinates(const sf::Vector2f& pixelPosition) const;
+    const std::vector<cpoint>& getEnemyPath() const;
+    cpoint getEnemyStartLocation() const;
+    int getMapWidthTiles() const { return MAP_WIDTH_TILES_FROM_MAP1; }
+    int getMapHeightTiles() const { return MAP_HEIGHT_TILES_FROM_MAP1; }
+};
+
+#endif // CMAP_H
