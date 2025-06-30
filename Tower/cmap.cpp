@@ -40,7 +40,6 @@ void cmap::loadTileTextures() {
     if (!loadTextureSFML(_pathStyle56_Texture, "assets/FieldsTile_56.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_pathStyle60_Texture, "assets/FieldsTile_60.png")) _texturesLoaded = false;
 
-    // --- Decorations ---
     if (!loadTextureSFML(_bush_Texture, "assets/Bush_10.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_grass_Texture, "assets/Grass.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_bush1_Texture, "assets/BushOverlay_1.png")) _texturesLoaded = false;
@@ -101,13 +100,13 @@ void cmap::loadTileTextures() {
     if (!loadTextureSFML(_flower7_Texture, "assets/FlowerOverlay_7.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_flower8_Texture, "assets/FlowerOverlay_8.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_flower9_Texture, "assets/FlowerOverlay_9.png")) _texturesLoaded = false;
-    if (!loadTextureSFML(_flower10_Texture, "assets/FlowerOverlay_10.png")) _texturesLoaded = false; // FIX: Was loading into _flower1_Texture
+    if (!loadTextureSFML(_flower10_Texture, "assets/FlowerOverlay_10.png")) _texturesLoaded = false; 
     if (!loadTextureSFML(_grassOverlay1_Texture, "assets/GrassOverlay_1.png")) _texturesLoaded = false;
-    if (!loadTextureSFML(_grassOverlay2_Texture, "assets/GrassOverlay_2.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
-    if (!loadTextureSFML(_grassOverlay3_Texture, "assets/GrassOverlay_3.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
-    if (!loadTextureSFML(_grassOverlay4_Texture, "assets/GrassOverlay_4.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
-    if (!loadTextureSFML(_grassOverlay5_Texture, "assets/GrassOverlay_5.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
-    if (!loadTextureSFML(_grassOverlay6_Texture, "assets/GrassOverlay_6.png")) _texturesLoaded = false; // FIX: Was loading into _grassOverlay1_Texture
+    if (!loadTextureSFML(_grassOverlay2_Texture, "assets/GrassOverlay_2.png")) _texturesLoaded = false; 
+    if (!loadTextureSFML(_grassOverlay3_Texture, "assets/GrassOverlay_3.png")) _texturesLoaded = false; 
+    if (!loadTextureSFML(_grassOverlay4_Texture, "assets/GrassOverlay_4.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_grassOverlay5_Texture, "assets/GrassOverlay_5.png")) _texturesLoaded = false; 
+    if (!loadTextureSFML(_grassOverlay6_Texture, "assets/GrassOverlay_6.png")) _texturesLoaded = false; 
     if (!loadTextureSFML(_fence1_Texture, "assets/FenceOverlay_1.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_fence2_Texture, "assets/FenceOverlay_2.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_fence3_Texture, "assets/FenceOverlay_3.png")) _texturesLoaded = false;
@@ -430,12 +429,10 @@ void cmap::calculateEnemyPath() {
 
 cmap::cmap() : _texturesLoaded(false) {
     CURRENT_TILE_SIZE = MAP_TILE_SIZE_FROM_MAP1;
-
-    // Initialization sequence
     loadTileTextures();
-    initializeGridFromMapData(); // Must run before path calculation
+    initializeGridFromMapData();
     assignTileTextures();
-    calculateEnemyPath();       // Must run after grid initialization
+    calculateEnemyPath();       
 
     // Add all decorative elements to the map
     addGrassAt(1, 5);
