@@ -1,16 +1,18 @@
-﻿#include "Menu.h"      
+﻿#include "Menu.h"
 #include "SoundManager.h"
 #include <iostream>
-#include <Windows.h> 
-#include <vector>      
-#include <string>       
-#include <iomanip> 
+#include <Windows.h>
+#include <vector>
+#include <string>
+#include <iomanip>
+
 #pragma execution_character_set("utf-8")
 
 void setConsoleToUtf8() {
     SetConsoleOutputCP(CP_UTF8);
 }
 
+// HÀM showMenu ĐÃ ĐƯỢC SỬA ĐỔI
 GameState showMenu(sf::RenderWindow& window) {
     sf::Font pixelFont;
     if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) {
@@ -40,7 +42,7 @@ GameState showMenu(sf::RenderWindow& window) {
     gameTitleText.setFillColor(sf::Color::Yellow);
     gameTitleText.setStyle(sf::Text::Bold);
 
-    sf::FloatRect titleRect_showMenu = gameTitleText.getLocalBounds(); // Đổi tên để tránh nhầm lẫn
+    sf::FloatRect titleRect_showMenu = gameTitleText.getLocalBounds();
     gameTitleText.setOrigin(titleRect_showMenu.left + titleRect_showMenu.width / 2.0f,
         titleRect_showMenu.top + titleRect_showMenu.height / 2.0f);
     gameTitleText.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 5.0f));
@@ -104,7 +106,8 @@ GameState showMenu(sf::RenderWindow& window) {
                 }
                 else if (event.key.code == sf::Keyboard::Return) {
                     SoundManager::playSoundEffect("menu_click");
-                    if (menuStrings[selectedItemIndex] == "New Game") return GameState::Playing;
+                    // SỬA ĐỔI: Chuyển sang màn hình chọn map thay vì chơi game ngay
+                    if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                     if (menuStrings[selectedItemIndex] == "Load Game") { std::cout << "Chuc nang Load Game chua duoc thuc hien." << std::endl; }
                     if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                     if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
@@ -117,7 +120,8 @@ GameState showMenu(sf::RenderWindow& window) {
                         if (menuItems[i].getGlobalBounds().contains(mousePos)) {
                             selectedItemIndex = static_cast<int>(i);
                             SoundManager::playSoundEffect("menu_click");
-                            if (menuStrings[selectedItemIndex] == "New Game") return GameState::Playing;
+                            // SỬA ĐỔI: Chuyển sang màn hình chọn map thay vì chơi game ngay
+                            if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                             if (menuStrings[selectedItemIndex] == "Load Game") {
                                 std::cout << "Chuc nang Load Game chua duoc thuc hien." << std::endl;
                             }
@@ -169,7 +173,108 @@ GameState showMenu(sf::RenderWindow& window) {
     return GameState::Exiting;
 }
 
+// HÀM MỚI: Màn hình chọn Map
+std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<MapInfo>& maps) {
+    sf::Font pixelFont;
+    if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) {
+        return ""; // Trả về chuỗi rỗng nếu có lỗi
+    }
 
+    sf::Text title("Choose a Map", pixelFont, 40);
+    title.setFillColor(sf::Color::Yellow);
+    title.setOrigin(title.getLocalBounds().width / 2.f, title.getLocalBounds().height / 2.f);
+    title.setPosition(window.getSize().x / 2.f, window.getSize().y / 5.f);
+
+    std::vector<sf::Text> mapItems;
+    for (const auto& map : maps) {
+        sf::Text text(map.name, pixelFont, 25);
+        // Cần set origin trước khi thêm vào vector để đảm bảo getGlobalBounds() chính xác
+        sf::FloatRect textRect = text.getLocalBounds();
+        text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+        mapItems.push_back(text);
+    }
+
+    // Sắp xếp các mục menu
+    float startY = window.getSize().y / 2.5f;
+    for (size_t i = 0; i < mapItems.size(); ++i) {
+        mapItems[i].setPosition(window.getSize().x / 2.f, startY + i * 50.f);
+    }
+
+    sf::Text returnHint("Press Esc to go back", pixelFont, 20);
+    returnHint.setFillColor(sf::Color(200, 200, 200));
+    sf::FloatRect hintRect = returnHint.getLocalBounds();
+    returnHint.setOrigin(hintRect.left + hintRect.width / 2.f, hintRect.top + hintRect.height / 2.f);
+    returnHint.setPosition(window.getSize().x / 2.f, window.getSize().y - 50.f);
+
+    int selectedItemIndex = 0;
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+                return "";
+            }
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Escape) {
+                    SoundManager::playSoundEffect("menu_click");
+                    return ""; // Trả về chuỗi rỗng để báo hiệu quay lại
+                }
+                if (event.key.code == sf::Keyboard::Up) {
+                    if (selectedItemIndex > 0) selectedItemIndex--;
+                    else selectedItemIndex = mapItems.size() - 1;
+                    SoundManager::playSoundEffect("menu_click");
+                }
+                else if (event.key.code == sf::Keyboard::Down) {
+                    if (selectedItemIndex < (int)mapItems.size() - 1) selectedItemIndex++;
+                    else selectedItemIndex = 0;
+                    SoundManager::playSoundEffect("menu_click");
+                }
+                else if (event.key.code == sf::Keyboard::Return) {
+                    SoundManager::playSoundEffect("menu_click");
+                    if (!maps.empty()) return maps[selectedItemIndex].id; // Trả về ID của map đã chọn
+                }
+            }
+            if (event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                    for (size_t i = 0; i < mapItems.size(); ++i) {
+                        if (mapItems[i].getGlobalBounds().contains(mousePos)) {
+                            SoundManager::playSoundEffect("menu_click");
+                            return maps[i].id;
+                        }
+                    }
+                }
+            }
+        }
+
+        sf::Vector2f mousePosView = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        for (size_t i = 0; i < mapItems.size(); ++i) {
+            if (mapItems[i].getGlobalBounds().contains(mousePosView)) {
+                selectedItemIndex = i;
+            }
+        }
+
+        for (int i = 0; i < (int)mapItems.size(); ++i) {
+            if (i == selectedItemIndex) mapItems[i].setFillColor(sf::Color::Yellow);
+            else mapItems[i].setFillColor(sf::Color::White);
+        }
+
+        window.clear(sf::Color(15, 30, 50));
+        window.draw(title);
+        for (const auto& item : mapItems) {
+            window.draw(item);
+        }
+        window.draw(returnHint);
+        window.display();
+    }
+
+    return "";
+}
+
+
+// --- HÀM showSettingsScreen và showPauseMenu giữ nguyên như bạn đã cung cấp ---
+// ... (Dán code cho 2 hàm showSettingsScreen và showPauseMenu của bạn vào đây) ...
 // --- HÀM HIỂN THỊ MÀN HÌNH SETTINGS (Đã thiết kế lại) ---
 GameState showSettingsScreen(sf::RenderWindow& window) {
     sf::Font pixelFont;
@@ -375,9 +480,6 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
     return GameState::ShowingMenu;
 }
 
-// Tệp: Menu.cpp
-// Hãy thay thế hàm showPauseMenu của bạn bằng hàm này
-
 GameState showPauseMenu(sf::RenderWindow& window) {
     sf::Font pixelFont;
     if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) {
@@ -389,10 +491,6 @@ GameState showPauseMenu(sf::RenderWindow& window) {
     const sf::Uint8 panelAlpha = 220;
     const sf::Uint8 textAlpha = 255;
 
-    // --- ĐÃ XÓA ---
-    // Các dòng mã khởi tạo cho "overlay" (lớp phủ đen toàn màn hình) đã được xóa bỏ.
-
-    // Tấm nền nhỏ phía sau các tùy chọn (Vẫn giữ lại)
     sf::RectangleShape backgroundPanel;
     backgroundPanel.setSize(sf::Vector2f(400, 350));
     backgroundPanel.setFillColor(sf::Color(10, 10, 10, 0)); // Bắt đầu trong suốt
@@ -401,16 +499,13 @@ GameState showPauseMenu(sf::RenderWindow& window) {
     backgroundPanel.setOrigin(backgroundPanel.getSize().x / 2.f, backgroundPanel.getSize().y / 2.f);
     backgroundPanel.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f);
 
-    // Tiêu đề "Game Paused"
     sf::Text pauseTitleText("Game Paused", pixelFont, 50);
     pauseTitleText.setFillColor(sf::Color(255, 255, 0, 0)); // Bắt đầu trong suốt
     pauseTitleText.setStyle(sf::Text::Bold);
     sf::FloatRect titleRect = pauseTitleText.getLocalBounds();
     pauseTitleText.setOrigin(titleRect.left + titleRect.width / 2.0f, titleRect.top + titleRect.height / 2.0f);
-    // Căn vị trí so với tấm nền
     pauseTitleText.setPosition(backgroundPanel.getPosition().x, backgroundPanel.getPosition().y - 120);
 
-    // Các lựa chọn trong menu
     std::vector<sf::Text> menuItems;
     std::vector<std::string> menuStrings = { "Resume", "Restart", "Quit to Menu" };
     for (size_t i = 0; i < menuStrings.size(); ++i) {
@@ -421,7 +516,6 @@ GameState showPauseMenu(sf::RenderWindow& window) {
         text.setFillColor(sf::Color(255, 255, 255, 0)); // Bắt đầu trong suốt
         sf::FloatRect textRect = text.getLocalBounds();
         text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-        // Căn vị trí so với tấm nền
         text.setPosition(backgroundPanel.getPosition().x, backgroundPanel.getPosition().y - 20 + i * 70);
         menuItems.push_back(text);
     }
@@ -435,7 +529,6 @@ GameState showPauseMenu(sf::RenderWindow& window) {
             alphaRatio = 1.f;
         }
 
-        // Cập nhật alpha cho TẤM NỀN và CHỮ
         backgroundPanel.setFillColor(sf::Color(10, 10, 10, static_cast<sf::Uint8>(panelAlpha * alphaRatio)));
         backgroundPanel.setOutlineColor(sf::Color(200, 200, 200, static_cast<sf::Uint8>(panelAlpha * alphaRatio)));
         pauseTitleText.setFillColor(sf::Color(255, 255, 0, static_cast<sf::Uint8>(textAlpha * alphaRatio)));
@@ -471,7 +564,6 @@ GameState showPauseMenu(sf::RenderWindow& window) {
             }
         }
 
-        // Cập nhật hiệu ứng hover và đổi màu lựa chọn
         if (alphaRatio >= 1.f) {
             sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
             for (size_t i = 0; i < menuItems.size(); ++i) { if (menuItems[i].getGlobalBounds().contains(mousePos)) { selectedItemIndex = i; } }
@@ -482,8 +574,6 @@ GameState showPauseMenu(sf::RenderWindow& window) {
             else { menuItems[i].setFillColor(sf::Color(255, 255, 255, currentAlpha)); }
         }
 
-        // --- Phần vẽ ---
-        // Vẽ trực tiếp lên màn hình game đã có sẵn
         window.draw(backgroundPanel);
         window.draw(pauseTitleText);
         for (const auto& item : menuItems) {

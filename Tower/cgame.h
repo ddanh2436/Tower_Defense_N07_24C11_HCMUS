@@ -34,6 +34,10 @@ class cgame {
 public:
     cgame();
     ~cgame();
+
+    // HÀM MỚI: Tải một map cụ thể dựa trên ID và đường dẫn file
+    void loadMap(const std::string& mapId, const std::string& dataFilePath);
+
     void resetGame();
     void handleInput(const sf::Event& event, sf::RenderWindow& window);
     void update(sf::Time deltaTime);
@@ -43,8 +47,9 @@ public:
     bool isGameOver() const;
     const TowerLevelData* getTowerNextLevelData(const std::string& typeId, int currentLevel) const;
     sf::Texture& getTexture(const std::string& texturePath);
+
 private:
-    cmap* _map;
+    cmap* _map; // Vẫn là con trỏ
     std::vector<cenemy> _enemies;
     std::vector<ctower> _towers;
     std::vector<cbullet> _bullets;
@@ -70,11 +75,9 @@ private:
     sf::Texture _ffButtonTexture;
     sf::Sprite _ffButtonSprite;
 
-    // ---- THAY ĐỔI: Chuyển _sellButton từ Sprite sang RectangleShape để nhất quán với Upgrade ----
     sf::RectangleShape _sellButton;
     sf::Text _sellText;
     sf::Text _sellValueText;
-    // ---- KẾT THÚC THAY ĐỔI ----
 
     int _lives;
     int _money;
@@ -109,8 +112,9 @@ private:
     bool _isFastForward;
     float _gameSpeedMultiplier;
 
-    std::string _dataFilePath;
-    std::string _currentMapId;
+    // XÓA BỎ: không cần các biến này nữa, thông tin map sẽ được truyền vào
+    // std::string _dataFilePath;
+    // std::string _currentMapId;
 
     void loadFont();
     void setupUI();

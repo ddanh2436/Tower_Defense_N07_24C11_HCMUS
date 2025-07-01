@@ -6,11 +6,7 @@
 #include <algorithm>
 
 cgame::cgame() : _rng(std::random_device{}()) {
-    _dataFilePath = "data/map1.txt"; // Đường dẫn tới file data
-    _currentMapId = "MAP_1";             // Map sẽ được tải mặc định
-
-    // THAY ĐỔI: Khởi tạo map bằng con trỏ
-    _map = new cmap(_dataFilePath, _currentMapId);
+    _map = nullptr;
 
     loadFont();
     setupUI();
@@ -21,10 +17,27 @@ cgame::cgame() : _rng(std::random_device{}()) {
 }
 
 cgame::~cgame() {
-    delete _map;
-    _map = nullptr;
+    if (_map) {
+        delete _map;
+        _map = nullptr;
+    }
 }
 
+void cgame::loadMap(const std::string& mapId, const std::string& dataFilePath) {
+    std::cout << "Loading map: " << mapId << " from " << dataFilePath << std::endl;
+
+    // Xóa map cũ nếu có
+    if (_map) {
+        delete _map;
+        _map = nullptr;
+    }
+
+    // Tạo map mới từ thông tin được cung cấp
+    _map = new cmap(dataFilePath, mapId);
+
+    // Reset lại trạng thái game cho map mới
+    resetGame();
+}
 
 void cgame::setupTowerTypes() {
     _towerBlueprints.clear();
@@ -146,7 +159,7 @@ void cgame::setupEnemyTypes() {
 
 void cgame::resetGameStats() {
     _isPaused = false;
-    _lives = 10;
+    _lives = 1;
     _money = 1000;
     _currentWave = 0;
     _enemiesPerWave = 5;
@@ -191,6 +204,7 @@ void cgame::startNextWave() {
 }
 
 void cgame::spawnEnemy() {
+    if (!_map) return;
     if (_enemiesSpawnedThisWave < _enemiesPerWave && _currentWaveEnemyTypeIndex != -1) {
         const auto& path = _map->getEnemyPath();
         if (!path.empty()) {
@@ -303,6 +317,7 @@ void cgame::resetGame() {
 }
 
 void cgame::updateEnemies(sf::Time deltaTime) {
+    if (!_map) return;
     for (auto& enemy : _enemies) {
         if (enemy.isActive()) {
             enemy.update(deltaTime);
@@ -343,7 +358,7 @@ void cgame::cleanupInactiveObjects() {
 }
 
 void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
-    if (!_selectingTowerToBuild) return;
+    if (!_selectingTowerToBuild ||!_map) return;
     sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
     sf::Vector2f mouseWorldPos = window.mapPixelToCoords(mousePixelPos);
     sf::Vector2i gridCoords = _map->getGridCoordinates(mouseWorldPos);
@@ -371,7 +386,7 @@ void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
 // =======================================================================
 
 void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
-    if (_isGameOver) return;
+    if (_isGameOver || !_map) return;
 
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::N) {
@@ -648,7 +663,9 @@ void cgame::update(sf::Time deltaTime) {
 }
 
 void cgame::render(sf::RenderWindow& window) {
-    _map->render(window);
+    if (_map) { // Kiểm tra an toàn
+        _map->render(window);
+    }
     for (auto& tower : _towers) tower.render(window);
     for (auto& enemy : _enemies) enemy.render(window);
     for (auto& bullet : _bullets) bullet.render(window);
