@@ -1,0 +1,2 @@
+MAP_1,Suburban,data/map1.txt
+MAP_2,City,data/map2.txt

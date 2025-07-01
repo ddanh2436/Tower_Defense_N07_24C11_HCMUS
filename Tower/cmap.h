@@ -197,8 +197,8 @@ public:
     sf::Vector2i getGridCoordinates(const sf::Vector2f& pixelPosition) const;
     const std::vector<cpoint>& getEnemyPath() const;
     cpoint getEnemyStartLocation() const;
-    int getMapWidthTiles() const { return _grid.empty() ? 0 : _grid[0].size(); }
-    int getMapHeightTiles() const { return _grid.size(); }
+    int getMapWidthTiles() const { return _grid.empty() ? 0 : static_cast<int>(_grid[0].size()); }
+    int getMapHeightTiles() const { return static_cast<int>(_grid.size()); }
     bool isDecorated(int row, int col) const;
 };
 

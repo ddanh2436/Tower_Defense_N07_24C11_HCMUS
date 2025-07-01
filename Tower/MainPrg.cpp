@@ -4,10 +4,14 @@
 #include <vector>
 #include <string>
 #include <memory>
-
+#include <fstream>      
+#include <sstream>      
+#include <algorithm>
+#include <Windows.h>
 #include "cgame.h"
 #include "Menu.h"
 #include "SoundManager.h"
+#pragma comment(lib, "user32.lib")
 
 constexpr unsigned int DEFAULT_WINDOW_WIDTH = 1024;
 constexpr unsigned int DEFAULT_WINDOW_HEIGHT = 768;
@@ -16,153 +20,178 @@ const std::string GAME_MUSIC_PATH = "assets/game_music.ogg";
 constexpr float MENU_MUSIC_VOLUME = 50.f;
 constexpr float GAME_MUSIC_VOLUME = 70.f;
 
-GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
-    bool wantsToRestart = true;
+// HÀM MỚI: Đọc danh sách các map từ file index
+std::vector<MapInfo> loadMapInfos(const std::string& indexPath) {
+    std::vector<MapInfo> maps;
+    std::ifstream file(indexPath);
+    if (!file.is_open()) {
+        std::cerr << "Fatal Error: Could not open maps_index.txt at path: " << indexPath << std::endl;
+        return maps;
+    }
 
-    // Vòng lặp này cho phép thực hiện chức năng "Restart"
-    while (wantsToRestart) {
-        wantsToRestart = false; // Mặc định là không restart, trừ khi người chơi chọn
-        gameManager.resetGame();
-        sf::Clock clock;
-
-        // Dừng nhạc hiện tại và phát nhạc game
-        SoundManager::stopBackgroundMusic();
-        if (SoundManager::getGameMusicState()) {
-            SoundManager::playBackgroundMusic(GAME_MUSIC_PATH, GAME_MUSIC_VOLUME);
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == '#') {
+            continue;
         }
 
-        // Vòng lặp cho một màn chơi
-        bool inGame = true;
-        while (inGame && window.isOpen()) {
-            sf::Time deltaTime = clock.restart();
-            sf::Event event;
-            SoundManager::update();
+        std::stringstream ss(line);
+        std::string id, name, dataFile;
 
-            // 1. XỬ LÝ SỰ KIỆN
-            while (window.pollEvent(event)) {
-                if (event.type == sf::Event::Closed) {
-                    SoundManager::stopBackgroundMusic();
-                    return GameState::Exiting;
-                }
+        if (std::getline(ss, id, ',') && std::getline(ss, name, ',') && std::getline(ss, dataFile, ',')) {
+            id.erase(id.find_last_not_of(" \n\r\t") + 1);
+            name.erase(0, name.find_first_not_of(" \n\r\t"));
+            name.erase(name.find_last_not_of(" \n\r\t") + 1);
+            dataFile.erase(0, dataFile.find_first_not_of(" \n\r\t"));
+            dataFile.erase(dataFile.find_last_not_of(" \n\r\t") + 1);
 
-                // Cho phép nhấn Escape để mở/tắt menu pause
-                if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
-                    // Dòng này đã được sửa trong cgame::handleInput, nhưng để ở đây cũng tốt
-                    // để xử lý khi người dùng đang không làm gì cả
-                    gameManager.setPaused(true);
-                    SoundManager::playSoundEffect("menu_click");
-                }
-
-                // Chỉ xử lý input game khi không bị dừng
-                if (!gameManager.isPaused()) {
-                    gameManager.handleInput(event, window);
-                }
+            if (!id.empty() && !name.empty() && !dataFile.empty()) {
+                maps.push_back({ id, name, dataFile });
             }
+        }
+    }
+    file.close();
+    return maps;
+}
 
-            // 2. CẬP NHẬT TRẠNG THÁI GAME
+
+// SỬA ĐỔI: runGame chỉ chạy một màn chơi và trả về trạng thái tiếp theo
+GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
+    // Bỏ vòng lặp while(wantsToRestart) - logic này sẽ do main() xử lý
+
+    // gameManager.resetGame(); // Đã được gọi trong loadMap hoặc trong main loop
+    sf::Clock clock;
+
+    SoundManager::stopBackgroundMusic();
+    if (SoundManager::getGameMusicState()) {
+        SoundManager::playBackgroundMusic(GAME_MUSIC_PATH, GAME_MUSIC_VOLUME);
+    }
+
+    bool inGame = true;
+    while (inGame && window.isOpen()) {
+        sf::Time deltaTime = clock.restart();
+        sf::Event event;
+        SoundManager::update();
+
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                return GameState::Exiting;
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                gameManager.setPaused(true);
+                SoundManager::playSoundEffect("menu_click");
+            }
             if (!gameManager.isPaused()) {
-                gameManager.update(deltaTime);
+                gameManager.handleInput(event, window);
             }
+        }
 
-            // 3. KIỂM TRA GAME OVER - Logic này được tách ra riêng
-            if (gameManager.isGameOver()) {
-                SoundManager::stopBackgroundMusic();
-                SoundManager::playSoundEffect("game_over");
+        if (!gameManager.isPaused()) {
+            gameManager.update(deltaTime);
+        }
 
-                // --- Thiết lập UI cho màn hình Game Over ---
-                sf::Font font;
-                if (!font.loadFromFile("assets/pixel_font.ttf")) { return GameState::ShowingMenu; }
+        if (gameManager.isGameOver()) {
+            SoundManager::stopBackgroundMusic();
+            SoundManager::playSoundEffect("game_over");
 
-                sf::Vector2f windowCenter = sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
-                sf::RectangleShape panel(sf::Vector2f(500, 300));
-                panel.setFillColor(sf::Color(0, 0, 0, 180));
-                panel.setOutlineColor(sf::Color(255, 255, 255, 100));
-                panel.setOutlineThickness(2);
-                panel.setOrigin(panel.getSize().x / 2.0f, panel.getSize().y / 2.0f);
-                panel.setPosition(windowCenter);
+            sf::Font font;
+            if (!font.loadFromFile("assets/pixel_font.ttf")) { return GameState::ShowingMenu; }
 
-                sf::Text restartButton("Restart", font, 40);
-                restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
-                restartButton.setPosition(windowCenter.x, windowCenter.y - 40);
+            sf::Vector2f windowCenter = sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+            sf::RectangleShape panel(sf::Vector2f(500, 300));
+            panel.setFillColor(sf::Color(0, 0, 0, 180));
+            panel.setOutlineColor(sf::Color(255, 255, 255, 100));
+            panel.setOutlineThickness(2);
+            panel.setOrigin(panel.getSize().x / 2.0f, panel.getSize().y / 2.0f);
+            panel.setPosition(windowCenter);
 
-                sf::Text menuButton("Back to Menu", font, 40);
-                menuButton.setOrigin(menuButton.getLocalBounds().width / 2, menuButton.getLocalBounds().height / 2);
-                menuButton.setPosition(windowCenter.x, windowCenter.y + 40);
+            sf::Text restartButton("Restart", font, 40);
+            restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
+            restartButton.setPosition(windowCenter.x, windowCenter.y - 40);
 
-                bool optionChosen = false;
-                while (!optionChosen && window.isOpen()) {
-                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                    restartButton.setFillColor(sf::Color::White);
-                    menuButton.setFillColor(sf::Color::White);
-                    if (restartButton.getGlobalBounds().contains(mousePos)) { restartButton.setFillColor(sf::Color::Yellow); }
-                    if (menuButton.getGlobalBounds().contains(mousePos)) { menuButton.setFillColor(sf::Color::Yellow); }
+            sf::Text menuButton("Back to Menu", font, 40);
+            menuButton.setOrigin(menuButton.getLocalBounds().width / 2, menuButton.getLocalBounds().height / 2);
+            menuButton.setPosition(windowCenter.x, windowCenter.y + 40);
 
-                    sf::Event gameOverEvent;
-                    while (window.pollEvent(gameOverEvent)) {
-                        if (gameOverEvent.type == sf::Event::Closed) { return GameState::Exiting; }
-                        if (gameOverEvent.type == sf::Event::MouseButtonPressed && gameOverEvent.mouseButton.button == sf::Mouse::Left) {
-                            if (restartButton.getGlobalBounds().contains(mousePos)) {
-                                SoundManager::playSoundEffect("menu_click");
-                                wantsToRestart = true;
-                                optionChosen = true;
-                            }
-                            if (menuButton.getGlobalBounds().contains(mousePos)) {
-                                SoundManager::playSoundEffect("menu_click");
-                                return GameState::ShowingMenu;
-                            }
+            bool optionChosen = false;
+            while (!optionChosen && window.isOpen()) {
+                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                restartButton.setFillColor(sf::Color::White);
+                menuButton.setFillColor(sf::Color::White);
+                if (restartButton.getGlobalBounds().contains(mousePos)) { restartButton.setFillColor(sf::Color::Yellow); }
+                if (menuButton.getGlobalBounds().contains(mousePos)) { menuButton.setFillColor(sf::Color::Yellow); }
+
+                sf::Event gameOverEvent;
+                while (window.pollEvent(gameOverEvent)) {
+                    if (gameOverEvent.type == sf::Event::Closed) { return GameState::Exiting; }
+                    if (gameOverEvent.type == sf::Event::MouseButtonPressed && gameOverEvent.mouseButton.button == sf::Mouse::Left) {
+                        if (restartButton.getGlobalBounds().contains(mousePos)) {
+                            SoundManager::playSoundEffect("menu_click");
+                            // SỬA ĐỔI: Trả về Playing để main loop xử lý chơi lại map này
+                            return GameState::Playing;
+                        }
+                        if (menuButton.getGlobalBounds().contains(mousePos)) {
+                            SoundManager::playSoundEffect("menu_click");
+                            return GameState::ShowingMenu;
                         }
                     }
-
-                    window.clear();
-                    gameManager.render(window); // Vẽ màn hình game cuối cùng
-                    window.draw(panel);
-                    window.draw(restartButton);
-                    window.draw(menuButton);
-                    window.display();
                 }
 
-                inGame = false; // Thoát vòng lặp game
-                continue; // Chuyển đến vòng lặp "wantsToRestart" tiếp theo
-            }
-
-            // 4. VẼ MỌI THỨ
-            window.clear(sf::Color(25, 25, 25));
-            gameManager.render(window);
-
-            if (gameManager.isPaused()) {
-                SoundManager::pauseBackgroundMusic();
-                GameState pauseResult = showPauseMenu(window); 
-
-                if (pauseResult == GameState::Playing) { 
-                    gameManager.setPaused(false);
-                    SoundManager::resumeBackgroundMusic();
-                    clock.restart(); 
-                }
-                else if (pauseResult == GameState::Restarting) {
-                    wantsToRestart = true;
-                    inGame = false; 
-                }
-                else {
-                    return pauseResult; 
-                }
-            }
-            else {
-                // Chỉ gọi display nếu game không bị dừng (vì menu dừng đã có display riêng)
+                window.clear();
+                gameManager.render(window);
+                window.draw(panel);
+                window.draw(restartButton);
+                window.draw(menuButton);
                 window.display();
             }
-        } // Kết thúc vòng lặp chơi game (while inGame)
-    } // Kết thúc vòng lặp restart (while wantsToRestart)
+        }
 
-    return GameState::ShowingMenu; // Mặc định trả về Menu nếu thoát khỏi các vòng lặp
+        window.clear(sf::Color(25, 25, 25));
+        gameManager.render(window);
+
+        if (gameManager.isPaused()) {
+            SoundManager::pauseBackgroundMusic();
+            GameState pauseResult = showPauseMenu(window);
+
+            if (pauseResult == GameState::Playing) {
+                gameManager.setPaused(false);
+                SoundManager::resumeBackgroundMusic();
+                clock.restart();
+            }
+            // SỬA ĐỔI: Restart từ menu pause sẽ quay về màn hình chọn map
+            else if (pauseResult == GameState::Restarting) {
+                return GameState::ShowingMapSelection;
+            }
+            else {
+                return pauseResult; // Exiting hoặc ShowingMenu
+            }
+        }
+        else {
+            window.display();
+        }
+    }
+    return GameState::ShowingMenu;
 }
+
+
 int main() {
     SoundManager::initialize();
+
+    // THÊM MỚI: Tải thông tin các map trước khi tạo cửa sổ
+    std::vector<MapInfo> mapInfos = loadMapInfos("data/maps_index.txt");
+    if (mapInfos.empty()) {
+        std::cerr << "No maps found or failed to load map index. Exiting." << std::endl;
+        // Hiển thị lỗi cho người dùng Windows thấy trước khi tắt
+        MessageBoxA(NULL, "Could not find or load 'data/maps_index.txt'.\nPlease ensure the file exists and is correctly formatted.", "Fatal Error", MB_OK | MB_ICONERROR);
+        return -1;
+    }
+
     auto gameManager = std::make_unique<cgame>();
 
+    // GIỮ NGUYÊN: Toàn bộ logic fullscreen của bạn được giữ lại
     const auto fullscreenModes = sf::VideoMode::getFullscreenModes();
     sf::VideoMode selectedMode;
     bool fullscreen = false;
-
     if (!fullscreenModes.empty()) {
         selectedMode = fullscreenModes[0];
         fullscreen = true;
@@ -172,7 +201,6 @@ int main() {
         selectedMode = sf::VideoMode(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
         std::cout << "Khong tim thay che do toan man hinh phu hop, su dung cua so: " << selectedMode.width << "x" << selectedMode.height << std::endl;
     }
-
     auto window = std::make_unique<sf::RenderWindow>(
         selectedMode,
         "Tower Defense SFML",
@@ -181,47 +209,73 @@ int main() {
     window->setFramerateLimit(60);
 
     GameState currentState = GameState::ShowingMenu;
-    std::cout << "Khoi chay Tower Defense SFML." << std::endl;
+    std::string selectedMapId = ""; // THÊM MỚI: Lưu ID map được chọn
 
-    // Phát nhạc menu khi bắt đầu
+    std::cout << "Khoi chay Tower Defense SFML." << std::endl;
     SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
 
+    // SỬA ĐỔI: Vòng lặp chính với state machine được cập nhật
     while (currentState != GameState::Exiting && window->isOpen()) {
         SoundManager::update();
 
         switch (currentState) {
         case GameState::ShowingMenu:
-            std::cout << "Dang hien thi Menu." << std::endl;
-            // Đảm bảo nhạc menu đang phát nếu nó không phải là track hiện tại hoặc đang không phát
-            if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH ||
-                SoundManager::backgroundMusic.getStatus() != sf::Music::Playing) {
+            if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH) {
                 SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
             }
             currentState = showMenu(*window);
             break;
+
+            // THÊM MỚI: Case xử lý màn hình chọn map
+        case GameState::ShowingMapSelection:
+        {
+            if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH) {
+                SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
+            }
+            std::string choice = showMapSelectionScreen(*window, mapInfos);
+            if (!choice.empty()) {
+                selectedMapId = choice;
+                currentState = GameState::Playing;
+            }
+            else {
+                currentState = GameState::ShowingMenu;
+            }
+        }
+        break;
+
+        // SỬA ĐỔI: Case playing để tải map trước khi chạy
         case GameState::Playing:
-            std::cout << "Chuyen sang trang thai Playing Game." << std::endl;
-            // SoundManager::stopBackgroundMusic(); // Đã gọi trong runGame
-            gameManager->resetGame();
-            currentState = runGame(*window, *gameManager);
-            // Khi quay lại từ runGame, vòng lặp sẽ tự xử lý nhạc cho trạng thái mới (ví dụ: ShowingMenu)
+        {
+            std::cout << "Chuyen sang trang thai Playing Game cho map: " << selectedMapId << std::endl;
+
+            auto it = std::find_if(mapInfos.begin(), mapInfos.end(), [&](const MapInfo& mi) {
+                return mi.id == selectedMapId;
+                });
+
+            if (it != mapInfos.end()) {
+                gameManager->loadMap(it->id, it->dataFile);
+                currentState = runGame(*window, *gameManager);
+            }
+            else {
+                std::cerr << "Error: Could not find map data for ID: " << selectedMapId << std::endl;
+                currentState = GameState::ShowingMenu;
+            }
+        }
+        break;
+
+        // Case này không còn cần thiết vì đã được xử lý bởi logic trả về của runGame
+        case GameState::Restarting:
+            currentState = GameState::Playing;
             break;
-        case GameState::Restarting: 
-            std::cout << "Chuyen sang trang thai Playing Game." << std::endl;
-            gameManager->resetGame();
-            currentState = runGame(*window, *gameManager);
-            break;
+
         case GameState::SettingsScreen:
-            std::cout << "Chuyen sang trang thai Settings." << std::endl;
-            // Đảm bảo nhạc menu đang phát cho màn hình settings
-            if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH ||
-                SoundManager::backgroundMusic.getStatus() != sf::Music::Playing) {
+            if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH) {
                 SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
             }
             currentState = showSettingsScreen(*window);
             break;
+
         case GameState::Exiting:
-            std::cout << "Dang chuan bi thoat game..." << std::endl;
             break;
         }
     }

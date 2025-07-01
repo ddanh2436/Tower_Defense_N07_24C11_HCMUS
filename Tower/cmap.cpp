@@ -9,7 +9,7 @@
 #include <map>
 #include <functional>
 
-int CURRENT_TILE_SIZE = 60; // Gán một giá trị mặc định hợp lý
+int CURRENT_TILE_SIZE = 60; 
 
 // Hàm helper để tải texture
 bool loadTextureSFML(sf::Texture& texture, const std::string& filename, bool smooth = false) {
@@ -21,30 +21,16 @@ bool loadTextureSFML(sf::Texture& texture, const std::string& filename, bool smo
     return true;
 }
 
-// --- HÀM KHỞI TẠO (CONSTRUCTOR) ĐÚNG ---
-// Thứ tự thực thi lệnh đã được sắp xếp lại chính xác.
 cmap::cmap(const std::string& dataFilePath, const std::string& mapId) : _texturesLoaded(false) {
-    CURRENT_TILE_SIZE = 60; // Giá trị này có thể được đọc từ file trong tương lai
+    CURRENT_TILE_SIZE = 60; 
 
-    // BƯỚC 1: Tải tất cả các texture cần thiết trước.
     loadTileTextures();
-
-    // BƯỚC 2: Tải layout bản đồ và thông tin decoration từ file.
-    // Thao tác này sẽ điền dữ liệu vào `_mapData` và gọi các hàm `add...At`.
     loadMapFromTxtFile(dataFilePath, mapId);
-
-    // BƯỚC 3: Bây giờ `_mapData` đã có dữ liệu, ta có thể khởi tạo grid.
     initializeGridFromMapData();
-
-    // BƯỚC 4: Gán texture cho các ô trong grid.
     assignTileTextures();
-
-    // BƯỚC 5: Tính toán đường đi cho quái vật.
     calculateEnemyPath();
 }
 
-
-// --- CÁC HÀM KHÁC ---
 
 void cmap::loadMapFromTxtFile(const std::string& filePath, const std::string& mapId) {
     std::ifstream file(filePath);
@@ -141,8 +127,8 @@ void cmap::initializeGridFromMapData() {
         return;
     }
 
-    int H = _mapData.size();
-    int W = _mapData[0].size();
+    int H= static_cast<int>(_mapData.size());
+    int W = static_cast<int>(_mapData[0].size());
 
     _grid.assign(H, std::vector<MapTile>(W));
 
@@ -534,23 +520,28 @@ void cmap::addGrassAt(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _grasses.emplace_back(_grass_Texture, row, col, scale);
 }
+
 void cmap::addGrass1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _grasses.emplace_back(_grass1_Texture, row, col, scale);
 }
+
 void cmap::addShadow6AndTree1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _trees.emplace_back(_tree1_Texture, row, col, scale);
     _shadows.emplace_back(_shadow6_Texture, row + 1, col - 1, scale + 0.16f);
 }
+
 void cmap::addPlaceForTower1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _placesForTowers.emplace_back(_placeForTower1_Texture, row, col - 1, scale - 0.75f);
 }
+
 void cmap::addLog1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _logs.emplace_back(_log1_Texture, row, col, scale);
 }
+
 void cmap::addComboBush1GrassFlowerAt(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _bushes.emplace_back(_bush1_Texture, row, col, scale);
@@ -559,6 +550,7 @@ void cmap::addComboBush1GrassFlowerAt(int row, int col) {
     _grasses.emplace_back(_grassOverlay4_Texture, row - 1, col - 1, scale + 0.2f);
     _flowers.emplace_back(_flower10_Texture, row, col - 1, scale);
 }
+
 void cmap::addComboLogCampStoneFlowerGrassAt(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _logs.emplace_back(_log3_Texture, row, col - 1, scale - 0.5f);
@@ -568,114 +560,142 @@ void cmap::addComboLogCampStoneFlowerGrassAt(int row, int col) {
     _grassesOverlay.emplace_back(_grassOverlay2_Texture, row + 1, col, scale);
     _flowers.emplace_back(_flower1_Texture, row + 1, col + 1, scale);
 }
+
 void cmap::addCamp5At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _camps.emplace_back(_camp5_Texture, row, col, scale);
 }
+
 void cmap::addFence1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _fences.emplace_back(_fence1_Texture, row, col, scale);
 }
+
 void cmap::addFence5At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _fences.emplace_back(_fence5_Texture, row, col, scale);
 }
+
 void cmap::addFence6At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _fences.emplace_back(_fence6_Texture, row, col, scale);
 }
+
 void cmap::addFence7At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _fences.emplace_back(_fence7_Texture, row, col, scale);
 }
+
 void cmap::addFence9At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _fences.emplace_back(_fence9_Texture, row, col, scale);
 }
+
 void cmap::addFence10At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _fences.emplace_back(_fence10_Texture, row, col, scale);
 }
+
 void cmap::addPointer1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _pointers.emplace_back(_pointer1_Texture, row, col, scale);
 }
+
 void cmap::addPointer4At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _pointers.emplace_back(_pointer4_Texture, row, col, scale);
 }
+
 void cmap::addPointer5At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _pointers.emplace_back(_pointer5_Texture, row, col, scale);
 }
+
 void cmap::addLamp1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _lamps.emplace_back(_lamp1_Texture, row, col, scale);
 }
+
 void cmap::addLamp2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _lamps.emplace_back(_lamp2_Texture, row, col, scale);
 }
+
 void cmap::addLamp3At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _lamps.emplace_back(_lamp3_Texture, row, col, scale);
 }
+
 void cmap::addLamp4At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _lamps.emplace_back(_lamp4_Texture, row, col, scale);
 }
+
 void cmap::addLamp5At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _lamps.emplace_back(_lamp5_Texture, row, col, scale);
 }
+
 void cmap::addLamp6At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _lamps.emplace_back(_lamp6_Texture, row, col, scale);
 }
+
 void cmap::addCamp6At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _camps.emplace_back(_camp6_Texture, row, col, scale);
 }
+
 void cmap::addCamp2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _camps.emplace_back(_camp2_Texture, row, col, scale);
 }
+
 void cmap::addCamp4At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _camps.emplace_back(_camp4_Texture, row, col, scale);
 }
+
 void cmap::addDirt2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _dirts.emplace_back(_dirt2_Texture, row, col, scale);
 }
+
 void cmap::addDirt6At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _dirts.emplace_back(_dirt6_Texture, row, col, scale);
 }
+
 void cmap::addBox1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _boxes.emplace_back(_box1_Texture, row, col, scale);
 }
+
 void cmap::addBox3At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _boxes.emplace_back(_box3_Texture, row, col, scale);
 }
+
 void cmap::addStone7At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _stones.emplace_back(_stone7_Texture, row, col, scale);
 }
+
 void cmap::addStone9At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _stones.emplace_back(_stone9_Texture, row, col, scale);
 }
+
 void cmap::addStone12At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _stones.emplace_back(_stone12_Texture, row, col, scale);
 }
+
 void cmap::addTree2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _trees.emplace_back(_tree2_Texture, row, col, scale);
 }
+
 void cmap::addComboFlowerGrassAt(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _flowers.emplace_back(_flower4_Texture, row, col, scale + 0.25f);
