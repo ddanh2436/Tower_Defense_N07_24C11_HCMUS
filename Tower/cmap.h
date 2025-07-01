@@ -133,7 +133,8 @@ private:
         _fence7_Texture, _fence8_Texture, _fence9_Texture, _fence10_Texture,
         _pointer1_Texture, _pointer2_Texture, _pointer3_Texture, _pointer4_Texture,
         _pointer5_Texture, _pointer6_Texture, _dirt1_Texture, _dirt2_Texture,
-        _dirt3_Texture, _dirt4_Texture, _dirt5_Texture, _dirt6_Texture;
+        _dirt3_Texture, _dirt4_Texture, _dirt5_Texture, _dirt6_Texture,
+        _box1_Texture, _box2_Texture, _box3_Texture, _box4_Texture;
 
     bool _texturesLoaded;
     std::vector<cpoint> _enemyPath; 
@@ -147,6 +148,8 @@ private:
     // Helper methods to add decorations
     void addBushAt(int row, int col);
     void addGrassAt(int row, int col);
+    void addBush3At(int row, int col);
+    void addBush4At(int row, int col);
     void addBush5At(int row, int col);
     void addGrass1At(int row, int col);
     void addShadow6AndTree1At(int row, int col);
@@ -154,19 +157,34 @@ private:
     void addLog1At(int row, int col);
     void addComboLogCampStoneFlowerGrassAt(int row, int col);
     void addCamp2At(int row, int col);
+    void addCamp4At(int row, int col);
     void addCamp5At(int row, int col);
     void addCamp6At(int row, int col);
     void addComboBush1GrassFlowerAt(int row, int col);
     void addFence1At(int row, int col);
+    void addFence5At(int row, int col);
+    void addFence6At(int row, int col);
+    void addFence7At(int row, int col);
+    void addFence9At(int row, int col);
+    void addFence10At(int row, int col);
     void addPointer1At(int row, int col);
     void addPointer4At(int row, int col);
+    void addPointer5At(int row, int col);
     void addLamp1At(int row, int col);
     void addLamp2At(int row, int col);
     void addLamp3At(int row, int col);
     void addLamp4At(int row, int col);
+    void addLamp5At(int row, int col);
+    void addLamp6At(int row, int col);
     void addDirt2At(int row, int col);
     void addDirt6At(int row, int col);
-
+    void addComboFlowerGrassAt(int row, int col);
+    void addBox1At(int row, int col);
+    void addBox3At(int row, int col);
+    void addStone7At(int row, int col);
+    void addStone9At(int row, int col);
+    void addStone12At(int row, int col);
+    void addTree2At(int row, int col);
 public:
     cmap();
     void render(sf::RenderWindow& window);
