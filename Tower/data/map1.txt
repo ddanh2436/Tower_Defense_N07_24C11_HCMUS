@@ -1,0 +1,136 @@
+# ---- Dữ liệu cho bản đồ thứ nhất ----
+[MAP_1]
+layout
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 6 60 56 20 56 56 20 8 0 0 0 0 6 56 60 20 56 20 20 8 0 0 0 0 0 0
+0 0 0 0 0 0 29 1 2 3 3 2 1 17 0 0 0 0 50 1 2 2 3 2 1 1 0 0 0 0 0 0
+0 0 0 0 0 0 50 16 0 0 0 0 13 16 0 0 0 0 29 16 0 0 0 0 29 16 0 0 0 0 0 0
+0 0 0 0 0 0 13 16 0 0 0 0 29 16 0 0 0 0 50 17 0 0 0 0 13 17 0 0 0 0 0 0
+0 0 0 0 0 0 21 17 0 0 0 0 21 17 0 0 0 0 29 16 0 0 0 0 50 16 0 0 0 0 0 0
+60 56 20 56 60 20 1 16 0 0 0 0 50 17 0 0 0 0 13 16 0 0 0 0 50 1 60 60 56 60 20 56
+2 2 3 5 24 2 2 28 0 0 0 0 13 16 0 0 0 0 21 17 0 0 0 0 22 3 2 24 2 3 2 2
+0 0 0 0 0 0 0 0 0 0 0 0 29 17 0 0 0 0 50 16 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 13 16 0 0 0 0 21 17 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 50 17 0 0 0 0 29 16 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 21 1 20 56 60 56 1 16 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 22 2 24 2 3 2 2 28 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+endlayout
+decorations
+# Format: TEN_DECO row col
+addGrassAt 1 5
+addBushAt 2 10
+addGrass1At 1 5
+addBush3At 14 9
+addBush4At 10 3
+addBush4At 10 4
+addBush4At 10 5
+addBush4At 10 6
+addBush4At 10 7
+addBush5At 2 10
+addShadow6AndTree1At 14 15
+addShadow6AndTree1At 5 4
+addShadow6AndTree1At 7 22
+addPlaceForTower1At 5 11
+addPlaceForTower1At 4 15
+addPlaceForTower1At 12 15
+addPlaceForTower1At 5 21
+addLog1At 14 5
+addComboLogCampStoneFlowerGrassAt 1 20
+addComboLogCampStoneFlowerGrassAt 12 25
+addCamp2At 4 28
+addCamp4At 16 2
+addCamp5At 5 27
+addCamp5At 12 23
+addCamp6At 12 8
+addComboBush1GrassFlowerAt 12 3
+addComboBush1GrassFlowerAt 3 4
+addFence1At 7 0
+addFence1At 10 0
+addFence1At 0 18
+addFence1At 0 19
+addFence1At 0 20
+addFence1At 0 21
+addFence1At 0 22
+addFence1At 10 22
+addFence1At 10 23
+addFence1At 10 24
+addFence1At 10 26
+addFence1At 10 27
+addFence1At 14 22
+addFence1At 14 23
+addFence1At 14 24
+addFence1At 14 25
+addFence1At 14 26
+addFence1At 14 27
+addFence1At 2 18
+addFence1At 2 19
+addFence1At 2 22
+addFence7At 0 18
+addFence7At 1 18
+addFence7At 0 23
+addFence7At 1 23
+addFence7At 13 22
+addFence7At 12 22
+addFence7At 11 22
+addFence7At 10 22
+addFence7At 10 25
+addFence7At 10 26
+addFence7At 13 28
+addFence7At 12 28
+addFence7At 11 28
+addFence7At 10 28
+addFence9At 2 23
+addFence9At 13 28
+addFence10At 2 20
+addFence5At 2 21
+addPointer1At 10 30
+addPointer4At 7 31
+addPointer4At 10 1
+addPointer5At 12 17
+addLamp1At 2 13
+addLamp2At 9 8
+addLamp3At 7 2
+addLamp4At 2 6
+addLamp5At 11 5
+addLamp6At 11 7
+addDirt2At 7 28
+addDirt6At 6 28
+addComboFlowerGrassAt 4 1
+addComboFlowerGrassAt 1 6
+addComboFlowerGrassAt 1 9
+addComboFlowerGrassAt 1 12
+addComboFlowerGrassAt 1 15
+addComboFlowerGrassAt 16 1
+addComboFlowerGrassAt 16 4
+addComboFlowerGrassAt 16 7
+addComboFlowerGrassAt 16 10
+addComboFlowerGrassAt 16 13
+addComboFlowerGrassAt 16 16
+addComboFlowerGrassAt 16 19
+addComboFlowerGrassAt 16 22
+addComboFlowerGrassAt 16 25
+addComboFlowerGrassAt 16 28
+addComboFlowerGrassAt 16 31
+addComboFlowerGrassAt 13 30
+addComboFlowerGrassAt 13 1
+addComboFlowerGrassAt 13 4
+addComboFlowerGrassAt 13 7
+addComboFlowerGrassAt 1 30
+addComboFlowerGrassAt 1 27
+addComboFlowerGrassAt 1 24
+addComboFlowerGrassAt 4 30
+addBox3At 13 25
+addBox3At 4 27
+addStone7At 14 5
+addStone9At 13 24
+addStone12At 6 16
+addTree2At 7 15
+addTree2At 11 4
+addBox1At 11 23
+enddecorations
+[/MAP_1]

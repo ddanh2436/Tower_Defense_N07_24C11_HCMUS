@@ -3,8 +3,15 @@
 #include <iostream>
 #include <sstream>
 #include <random>
+#include <algorithm>
 
 cgame::cgame() : _rng(std::random_device{}()) {
+    _dataFilePath = "data/map1.txt"; // Đường dẫn tới file data
+    _currentMapId = "MAP_1";             // Map sẽ được tải mặc định
+
+    // THAY ĐỔI: Khởi tạo map bằng con trỏ
+    _map = new cmap(_dataFilePath, _currentMapId);
+
     loadFont();
     setupUI();
     setupEnemyTypes();
@@ -12,6 +19,12 @@ cgame::cgame() : _rng(std::random_device{}()) {
     _isPaused = false;
     resetGame();
 }
+
+cgame::~cgame() {
+    delete _map;
+    _map = nullptr;
+}
+
 
 void cgame::setupTowerTypes() {
     _towerBlueprints.clear();
@@ -25,18 +38,8 @@ void cgame::setupTowerTypes() {
     archerLevels.push_back(TowerLevelData{
         /*level*/ 1, /*cost*/ 50,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
-
-        /*--- Animation chính (Xây/Tấn công) ---*/
-        /*texturePath*/ "assets/4.png",
-        /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
-
-        /*--- Animation IDLE ---*/
-         "assets/4_idle.png",
-         0,
-         6,
-         2.0f,
-
-         /*--- Chỉ số chiến đấu ---*/
+        /*texturePath*/ "assets/4.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
+        "assets/4_idle.png", 0, 6, 2.0f,
         /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f
         });
 
@@ -44,55 +47,27 @@ void cgame::setupTowerTypes() {
     archerLevels.push_back(TowerLevelData{
         /*level*/ 2, /*cost*/ 75,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
-
-        /*--- Animation chính (Xây/Tấn công) ---*/
-        /*texturePath*/ "assets/5.png",
-        /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.4f,
-
-        /*--- Animation IDLE ---*/
-        /*idle_texturePath*/ "assets/5_idle.png",
-        /*idle_startFrame*/  0,
-        /*idle_numFrames*/   6,
-        /*idle_speed*/       1.8f,
-
-        /*--- Chỉ số chiến đấu ---*/
-        /*range*/ 175.f, /*fireRate*/ 0.8f, /*damage*/ 40, /*bulletSpeed*/ 220.f
+        "assets/5.png", 2, 2, 0.4f,
+        "assets/5_idle.png", 0, 6, 1.8f,
+        175.f, 0.8f, 40, 220.f
         });
 
+    // ----- CẤP 3 -----
     archerLevels.push_back(TowerLevelData{
         /*level*/ 3, /*cost*/ 100,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
-
-        /*--- Animation chính (Xây/Tấn công) ---*/
-        /*texturePath*/ "assets/6.png",
-        /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.4f,
-
-        /*--- Animation IDLE ---*/
-        /*idle_texturePath*/ "assets/6_idle.png",
-        /*idle_startFrame*/  0,
-        /*idle_numFrames*/   6,
-        /*idle_speed*/       1.8f,
-
-        /*--- Chỉ số chiến đấu ---*/
-        /*range*/ 200.f, /*fireRate*/ 0.9f, /*damage*/ 50, /*bulletSpeed*/ 230.f
+        "assets/6.png", 2, 2, 0.4f,
+        "assets/6_idle.png", 0, 6, 1.8f,
+        200.f, 0.9f, 50, 230.f
         });
 
+    // ----- CẤP 4 -----
     archerLevels.push_back(TowerLevelData{
         /*level*/ 4, /*cost*/ 150,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
-
-        /*--- Animation chính (Xây/Tấn công) ---*/
-        /*texturePath*/ "assets/7.png",
-        /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.4f,
-
-        /*--- Animation IDLE ---*/
-        /*idle_texturePath*/ "assets/7_idle.png",
-        /*idle_startFrame*/  0,
-        /*idle_numFrames*/   6,
-        /*idle_speed*/       1.8f,
-
-        /*--- Chỉ số chiến đấu ---*/
-        /*range*/ 230.f, /*fireRate*/ 1.2f, /*damage*/ 65, /*bulletSpeed*/ 235.f
+        "assets/7.png", 2, 2, 0.4f,
+        "assets/7_idle.png", 0, 6, 1.8f,
+        230.f, 1.2f, 65, 235.f
         });
 
     _towerBlueprints["ArcherTower"] = archerLevels;
@@ -112,13 +87,8 @@ const TowerLevelData* cgame::getTowerNextLevelData(const std::string& typeId, in
 
 void cgame::setupEnemyTypes() {
     _availableEnemyTypes.clear();
-
-    // Loại 1: (Goblin)
     EnemyType goblin;
-    goblin.health = 120;
-    goblin.speed = 20.f;
-    goblin.scale = 2.0f;
-    goblin.moneyValue = 30;
+    goblin.health = 120; goblin.speed = 20.f; goblin.scale = 2.0f; goblin.moneyValue = 30;
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U_Walk.png";
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D_Walk.png";
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S_Walk.png";
@@ -127,12 +97,8 @@ void cgame::setupEnemyTypes() {
     goblin.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S_Death.png";
     _availableEnemyTypes.push_back(goblin);
 
-    // Loại 2: WOLF
     EnemyType wolf = goblin;
-    wolf.health = 60;
-    wolf.speed = 35.f;
-    wolf.scale = 1.2f;
-    wolf.moneyValue = 20;
+    wolf.health = 60; wolf.speed = 35.f; wolf.scale = 1.2f; wolf.moneyValue = 20;
     wolf.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U1_Walk.png";
     wolf.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D1_Walk.png";
     wolf.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S1_Walk.png";
@@ -140,13 +106,8 @@ void cgame::setupEnemyTypes() {
     wolf.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D1_Death.png";
     wolf.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S1_Death.png";
     _availableEnemyTypes.push_back(wolf);
-
-    // Loại 3: Bee
     EnemyType bee = wolf;
-    bee.health = 250;
-    bee.speed = 15.f;
-    bee.scale = 2.0f;
-    bee.moneyValue = 20;
+    bee.health = 250; bee.speed = 15.f; bee.scale = 2.0f; bee.moneyValue = 20;
     bee.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U2_Walk.png";
     bee.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D2_Walk.png";
     bee.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S2_Walk.png";
@@ -155,12 +116,8 @@ void cgame::setupEnemyTypes() {
     bee.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S2_Death.png";
     _availableEnemyTypes.push_back(bee);
 
-    //Loai 4: Slime
     EnemyType slime = bee;
-    slime.health = 150;
-    slime.speed = 20.f;
-    slime.scale = 2.0f;
-    slime.moneyValue = 20;
+    slime.health = 150; slime.speed = 20.f; slime.scale = 2.0f; slime.moneyValue = 20;
     slime.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U3_Walk.png";
     slime.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D3_Walk.png";
     slime.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S3_Walk.png";
@@ -170,10 +127,7 @@ void cgame::setupEnemyTypes() {
     _availableEnemyTypes.push_back(slime);
 
     EnemyType slime1 = slime;
-    slime1.health = 150;
-    slime1.speed = 20.f;
-    slime1.scale = 2.0f;
-    slime1.moneyValue = 20;
+    slime1.health = 150; slime1.speed = 20.f; slime1.scale = 2.0f; slime1.moneyValue = 20;
     slime1.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U3_Special.png";
     slime1.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D3_Special.png";
     slime1.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S3_Special.png";
@@ -182,27 +136,21 @@ void cgame::setupEnemyTypes() {
     slime1.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S3_Death2.png";
     _availableEnemyTypes.push_back(slime1);
 
-    // Knight
     EnemyType knight = goblin;
-    knight.health = 250;
-    knight.speed = 20.f;
-    knight.scale = 2.0f;
-    knight.moneyValue = 20;
+    knight.health = 250; knight.speed = 20.f; knight.scale = 2.0f; knight.moneyValue = 20;
     knight.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U4_Walk.png";
     knight.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D4_Walk.png";
     knight.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S4_Walk.png";
-    /*knight.frameSize = { 96, 96 };*/
     _availableEnemyTypes.push_back(knight);
-
 }
 
 void cgame::resetGameStats() {
     _isPaused = false;
-    _lives = 1;
+    _lives = 10;
     _money = 1000;
     _currentWave = 0;
     _enemiesPerWave = 5;
-    _spawnInterval = sf::seconds(2.0f); // Giảm thời gian spawn quái
+    _spawnInterval = sf::seconds(2.0f);
     _timeSinceLastSpawn = sf::Time::Zero;
     _enemiesSpawnedThisWave = 0;
     _isGameOver = false;
@@ -212,18 +160,19 @@ void cgame::resetGameStats() {
     _levelWon = false;
     _waveInProgress = false;
     _currentWaveEnemyTypeIndex = -1;
-    _isFastForward = false; // <<< THÊM MỚI
-    _gameSpeedMultiplier = 2.0f; // <<< THÊM MỚI
+    _isFastForward = false;
+    _gameSpeedMultiplier = 2.0f;
 
     _enemies.clear();
     _towers.clear();
     _bullets.clear();
 
     _selectingTowerToBuild = false;
+    _selectedTower = nullptr;
+    _isUpgradePanelVisible = false;
 }
 
 void cgame::startNextWave() {
-    // Thêm _levelWon vào điều kiện bảo vệ
     if (_waveInProgress || _isGameOver || _levelWon) return;
 
     if (!_availableEnemyTypes.empty()) {
@@ -237,33 +186,20 @@ void cgame::startNextWave() {
     _waveInProgress = true;
     _timeSinceLastSpawn = sf::Time::Zero;
     _messageText.setString("");
-
     _enemies.reserve(_enemiesPerWave);
-
-    std::cout << "Wave " << _currentWave << " bat dau!" << std::endl;
+    std::cout << "Wave " << _currentWave << " Start!" << std::endl;
 }
+
 void cgame::spawnEnemy() {
     if (_enemiesSpawnedThisWave < _enemiesPerWave && _currentWaveEnemyTypeIndex != -1) {
-        const auto& path = _map.getEnemyPath();
+        const auto& path = _map->getEnemyPath();
         if (!path.empty()) {
             const EnemyType& currentType = _availableEnemyTypes.at(_currentWaveEnemyTypeIndex);
-            int finalHealth = static_cast<int>(currentType.health * std::pow(1.2, _currentWave - 1));
-            if (finalHealth < currentType.health) finalHealth = currentType.health;
+            int finalHealth = static_cast<int>(currentType.health * std::pow(1.3, _currentWave - 1));
             float finalSpeed = currentType.speed * (1.f + (_currentWave - 1) * 0.05f);
-            const float maxSpeed = 50.f;
-            if (finalSpeed > maxSpeed) finalSpeed = maxSpeed;
             int finalMoneyValue = currentType.moneyValue + (_currentWave * 2);
 
-            _enemies.emplace_back(
-                this,
-                currentType.speed,
-                finalHealth,
-                path,
-                currentType.scale,
-                currentType.moneyValue,
-                currentType.frameSize,
-                currentType.texturePaths
-            );
+            _enemies.emplace_back(this, currentType.speed, finalHealth, path, currentType.scale, finalMoneyValue, currentType.frameSize, currentType.texturePaths);
             _enemiesSpawnedThisWave++;
         }
     }
@@ -272,16 +208,14 @@ void cgame::spawnEnemy() {
 void cgame::handleCollisions() {
     for (auto& bullet : _bullets) {
         if (!bullet.canCollide()) continue;
-
         for (auto& enemy : _enemies) {
             if (enemy.isActive() && enemy.isAlive()) {
                 if (bullet.getGlobalBounds().intersects(enemy.getGlobalBounds())) {
                     enemy.takeDamage(bullet.getDamage());
                     bullet.setActive(false);
-
                     if (!enemy.isAlive()) {
                         _money += enemy.getMoneyValue();
-                        SoundManager::playSoundEffect("enemy_explode");
+                        SoundManager::playSoundEffect("assets/enemy_explode.wav");
                     }
                     break;
                 }
@@ -301,100 +235,69 @@ void cgame::loadFont() {
 }
 
 void cgame::setupUI() {
-    // Create UI panel background
     _uiPanel.setSize(sf::Vector2f(250, 120));
     _uiPanel.setPosition(10, 10);
     _uiPanel.setFillColor(sf::Color(30, 30, 40, 200));
     _uiPanel.setOutlineThickness(2.f);
     _uiPanel.setOutlineColor(sf::Color(60, 60, 80, 255));
 
-    // Common text settings
     const int fontSize = 22;
     const float padding = 15.f;
     const float iconSize = 24.f;
     const float yStart = 20.f;
     const float spacing = 30.f;
 
-    // Load UI icons
-    if (!_heartIcon.loadFromFile("assets/heart_icon.png") ||
-        !_coinIcon.loadFromFile("assets/coin_icon.png") ||
-        !_waveIcon.loadFromFile("assets/wave_icon.png")) {
-        std::cerr << "Warning: Failed to load UI icons, using text labels instead" << std::endl;
+    if (!_heartIcon.loadFromFile("assets/heart_icon.png") || !_coinIcon.loadFromFile("assets/coin_icon.png") || !_waveIcon.loadFromFile("assets/wave_icon.png")) {
+        std::cerr << "Warning: Failed to load UI icons" << std::endl;
     }
 
-    // Setup heart/lives UI
     _livesIconSprite.setTexture(_heartIcon);
     _livesIconSprite.setScale(iconSize / _heartIcon.getSize().x, iconSize / _heartIcon.getSize().y);
     _livesIconSprite.setPosition(padding + 10, yStart);
-
     _livesText.setFont(_gameFont);
     _livesText.setCharacterSize(fontSize);
     _livesText.setFillColor(sf::Color::White);
-    _livesText.setOutlineColor(sf::Color(100, 0, 0));
-    _livesText.setOutlineThickness(1.f);
     _livesText.setPosition(padding + iconSize + 20, yStart - 2);
 
-    // Setup coin/money UI
     _moneyIconSprite.setTexture(_coinIcon);
     _moneyIconSprite.setScale(iconSize / _coinIcon.getSize().x, iconSize / _coinIcon.getSize().y);
     _moneyIconSprite.setPosition(padding + 10, yStart + spacing);
-
     _moneyText.setFont(_gameFont);
     _moneyText.setCharacterSize(fontSize);
-    _moneyText.setFillColor(sf::Color(255, 215, 0)); // Gold color
-    _moneyText.setOutlineColor(sf::Color(100, 80, 0));
-    _moneyText.setOutlineThickness(1.f);
+    _moneyText.setFillColor(sf::Color(255, 215, 0));
     _moneyText.setPosition(padding + iconSize + 20, yStart + spacing - 2);
 
-    // Setup wave UI
     _waveIconSprite.setTexture(_waveIcon);
     _waveIconSprite.setScale(iconSize / _waveIcon.getSize().x, iconSize / _waveIcon.getSize().y);
     _waveIconSprite.setPosition(padding + 10, yStart + spacing * 2);
-
     _waveText.setFont(_gameFont);
     _waveText.setCharacterSize(fontSize);
-    _waveText.setFillColor(sf::Color(120, 200, 255)); // Light blue
-    _waveText.setOutlineColor(sf::Color(0, 50, 100));
-    _waveText.setOutlineThickness(1.f);
+    _waveText.setFillColor(sf::Color(120, 200, 255));
     _waveText.setPosition(padding + iconSize + 20, yStart + spacing * 2 - 2);
 
-    // Set up other UI elements
     _messageText.setFont(_gameFont);
     _messageText.setCharacterSize(50);
     _messageText.setFillColor(sf::Color::Yellow);
-    _messageText.setOutlineColor(sf::Color(100, 100, 0));
-    _messageText.setOutlineThickness(1.5f);
 
     _timerText.setFont(_gameFont);
     _timerText.setCharacterSize(50);
     _timerText.setFillColor(sf::Color::Yellow);
-    _timerText.setOutlineColor(sf::Color(100, 100, 0));
-    _timerText.setOutlineThickness(1.5f);
 
     if (!_pauseButtonTexture.loadFromFile("assets/pause_icon.png")) {
         std::cerr << "Loi: Khong the tai pause_icon.png" << std::endl;
     }
     _pauseButtonSprite.setTexture(_pauseButtonTexture);
     float pauseIconSize = 40.f;
-    _pauseButtonSprite.setScale(
-        pauseIconSize / _pauseButtonTexture.getSize().x,
-        pauseIconSize / _pauseButtonTexture.getSize().y
-    );
+    _pauseButtonSprite.setScale(pauseIconSize / _pauseButtonTexture.getSize().x, pauseIconSize / _pauseButtonTexture.getSize().y);
 
-    // <<< THÊM MỚI: Thiết lập cho nút tăng tốc
-    if (!_ffButtonTexture.loadFromFile("assets/ff_icon.png")) { // Nhớ tạo file assets/ff_icon.png
+    if (!_ffButtonTexture.loadFromFile("assets/ff_icon.png")) {
         std::cerr << "Loi: Khong the tai ff_icon.png" << std::endl;
     }
     _ffButtonSprite.setTexture(_ffButtonTexture);
-    _ffButtonSprite.setScale(
-        pauseIconSize / _ffButtonTexture.getSize().x,
-        pauseIconSize / _ffButtonTexture.getSize().y
-    );
+    _ffButtonSprite.setScale(pauseIconSize / _ffButtonTexture.getSize().x, pauseIconSize / _ffButtonTexture.getSize().y);
 }
 
-
 void cgame::resetGame() {
-
     std::cout << "Reseting game state..." << std::endl;
     resetGameStats();
 }
@@ -405,12 +308,11 @@ void cgame::updateEnemies(sf::Time deltaTime) {
             enemy.update(deltaTime);
             if (enemy.hasReachedEnd()) {
                 _lives--;
+                SoundManager::playSoundEffect("life_lost");
                 enemy.setActive(false);
-                std::cout << "Mot enemy da den dich! Mang con lai: " << _lives << std::endl;
                 if (_lives <= 0) {
                     _isGameOver = true;
                     _messageText.setString("GAME OVER!");
-                    std::cout << "GAME OVER!" << std::endl;
                 }
             }
         }
@@ -436,62 +338,53 @@ void cgame::updateBullets(sf::Time deltaTime) {
 }
 
 void cgame::cleanupInactiveObjects() {
-    _enemies.erase(std::remove_if(_enemies.begin(), _enemies.end(),
-        [](const cenemy& e) { return e.isReadyForRemoval(); }),
-        _enemies.end());
-
-    _bullets.erase(std::remove_if(_bullets.begin(), _bullets.end(),
-        [](const cbullet& b) { return !b.isActive(); }),
-        _bullets.end());
+    _enemies.erase(std::remove_if(_enemies.begin(), _enemies.end(), [](const cenemy& e) { return e.isReadyForRemoval(); }), _enemies.end());
+    _bullets.erase(std::remove_if(_bullets.begin(), _bullets.end(), [](const cbullet& b) { return !b.isActive(); }), _bullets.end());
 }
 
 void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
     if (!_selectingTowerToBuild) return;
-
     sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
     sf::Vector2f mouseWorldPos = window.mapPixelToCoords(mousePixelPos);
-
-    sf::Vector2i gridCoords = _map.getGridCoordinates(mouseWorldPos);
-    cpoint tileCenterPixelPos = _map.getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
-
+    sf::Vector2i gridCoords = _map->getGridCoordinates(mouseWorldPos);
+    cpoint tileCenterPixelPos = _map->getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
     _towerPlacementPreview.setPosition(tileCenterPixelPos.toVector2f());
-
-    // Kiểm tra xem có thể xây dựng không (bao gồm cả việc check tile có bị chiếm chưa)
     bool isOccupied = false;
     for (const auto& tower : _towers) {
-        if (_map.getGridCoordinates(tower.getPosition()) == gridCoords) {
+        if (_map->getGridCoordinates(tower.getPosition()) == gridCoords) {
             isOccupied = true;
             break;
         }
     }
-
-    if (_map.isBuildable(gridCoords.y, gridCoords.x) && !isOccupied) {
+    if (_map->isBuildable(gridCoords.y, gridCoords.x) && !isOccupied) {
         _canPlaceTower = true;
-        _towerPlacementPreview.setColor(sf::Color(255, 255, 255, 150)); // Màu hợp lệ
+        _towerPlacementPreview.setColor(sf::Color(255, 255, 255, 150));
     }
     else {
         _canPlaceTower = false;
-        _towerPlacementPreview.setColor(sf::Color(255, 0, 0, 150)); // Màu không hợp lệ
+        _towerPlacementPreview.setColor(sf::Color(255, 0, 0, 150));
     }
 }
 
+// =======================================================================
+// ==================== HÀM ĐƯỢC SỬA LỖI ===================================
+// =======================================================================
 
 void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
     if (_isGameOver) return;
 
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::N) {
-            if (!_waveInProgress && !_inIntermission) {
-                startNextWave();
-            }
+            if (!_waveInProgress && !_inIntermission) startNextWave();
         }
         if (event.key.code == sf::Keyboard::Num1) {
             const auto& blueprint = _towerBlueprints.at("ArcherTower");
-            if (_money >= blueprint[0].cost) {
-                _selectingTowerToBuild = true;
-                _selectedTowerType = "ArcherTower"; // Lưu loại trụ đang chọn
+            int buildCost = blueprint[0].cost;
 
-                // Thiết lập preview từ blueprint cấp 1
+            // ---- SỬA LỖI: Chỉ cho phép chọn khi chi phí > 0 ----
+            if (buildCost > 0 && _money >= buildCost) {
+                _selectingTowerToBuild = true;
+                _selectedTowerType = "ArcherTower";
                 static sf::Texture previewTexture;
                 if (previewTexture.loadFromFile(blueprint[0].idle_texturePath)) {
                     _towerPlacementPreview.setTexture(previewTexture);
@@ -502,11 +395,11 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                     _selectingTowerToBuild = false;
                     return;
                 }
-
                 sf::FloatRect bounds = _towerPlacementPreview.getLocalBounds();
                 _towerPlacementPreview.setOrigin(bounds.width / 2.f, bounds.height - blueprint[0].frameOffsetY);
-
-                std::cout << "Dang chon vi tri dat thap. Click de dat." << std::endl;
+            }
+            else if (buildCost <= 0) {
+                std::cerr << "Loi: Chi phi xay dung khong hop le (" << buildCost << ")" << std::endl;
             }
             else {
                 std::cout << "Khong du tien de mua thap!" << std::endl;
@@ -523,65 +416,62 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
         if (event.mouseButton.button == sf::Mouse::Left) {
             sf::Vector2f mouseWorldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
-            // Ưu tiên kiểm tra nút pause trước
             if (_pauseButtonSprite.getGlobalBounds().contains(mouseWorldPos)) {
                 setPaused(true);
-                SoundManager::playSoundEffect("menu_click");
+                SoundManager::playSoundEffect("assets/menu_click.wav");
                 return;
             }
-
-            // <<< THÊM MỚI: Xử lý click nút tăng tốc
             if (_ffButtonSprite.getGlobalBounds().contains(mouseWorldPos)) {
                 _isFastForward = !_isFastForward;
-                if (_isFastForward) {
-                    _ffButtonSprite.setColor(sf::Color(100, 255, 100)); // Màu xanh khi bật
-                }
-                else {
-                    _ffButtonSprite.setColor(sf::Color::White); // Màu trắng khi tắt
-                }
+                _ffButtonSprite.setColor(_isFastForward ? sf::Color(100, 255, 100) : sf::Color::White);
                 return;
             }
-
-            if (_isUpgradePanelVisible && _upgradeButton.getGlobalBounds().contains(mouseWorldPos)) {
-                handleUpgrade();
+            if (_isUpgradePanelVisible) {
+                if (_upgradeButton.getGlobalBounds().contains(mouseWorldPos)) {
+                    handleUpgrade();
+                    return;
+                }
+                if (_sellButton.getGlobalBounds().contains(mouseWorldPos)) {
+                    handleSell();
+                    return;
+                }
             }
-            else if (_selectingTowerToBuild) {
-                // ---- START: CẢI TIẾN LOGIC ĐẶT TRỤ ----
-                sf::Vector2i gridCoords = _map.getGridCoordinates(mouseWorldPos);
 
-                // KIỂM TRA 1: Tile có thể xây được không? (không phải đường đi)
-                if (_map.isBuildable(gridCoords.y, gridCoords.x)) {
-
-                    // KIỂM TRA 2: Tile đã có trụ nào chiếm chưa?
+            if (_selectingTowerToBuild) {
+                sf::Vector2i gridCoords = _map->getGridCoordinates(mouseWorldPos);
+                if (_map->isBuildable(gridCoords.y, gridCoords.x)) {
                     bool tileIsOccupied = false;
                     for (const auto& existingTower : _towers) {
-                        sf::Vector2i existingGridCoords = _map.getGridCoordinates(existingTower.getPosition());
-                        if (existingGridCoords == gridCoords) {
+                        if (_map->getGridCoordinates(existingTower.getPosition()) == gridCoords) {
                             tileIsOccupied = true;
-                            std::cout << "A tower already exists on this tile." << std::endl;
                             break;
                         }
                     }
-
-                    // Nếu tile trống và có thể xây, tiến hành xây
                     if (!tileIsOccupied) {
                         const auto& blueprint = _towerBlueprints.at(_selectedTowerType);
-                        if (_money >= blueprint[0].cost) {
-                            cpoint towerPosition = _map.getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
+                        int buildCost = blueprint[0].cost;
+
+                        // ---- SỬA LỖI: Kiểm tra chi phí > 0 trước khi trừ tiền ----
+                        if (buildCost > 0 && _money >= buildCost) {
+                            cpoint towerPosition = _map->getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
                             _towers.emplace_back(this, _selectedTowerType, blueprint[0], towerPosition);
-                            _money -= blueprint[0].cost;
+                            SoundManager::playSoundEffect("assets/tower_place.wav");
+                            _money -= buildCost;
+                            _selectingTowerToBuild = false;
+                        }
+                        else if (buildCost <= 0) {
+                            std::cerr << "Loi: Chi phi xay dung khong hop le (" << buildCost << ")" << std::endl;
                             _selectingTowerToBuild = false;
                         }
                         else {
-                            std::cout << "Not enough money to build tower!" << std::endl;
+                            std::cout << "Khong du tien de xay thap!" << std::endl;
                             _selectingTowerToBuild = false;
                         }
                     }
                 }
                 else {
-                    std::cout << "Cannot place tower on path or obstacle." << std::endl;
+                    std::cout << "Khong the dat thap o vi tri nay." << std::endl;
                 }
-                // ---- END: CẢI TIẾN LOGIC ĐẶT TRỤ ----
             }
             else {
                 handleTowerSelection(mouseWorldPos);
@@ -589,7 +479,6 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
         }
     }
 }
-
 
 void cgame::handleTowerSelection(const sf::Vector2f& mousePos) {
     _selectedTower = nullptr;
@@ -599,51 +488,56 @@ void cgame::handleTowerSelection(const sf::Vector2f& mousePos) {
         if (tower.getGlobalBounds().contains(mousePos)) {
             _selectedTower = &tower;
             _isUpgradePanelVisible = true;
-            std::cout << "Da chon thap cap " << tower.getLevel() << std::endl;
 
             sf::Vector2f towerPos = tower.getPosition();
+            float buttonWidth = 90.f, buttonHeight = 35.f, buttonSpacing = 10.f;
+            float totalWidth = buttonWidth * 2 + buttonSpacing;
+            float startX = towerPos.x - totalWidth / 2.f;
+            float buttonY = towerPos.y - 90;
 
-            _upgradeButton.setSize({ 110, 40 });
-            _upgradeButton.setOrigin(55, 20);
-            _upgradeButton.setPosition(towerPos.x, towerPos.y - 90);
+            _upgradeButton.setSize({ buttonWidth, buttonHeight });
+            _upgradeButton.setOrigin(0, 0);
+            _upgradeButton.setPosition(startX, buttonY);
 
             if (tower.canUpgrade()) {
-
                 _upgradeButton.setFillColor(sf::Color(30, 144, 255));
-                _upgradeButton.setOutlineColor(sf::Color(0, 191, 255));
-                _upgradeButton.setOutlineThickness(2.f);
-
-                std::stringstream ss;
-                ss << "UPGRADE";
-                _upgradeText.setString(ss.str());
-
-                _costText.setFont(_gameFont);
+                _upgradeText.setString("UPGRADE");
                 _costText.setString(std::to_string(tower.getUpgradeCost()) + " G");
-                _costText.setCharacterSize(14);
-                _costText.setFillColor(sf::Color::Yellow);
-
-                sf::FloatRect costBounds = _costText.getLocalBounds();
-                _costText.setOrigin(costBounds.width / 2.f, 0);
-                _costText.setPosition(_upgradeButton.getPosition().x,
-                    _upgradeButton.getPosition().y + 25);
             }
             else {
                 _upgradeButton.setFillColor(sf::Color(80, 80, 80));
-                _upgradeButton.setOutlineColor(sf::Color(120, 120, 120));
-                _upgradeButton.setOutlineThickness(1.f);
                 _upgradeText.setString("MAX LEVEL");
                 _costText.setString("");
             }
-
             _upgradeText.setFont(_gameFont);
-            _upgradeText.setCharacterSize(16);
-            _upgradeText.setStyle(sf::Text::Bold);
-            _upgradeText.setFillColor(sf::Color::White);
-
+            _upgradeText.setCharacterSize(14);
             sf::FloatRect textBounds = _upgradeText.getLocalBounds();
-            _upgradeText.setOrigin(textBounds.width / 2.f, textBounds.height / 2.f);
-            _upgradeText.setPosition(_upgradeButton.getPosition());
+            _upgradeText.setOrigin(textBounds.left + textBounds.width / 2.f, textBounds.top + textBounds.height / 2.f);
+            _upgradeText.setPosition(_upgradeButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 - 5));
 
+            _costText.setFont(_gameFont);
+            _costText.setCharacterSize(12);
+            sf::FloatRect costBounds = _costText.getLocalBounds();
+            _costText.setOrigin(costBounds.left + costBounds.width / 2.f, costBounds.top + costBounds.height / 2.f);
+            _costText.setPosition(_upgradeButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 + 8));
+
+            _sellButton.setSize({ buttonWidth, buttonHeight });
+            _sellButton.setOrigin(0, 0);
+            _sellButton.setPosition(startX + buttonWidth + buttonSpacing, buttonY);
+            _sellButton.setFillColor(sf::Color(220, 50, 50));
+            _sellText.setFont(_gameFont);
+            _sellText.setString("SELL");
+            _sellText.setCharacterSize(14);
+            sf::FloatRect sellTextBounds = _sellText.getLocalBounds();
+            _sellText.setOrigin(sellTextBounds.left + sellTextBounds.width / 2.f, sellTextBounds.top + sellTextBounds.height / 2.f);
+            _sellText.setPosition(_sellButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 - 5));
+
+            _sellValueText.setFont(_gameFont);
+            _sellValueText.setString(std::to_string(tower.getSellValue()) + " G");
+            _sellValueText.setCharacterSize(12);
+            sf::FloatRect sellValueBounds = _sellValueText.getLocalBounds();
+            _sellValueText.setOrigin(sellValueBounds.left + sellValueBounds.width / 2.f, sellValueBounds.top + sellValueBounds.height / 2.f);
+            _sellValueText.setPosition(_sellButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 + 8));
             return;
         }
     }
@@ -651,18 +545,35 @@ void cgame::handleTowerSelection(const sf::Vector2f& mousePos) {
 
 void cgame::handleUpgrade() {
     if (_selectedTower && _selectedTower->canUpgrade()) {
-        int cost = _selectedTower->getUpgradeCost();
-        if (_money >= cost) {
-            _money -= cost;
+        int upgradeCost = _selectedTower->getUpgradeCost();
+
+        // ---- SỬA LỖI: Kiểm tra chi phí > 0 và sửa logic cập nhật panel ----
+        if (upgradeCost > 0 && _money >= upgradeCost) {
+            _money -= upgradeCost;
             _selectedTower->upgrade();
-            _isUpgradePanelVisible = false;
-            _selectedTower = nullptr;
+            SoundManager::playSoundEffect("assets/tower_upgrade.wav");
+
+            handleTowerSelection(_selectedTower->getPosition());
+        }
+        else if (upgradeCost <= 0) {
+            std::cerr << "Loi: Chi phi nang cap khong hop le (" << upgradeCost << ")" << std::endl;
         }
         else {
             std::cout << "Khong du tien de nang cap!" << std::endl;
         }
     }
 }
+
+void cgame::handleSell() {
+    if (!_selectedTower) return;
+    int sellValue = _selectedTower->getSellValue();
+    _money += sellValue;
+    _towers.erase(std::remove_if(_towers.begin(), _towers.end(), [this](const ctower& tower) { return &tower == _selectedTower; }), _towers.end());
+    SoundManager::playSoundEffect("assets/tower_sell.wav");
+    _selectedTower = nullptr;
+    _isUpgradePanelVisible = false;
+}
+
 
 void cgame::updateInterMission(sf::Time deltaTime) {
     if (_intermissionTimer > sf::Time::Zero) {
@@ -674,43 +585,30 @@ void cgame::updateInterMission(sf::Time deltaTime) {
     else {
         _inIntermission = false;
         _timerText.setString("");
-
-        if (!_levelWon) {
-            startNextWave();
-        }
+        if (!_levelWon) startNextWave();
     }
 }
 
-// <<< SỬA ĐỔI: Toàn bộ hàm update được sửa đổi để áp dụng tốc độ game
 void cgame::update(sf::Time deltaTime) {
-    sf::Time modifiedDeltaTime = deltaTime;
-    if (_isFastForward) {
-        modifiedDeltaTime *= _gameSpeedMultiplier;
-    }
-
+    sf::Time modifiedDeltaTime = deltaTime * (_isFastForward ? _gameSpeedMultiplier : 1.0f);
     if (_levelWon) {
         _messageText.setString("VICTORY!");
         _timerText.setString("");
         return;
     }
-
     if (_isPaused || _isGameOver) return;
-
     if (_inIntermission) {
         updateInterMission(modifiedDeltaTime);
         return;
     }
-
     if (_waveInProgress) {
         _timeSinceLastSpawn += modifiedDeltaTime;
         if (_timeSinceLastSpawn >= _spawnInterval && _enemiesSpawnedThisWave < _enemiesPerWave) {
             spawnEnemy();
             _timeSinceLastSpawn = sf::Time::Zero;
         }
-
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
             _waveInProgress = false;
-
             if (_currentWave >= 5) {
                 _levelWon = true;
             }
@@ -728,7 +626,6 @@ void cgame::update(sf::Time deltaTime) {
     handleCollisions();
     cleanupInactiveObjects();
 
-    // Khối cập nhật UI tập trung
     std::stringstream ssLives, ssMoney, ssWave;
     ssLives << _lives;
     ssMoney << _money;
@@ -737,7 +634,6 @@ void cgame::update(sf::Time deltaTime) {
     _moneyText.setString(ssMoney.str());
     _waveText.setString(ssWave.str());
 
-    // Logic hiển thị thông báo chính
     if (_isGameOver) {
         _messageText.setString("GAME OVER");
     }
@@ -752,67 +648,41 @@ void cgame::update(sf::Time deltaTime) {
 }
 
 void cgame::render(sf::RenderWindow& window) {
-    _map.render(window);
+    _map->render(window);
+    for (auto& tower : _towers) tower.render(window);
+    for (auto& enemy : _enemies) enemy.render(window);
+    for (auto& bullet : _bullets) bullet.render(window);
 
-    for (auto& tower : _towers) {
-        tower.render(window);
-    }
-    for (auto& enemy : _enemies) {
-        enemy.render(window);
-    }
-    for (auto& bullet : _bullets) {
-        bullet.render(window);
-    }
-
-    // Draw UI panel and elements
     window.draw(_uiPanel);
-
-    // Draw lives UI with icon
-    if (_heartIcon.getSize().x > 0) {
-        window.draw(_livesIconSprite);
-    }
+    if (_heartIcon.getSize().x > 0) window.draw(_livesIconSprite);
     window.draw(_livesText);
-
-    // Draw money UI with icon
-    if (_coinIcon.getSize().x > 0) {
-        window.draw(_moneyIconSprite);
-    }
+    if (_coinIcon.getSize().x > 0) window.draw(_moneyIconSprite);
     window.draw(_moneyText);
-
-    // Draw wave UI with icon
-    if (_waveIcon.getSize().x > 0) {
-        window.draw(_waveIconSprite);
-    }
+    if (_waveIcon.getSize().x > 0) window.draw(_waveIconSprite);
     window.draw(_waveText);
 
-    // <<< SỬA ĐỔI: Định vị và vẽ cả hai nút
     float pauseButtonX = window.getSize().x - _pauseButtonSprite.getGlobalBounds().width - 20.f;
     _pauseButtonSprite.setPosition(pauseButtonX, 20.f);
-
     float ffButtonX = pauseButtonX - _ffButtonSprite.getGlobalBounds().width - 10.f;
     _ffButtonSprite.setPosition(ffButtonX, 20.f);
-
     window.draw(_ffButtonSprite);
     window.draw(_pauseButtonSprite);
 
     renderTowerUI(window);
 
     sf::Vector2f windowSize = sf::Vector2f(window.getSize());
-
     if (!_messageText.getString().isEmpty()) {
         sf::FloatRect textBounds = _messageText.getLocalBounds();
         _messageText.setOrigin(textBounds.left + textBounds.width / 2.f, textBounds.top + textBounds.height / 2.f);
         _messageText.setPosition(windowSize.x / 2.f, windowSize.y / 2.f);
         window.draw(_messageText);
     }
-
     if (_inIntermission) {
         sf::FloatRect timerBounds = _timerText.getLocalBounds();
         _timerText.setOrigin(timerBounds.left + timerBounds.width / 2.f, timerBounds.top + timerBounds.height / 2.f);
         _timerText.setPosition(windowSize.x / 2.f, windowSize.y / 2.f);
         window.draw(_timerText);
     }
-
     if (_selectingTowerToBuild) {
         updateTowerPlacementPreview(window);
         window.draw(_towerPlacementPreview);
@@ -820,9 +690,8 @@ void cgame::render(sf::RenderWindow& window) {
 }
 
 void cgame::renderTowerUI(sf::RenderWindow& window) {
-    if (_selectedTower) {
+    if (_selectedTower && _isUpgradePanelVisible) {
         float radius = _selectedTower->getCurrentLevelData().range;
-
         sf::CircleShape rangeCircle(radius);
         rangeCircle.setFillColor(sf::Color(100, 100, 100, 30));
         rangeCircle.setOutlineColor(sf::Color(255, 255, 255, 150));
@@ -831,50 +700,29 @@ void cgame::renderTowerUI(sf::RenderWindow& window) {
         rangeCircle.setPosition(_selectedTower->getPosition());
         window.draw(rangeCircle);
 
-        // Draw tower UI elements
-        if (_isUpgradePanelVisible) {
-            sf::RectangleShape buttonShadow(_upgradeButton.getSize() + sf::Vector2f(4, 4));
-            buttonShadow.setOrigin(_upgradeButton.getOrigin() + sf::Vector2f(2, 2));
-            buttonShadow.setPosition(_upgradeButton.getPosition() + sf::Vector2f(3, 3));
-            buttonShadow.setFillColor(sf::Color(0, 0, 0, 100));
-            window.draw(buttonShadow);
+        window.draw(_upgradeButton);
+        window.draw(_upgradeText);
+        if (_selectedTower->canUpgrade()) window.draw(_costText);
 
-            window.draw(_upgradeButton);
+        window.draw(_sellButton);
+        window.draw(_sellText);
+        window.draw(_sellValueText);
 
-            sf::RectangleShape highlight({ _upgradeButton.getSize().x - 4, 2 });
-            highlight.setOrigin(_upgradeButton.getOrigin().x - 2, _upgradeButton.getOrigin().y - 19);
-            highlight.setPosition(_upgradeButton.getPosition());
-            highlight.setFillColor(sf::Color(255, 255, 255, 100));
-            window.draw(highlight);
-
-            window.draw(_upgradeText);
-
-            if (_selectedTower->canUpgrade()) {
-                window.draw(_costText);
-            }
-
-            std::stringstream levelText;
-            levelText << "Level " << _selectedTower->getLevel();
-            sf::Text towerLevel;
-            towerLevel.setFont(_gameFont);
-            towerLevel.setString(levelText.str());
-            towerLevel.setCharacterSize(14);
-            towerLevel.setFillColor(sf::Color::White);
-            towerLevel.setOutlineColor(sf::Color::Black);
-            towerLevel.setOutlineThickness(1.f);
-
-            sf::FloatRect levelBounds = towerLevel.getLocalBounds();
-            towerLevel.setOrigin(levelBounds.width / 2.f, 0);
-            towerLevel.setPosition(_selectedTower->getPosition().x,
-                _selectedTower->getPosition().y + 30);
-            window.draw(towerLevel);
-        }
+        std::stringstream levelText;
+        levelText << "Level " << _selectedTower->getLevel();
+        sf::Text towerLevel;
+        towerLevel.setFont(_gameFont);
+        towerLevel.setString(levelText.str());
+        towerLevel.setCharacterSize(14);
+        sf::FloatRect levelBounds = towerLevel.getLocalBounds();
+        towerLevel.setOrigin(levelBounds.width / 2.f, 0);
+        towerLevel.setPosition(_selectedTower->getPosition().x, _selectedTower->getPosition().y + 30);
+        window.draw(towerLevel);
     }
 }
 
 sf::Texture& cgame::getTexture(const std::string& texturePath) {
     auto it = _textureManager.find(texturePath);
-
     if (it != _textureManager.end()) {
         return it->second;
     }
@@ -885,8 +733,9 @@ sf::Texture& cgame::getTexture(const std::string& texturePath) {
             return _textureManager[texturePath];
         }
         else {
-            std::cerr << "Khong the tai texture trong getTexture: " << texturePath << std::endl;
-            return _textureManager[texturePath];
+            std::cerr << "Khong the tai texture: " << texturePath << std::endl;
+            static sf::Texture emptyTexture;
+            return emptyTexture;
         }
     }
 }

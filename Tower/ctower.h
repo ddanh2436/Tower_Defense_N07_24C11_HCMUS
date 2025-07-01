@@ -1,13 +1,13 @@
-﻿#ifndef CTOWER_H  
-#define CTOWER_H  
+﻿#ifndef CTOWER_H
+#define CTOWER_H
 
-#include "cpoint.h"  
-#include "cbullet.h" 
-#include "cenemy.h"  
-#include <SFML/Graphics.hpp>  
-#include <vector>  
+#include "cpoint.h"
+#include "cbullet.h"
+#include "cenemy.h"
+#include <SFML/Graphics.hpp>
+#include <vector>
 #include <string>
-#include <map> 
+#include <map>
 
 class cenemy;
 class cgame;
@@ -22,7 +22,7 @@ struct TowerLevelData {
     std::string texturePath;
     int startFrame;
     int numFramesForLevel;
-    float animationSpeed; 
+    float animationSpeed;
 
     std::string idle_texturePath;
     int idle_startFrame;
@@ -65,8 +65,8 @@ private:
     TowerLevelData _currentLevelData;
     cgame* _gameInstance;
     cenemy* _target;
+    int _totalCostInvested;
 
-    void initSprite();
     void setAnimation(const TowerLevelData& levelData);
     void updateAnimation(sf::Time deltaTime);
 public:
@@ -80,6 +80,7 @@ public:
     void upgrade();
     bool canUpgrade() const;
     int getUpgradeCost() const;
+    int getSellValue() const;
 
     sf::FloatRect getGlobalBounds() const;
     int getLevel() const { return _level; }

@@ -446,12 +446,11 @@ GameState showPauseMenu(sf::RenderWindow& window) {
 
         sf::Event event;
         while (window.pollEvent(event)) {
-            // ... (toàn bộ phần xử lý sự kiện giữ nguyên như cũ) ...
             if (event.type == sf::Event::Closed) { return GameState::Exiting; }
             if (alphaRatio >= 1.f) {
                 if (event.type == sf::Event::KeyPressed) {
                     if (event.key.code == sf::Keyboard::Escape) { return GameState::Playing; }
-                    if (event.key.code == sf::Keyboard::Up) { selectedItemIndex = (selectedItemIndex + menuItems.size() - 1) % menuItems.size(); SoundManager::playSoundEffect("menu_click"); }
+                    if (event.key.code == sf::Keyboard::Up) { selectedItemIndex = (selectedItemIndex + menuItems.size() - 1) % static_cast<int>(menuItems.size()); SoundManager::playSoundEffect("menu_click"); }
                     else if (event.key.code == sf::Keyboard::Down) { selectedItemIndex = (selectedItemIndex + 1) % menuItems.size(); SoundManager::playSoundEffect("menu_click"); }
                     else if (event.key.code == sf::Keyboard::Return) {
                         if (selectedItemIndex == 0) return GameState::Playing;
