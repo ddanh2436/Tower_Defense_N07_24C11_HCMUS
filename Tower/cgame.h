@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <random> 
+#include <random>
 #include <sstream>
 
 const std::string FONT_PATH = "assets/pixel_font.ttf";
@@ -33,6 +33,7 @@ struct EnemyType {
 class cgame {
 public:
     cgame();
+    ~cgame();
     void resetGame();
     void handleInput(const sf::Event& event, sf::RenderWindow& window);
     void update(sf::Time deltaTime);
@@ -43,7 +44,7 @@ public:
     const TowerLevelData* getTowerNextLevelData(const std::string& typeId, int currentLevel) const;
     sf::Texture& getTexture(const std::string& texturePath);
 private:
-    cmap _map;
+    cmap* _map;
     std::vector<cenemy> _enemies;
     std::vector<ctower> _towers;
     std::vector<cbullet> _bullets;
@@ -66,8 +67,14 @@ private:
     sf::Sprite _waveIconSprite;
     sf::Texture _pauseButtonTexture;
     sf::Sprite _pauseButtonSprite;
-    sf::Texture _ffButtonTexture; 
+    sf::Texture _ffButtonTexture;
     sf::Sprite _ffButtonSprite;
+
+    // ---- THAY ĐỔI: Chuyển _sellButton từ Sprite sang RectangleShape để nhất quán với Upgrade ----
+    sf::RectangleShape _sellButton;
+    sf::Text _sellText;
+    sf::Text _sellValueText;
+    // ---- KẾT THÚC THAY ĐỔI ----
 
     int _lives;
     int _money;
@@ -102,6 +109,9 @@ private:
     bool _isFastForward;
     float _gameSpeedMultiplier;
 
+    std::string _dataFilePath;
+    std::string _currentMapId;
+
     void loadFont();
     void setupUI();
     void resetGameStats();
@@ -119,6 +129,7 @@ private:
     void handleTowerSelection(const sf::Vector2f& mousePos);
     void handleUpgrade();
     void renderTowerUI(sf::RenderWindow& window);
+    void handleSell();
 };
 
 #endif // CGAME_H

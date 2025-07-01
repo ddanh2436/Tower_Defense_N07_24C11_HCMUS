@@ -68,7 +68,7 @@ struct MapTile {
 
 class cmap {
 private:
-    MapTile _grid[MAP_HEIGHT_TILES_FROM_MAP1][MAP_WIDTH_TILES_FROM_MAP1];
+    std::vector<std::vector<MapTile>> _grid;
 
     std::vector<Bush> _bushes;
     std::vector<Grass> _grasses;
@@ -85,9 +85,11 @@ private:
     std::vector<Log> _logs;
     std::vector<GrassOverlay> _grassesOverlay;
     std::vector<Fence> _fences;
+    std::vector<std::vector<int>> _mapData;
+
 
     // Hardcoded map layout data.
-    int _mapData[MAP_HEIGHT_TILES_FROM_MAP1][MAP_WIDTH_TILES_FROM_MAP1] = {
+    /*int _mapData[MAP_HEIGHT_TILES_FROM_MAP1][MAP_WIDTH_TILES_FROM_MAP1] = {
         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -106,7 +108,7 @@ private:
         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-    };
+    };*/
 
     sf::Texture _grassTexture, _wallTexture, _pathDefaultTexture, _pathStyle2_Texture,
         _pathStyle3_Texture, _pathStyle5_Texture, _pathStyle6_Texture, _pathStyle20_Texture,
@@ -144,6 +146,7 @@ private:
     void initializeGridFromMapData();
     void assignTileTextures();
     void calculateEnemyPath();
+    void loadMapFromTxtFile(const std::string& filePath, const std::string& mapId);
 
     // Helper methods to add decorations
     void addBushAt(int row, int col);
@@ -186,7 +189,7 @@ private:
     void addStone12At(int row, int col);
     void addTree2At(int row, int col);
 public:
-    cmap();
+    cmap(const std::string& dataFilePath, const std::string& mapId);
     void render(sf::RenderWindow& window);
     TileType getTileType(int row, int col) const;
     bool isBuildable(int row, int col) const;
@@ -194,8 +197,8 @@ public:
     sf::Vector2i getGridCoordinates(const sf::Vector2f& pixelPosition) const;
     const std::vector<cpoint>& getEnemyPath() const;
     cpoint getEnemyStartLocation() const;
-    int getMapWidthTiles() const { return MAP_WIDTH_TILES_FROM_MAP1; }
-    int getMapHeightTiles() const { return MAP_HEIGHT_TILES_FROM_MAP1; }
+    int getMapWidthTiles() const { return _grid.empty() ? 0 : _grid[0].size(); }
+    int getMapHeightTiles() const { return _grid.size(); }
     bool isDecorated(int row, int col) const;
 };
 
