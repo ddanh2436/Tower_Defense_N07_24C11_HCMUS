@@ -55,11 +55,7 @@ std::vector<MapInfo> loadMapInfos(const std::string& indexPath) {
 }
 
 
-// SỬA ĐỔI: runGame chỉ chạy một màn chơi và trả về trạng thái tiếp theo
 GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
-    // Bỏ vòng lặp while(wantsToRestart) - logic này sẽ do main() xử lý
-
-    // gameManager.resetGame(); // Đã được gọi trong loadMap hoặc trong main loop
     sf::Clock clock;
 
     SoundManager::stopBackgroundMusic();
@@ -160,7 +156,7 @@ GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
             }
             // SỬA ĐỔI: Restart từ menu pause sẽ quay về màn hình chọn map
             else if (pauseResult == GameState::Restarting) {
-                return GameState::ShowingMapSelection;
+                return GameState::Playing;
             }
             else {
                 return pauseResult; // Exiting hoặc ShowingMenu
