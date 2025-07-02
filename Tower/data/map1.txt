@@ -21,7 +21,6 @@ layout
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 endlayout
 decorations
-# Format: TEN_DECO row col
 addGrassAt 1 5
 addBushAt 2 10
 addGrass1At 1 5
