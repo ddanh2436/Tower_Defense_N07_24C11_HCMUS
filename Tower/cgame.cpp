@@ -251,7 +251,7 @@ void cgame::handleCollisions() {
 }
 
 bool cgame::isGameOver() const {
-    return _isGameOver;
+    return _isGameOver || _levelWon;
 }
 
 void cgame::loadFont() {

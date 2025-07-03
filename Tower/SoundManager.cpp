@@ -16,6 +16,7 @@ namespace SoundManager {
 
     const std::string GAME_MUSIC_FILEPATH = "assets/game_music.ogg"; 
     const std::string MENU_MUSIC_FILEPATH = "assets/menu_music.ogg";
+    const std::string VICTORY_MUSIC_FILEPATH = "assets/victory_music.ogg";
 
 
     void applyAllVolumeSettings() {
@@ -147,6 +148,10 @@ namespace SoundManager {
         else {
             std::cerr << "Error: Sound effect '" << id << "' not found or not loaded." << std::endl;
         }
+    }
+
+    void playVictoryMusic() {
+        playBackgroundMusic(VICTORY_MUSIC_FILEPATH, 70.f, false);
     }
 
     void update() {

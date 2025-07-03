@@ -33,7 +33,7 @@ namespace SoundManager {
 
     bool loadSoundEffect(const std::string& id, const std::string& filePath);
     void playSoundEffect(const std::string& id, float volume = 100.f);
-
+    void playVictoryMusic();
     void update();
 
 } 
