@@ -41,7 +41,9 @@ public:
     enum State {
         CONSTRUCTING,
         IDLE,
-        ATTACKING
+        ATTACKING,
+        SELLING,
+        UPGRADING // <-- THÊM MỚI: Trạng thái cho hiệu ứng nâng cấp
     };
     const TowerLevelData& getCurrentLevelData() const { return _currentLevelData; }
 
@@ -67,6 +69,15 @@ private:
     cenemy* _target;
     int _totalCostInvested;
 
+    // Các biến cho hiệu ứng
+    sf::Time _effectTimer;
+    sf::Time _effectDuration;
+    bool _isPendingRemoval;
+
+    // <-- THÊM MỚI: Con trỏ lưu dữ liệu cấp độ tiếp theo khi đang nâng cấp
+    const TowerLevelData* _pendingUpgradeData;
+    // <-- KẾT THÚC THÊM MỚI
+
     void setAnimation(const TowerLevelData& levelData);
     void updateAnimation(sf::Time deltaTime);
 public:
@@ -85,6 +96,10 @@ public:
     sf::FloatRect getGlobalBounds() const;
     int getLevel() const { return _level; }
     std::string getTypeId() const { return _typeId; }
+
+    // Các hàm hỗ trợ cho việc bán tháp
+    void sell();
+    bool isPendingRemoval() const;
 };
 
 #endif // CTOWER_H

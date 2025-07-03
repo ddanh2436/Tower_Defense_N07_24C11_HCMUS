@@ -22,10 +22,14 @@ struct EnemyType {
     float scale;
     int moneyValue;
     std::map<EnemyState, std::map<MovementDirection, std::string>> texturePaths;
+
+    // Thêm các thuộc tính animation
     sf::Vector2i frameSize;
+    int frameCount;
+    int stride;
 
     EnemyType()
-        : speed(0.0f), health(0), scale(1.0f), moneyValue(0) {
+        : speed(0.0f), health(0), scale(1.0f), moneyValue(0), frameCount(0), stride(0) {
     }
 };
 
@@ -35,9 +39,7 @@ public:
     cgame();
     ~cgame();
 
-    // HÀM MỚI: Tải một map cụ thể dựa trên ID và đường dẫn file
     void loadMap(const std::string& mapId, const std::string& dataFilePath);
-
     void resetGame();
     void handleInput(const sf::Event& event, sf::RenderWindow& window);
     void update(sf::Time deltaTime);
@@ -49,13 +51,12 @@ public:
     sf::Texture& getTexture(const std::string& texturePath);
 
 private:
-    cmap* _map; // Vẫn là con trỏ
+    cmap* _map;
     std::vector<cenemy> _enemies;
     std::vector<ctower> _towers;
     std::vector<cbullet> _bullets;
     std::map<std::string, std::vector<TowerLevelData>> _towerBlueprints;
     std::map<std::string, sf::Texture> _textureManager;
-
     sf::Font _gameFont;
     sf::Text _livesText;
     sf::Text _moneyText;
@@ -74,11 +75,9 @@ private:
     sf::Sprite _pauseButtonSprite;
     sf::Texture _ffButtonTexture;
     sf::Sprite _ffButtonSprite;
-
     sf::RectangleShape _sellButton;
     sf::Text _sellText;
     sf::Text _sellValueText;
-
     int _lives;
     int _money;
     int _currentWave;
@@ -93,28 +92,20 @@ private:
     bool _inIntermission;
     sf::Time _intermissionTime;
     sf::Time _intermissionTimer;
-
     bool _selectingTowerToBuild;
     std::string _selectedTowerTypeTexturePath;
     sf::Sprite _towerPlacementPreview;
     bool _canPlaceTower;
     std::string _selectedTowerType;
-
     sf::RectangleShape _upgradeButton;
     sf::Text _upgradeText;
     bool _isUpgradePanelVisible;
-
     std::vector<EnemyType> _availableEnemyTypes;
     int _currentWaveEnemyTypeIndex;
     std::mt19937 _rng;
-
     bool _isPaused;
     bool _isFastForward;
     float _gameSpeedMultiplier;
-
-    // XÓA BỎ: không cần các biến này nữa, thông tin map sẽ được truyền vào
-    // std::string _dataFilePath;
-    // std::string _currentMapId;
 
     void loadFont();
     void setupUI();
