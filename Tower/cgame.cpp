@@ -98,10 +98,16 @@ const TowerLevelData* cgame::getTowerNextLevelData(const std::string& typeId, in
 }
 
 
+// Tệp: cgame.cpp
+
 void cgame::setupEnemyTypes() {
     _availableEnemyTypes.clear();
+
+    // --- GOBLIN (Và các quái vật gốc khác) ---
     EnemyType goblin;
     goblin.health = 120; goblin.speed = 20.f; goblin.scale = 2.0f; goblin.moneyValue = 30;
+    // Thêm thông số animation cho quái vật gốc
+    goblin.frameSize = { 36, 48 }; goblin.frameCount = 6; goblin.stride = 48;
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U_Walk.png";
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D_Walk.png";
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S_Walk.png";
@@ -110,7 +116,8 @@ void cgame::setupEnemyTypes() {
     goblin.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S_Death.png";
     _availableEnemyTypes.push_back(goblin);
 
-    EnemyType wolf = goblin;
+    // --- WOLF ---
+    EnemyType wolf = goblin; // Sao chép toàn bộ thông số từ goblin (bao gồm cả animation)
     wolf.health = 60; wolf.speed = 35.f; wolf.scale = 1.2f; wolf.moneyValue = 20;
     wolf.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U1_Walk.png";
     wolf.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D1_Walk.png";
@@ -119,7 +126,9 @@ void cgame::setupEnemyTypes() {
     wolf.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D1_Death.png";
     wolf.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S1_Death.png";
     _availableEnemyTypes.push_back(wolf);
-    EnemyType bee = wolf;
+
+    // --- BEE ---
+    EnemyType bee = goblin;
     bee.health = 250; bee.speed = 15.f; bee.scale = 2.0f; bee.moneyValue = 20;
     bee.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U2_Walk.png";
     bee.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D2_Walk.png";
@@ -129,7 +138,8 @@ void cgame::setupEnemyTypes() {
     bee.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S2_Death.png";
     _availableEnemyTypes.push_back(bee);
 
-    EnemyType slime = bee;
+    // --- SLIME ---
+    EnemyType slime = goblin;
     slime.health = 150; slime.speed = 20.f; slime.scale = 2.0f; slime.moneyValue = 20;
     slime.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U3_Walk.png";
     slime.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D3_Walk.png";
@@ -139,7 +149,8 @@ void cgame::setupEnemyTypes() {
     slime.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S3_Death.png";
     _availableEnemyTypes.push_back(slime);
 
-    EnemyType slime1 = slime;
+    // --- SLIME 1 ---
+    EnemyType slime1 = goblin;
     slime1.health = 150; slime1.speed = 20.f; slime1.scale = 2.0f; slime1.moneyValue = 20;
     slime1.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U3_Special.png";
     slime1.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D3_Special.png";
@@ -149,12 +160,6 @@ void cgame::setupEnemyTypes() {
     slime1.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S3_Death2.png";
     _availableEnemyTypes.push_back(slime1);
 
-    EnemyType knight = goblin;
-    knight.health = 250; knight.speed = 20.f; knight.scale = 2.0f; knight.moneyValue = 20;
-    knight.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U4_Walk.png";
-    knight.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D4_Walk.png";
-    knight.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S4_Walk.png";
-    _availableEnemyTypes.push_back(knight);
 }
 
 void cgame::resetGameStats() {
@@ -205,17 +210,24 @@ void cgame::startNextWave() {
 
 void cgame::spawnEnemy() {
     if (!_map) return;
+
     if (_enemiesSpawnedThisWave < _enemiesPerWave && _currentWaveEnemyTypeIndex != -1) {
         const auto& path = _map->getEnemyPath();
-        if (!path.empty()) {
-            const EnemyType& currentType = _availableEnemyTypes.at(_currentWaveEnemyTypeIndex);
-            int finalHealth = static_cast<int>(currentType.health * std::pow(1.3, _currentWave - 1));
-            float finalSpeed = currentType.speed * (1.f + (_currentWave - 1) * 0.05f);
-            int finalMoneyValue = currentType.moneyValue + (_currentWave * 2);
+        if (path.empty()) return;
 
-            _enemies.emplace_back(this, currentType.speed, finalHealth, path, currentType.scale, finalMoneyValue, currentType.frameSize, currentType.texturePaths);
-            _enemiesSpawnedThisWave++;
-        }
+        // 1. Lấy thông tin gốc của loại quái vật
+        const EnemyType& baseType = _availableEnemyTypes.at(_currentWaveEnemyTypeIndex);
+
+        // 2. Tạo một bản sao tạm thời để thay đổi chỉ số theo wave
+        EnemyType finalType = baseType;
+        finalType.health = static_cast<int>(baseType.health * std::pow(1.3, _currentWave - 1));
+        finalType.speed = baseType.speed * (1.f + (_currentWave - 1) * 0.05f);
+        finalType.moneyValue = baseType.moneyValue + (_currentWave * 2);
+
+        // 3. Sử dụng hàm khởi tạo mới, gọn gàng với các chỉ số cuối cùng
+        _enemies.emplace_back(this, finalType, path);
+
+        _enemiesSpawnedThisWave++;
     }
 }
 
@@ -355,7 +367,13 @@ void cgame::updateBullets(sf::Time deltaTime) {
 void cgame::cleanupInactiveObjects() {
     _enemies.erase(std::remove_if(_enemies.begin(), _enemies.end(), [](const cenemy& e) { return e.isReadyForRemoval(); }), _enemies.end());
     _bullets.erase(std::remove_if(_bullets.begin(), _bullets.end(), [](const cbullet& b) { return !b.isActive(); }), _bullets.end());
+
+    // <-- THÊM MỚI: Logic dọn dẹp các tháp đã bán và hoàn thành hiệu ứng
+    _towers.erase(std::remove_if(_towers.begin(), _towers.end(),
+        [](const ctower& t) { return t.isPendingRemoval(); }),
+        _towers.end());
 }
+
 
 void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
     if (!_selectingTowerToBuild ||!_map) return;
@@ -381,9 +399,6 @@ void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
     }
 }
 
-// =======================================================================
-// ==================== HÀM ĐƯỢC SỬA LỖI ===================================
-// =======================================================================
 
 void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
     if (_isGameOver || !_map) return;
@@ -508,7 +523,7 @@ void cgame::handleTowerSelection(const sf::Vector2f& mousePos) {
             float buttonWidth = 90.f, buttonHeight = 35.f, buttonSpacing = 10.f;
             float totalWidth = buttonWidth * 2 + buttonSpacing;
             float startX = towerPos.x - totalWidth / 2.f;
-            float buttonY = towerPos.y - 90;
+            float buttonY = towerPos.y - 120;
 
             _upgradeButton.setSize({ buttonWidth, buttonHeight });
             _upgradeButton.setOrigin(0, 0);
@@ -583,11 +598,18 @@ void cgame::handleSell() {
     if (!_selectedTower) return;
     int sellValue = _selectedTower->getSellValue();
     _money += sellValue;
-    _towers.erase(std::remove_if(_towers.begin(), _towers.end(), [this](const ctower& tower) { return &tower == _selectedTower; }), _towers.end());
+
+    // <-- SỬA ĐỔI: Gọi hàm sell() để bắt đầu hiệu ứng thay vì xóa ngay
+    _selectedTower->sell();
+    // _towers.erase(std::remove_if(_towers.begin(), _towers.end(), [this](const ctower& tower) { return &tower == _selectedTower; }), _towers.end()); // DÒNG CŨ BỊ XÓA
+
     SoundManager::playSoundEffect("assets/tower_sell.wav");
+
+    // Bỏ chọn tháp
     _selectedTower = nullptr;
     _isUpgradePanelVisible = false;
 }
+
 
 
 void cgame::updateInterMission(sf::Time deltaTime) {

@@ -1,21 +1,22 @@
 ﻿#include "cenemy.h"
 #include "cgame.h"
-#include "TextureManager.h"
 #include <iostream>
 #include <cmath>
 
-cenemy::cenemy(cgame* gameInstance, float speed, int initialHealth, const std::vector<cpoint>& path, float scale, int moneyValue, const sf::Vector2i& frameSize, const std::map<EnemyState, std::map<MovementDirection, std::string>>& texturePaths)
+// Hàm khởi tạo mới, lấy toàn bộ dữ liệu từ EnemyType
+cenemy::cenemy(cgame* gameInstance, const EnemyType& type, const std::vector<cpoint>& path)
     : _gameInstance(gameInstance),
-    _speed(speed),
-    _health(initialHealth),
-    _maxHealth(initialHealth),
-    _isActive(true),
     _path(path),
-    _scale(scale),
+    _speed(type.speed),
+    _health(type.health),
+    _maxHealth(type.health),
+    _moneyValue(type.moneyValue),
+    _isActive(true),
     _currentFrame(0),
     _elapsedTime(sf::Time::Zero),
-    _moneyValue(moneyValue)
+    _currentPathIndex(0)
 {
+    // Thiết lập thanh máu
     _healthBarBackground.setSize({ 40.f, 6.f });
     _healthBarBackground.setFillColor(sf::Color(100, 0, 0, 200));
     _healthBarBackground.setOrigin(20.f, 3.f);
@@ -23,16 +24,22 @@ cenemy::cenemy(cgame* gameInstance, float speed, int initialHealth, const std::v
     _healthBarFill.setFillColor(sf::Color(0, 200, 0, 220));
     _healthBarFill.setOrigin(20.f, 3.f);
 
+    // Thiết lập sprite với scale
+    _sprite.setScale(type.scale, type.scale);
+
+    // Thiết lập thông tin animation từ EnemyType
     std::vector<float> walkBobEffect = { 0.f, -5.f, -8.f, -5.f, 0.f, 2.f };
     std::vector<float> noBob = {};
-    _animations[EnemyState::WALKING][MovementDirection::UP] = { "", {36, 48}, 6, 48, 1.f, walkBobEffect };
-    _animations[EnemyState::WALKING][MovementDirection::DOWN] = { "", {36, 48}, 6, 48, 1.f, walkBobEffect };
-    _animations[EnemyState::WALKING][MovementDirection::SIDE] = { "", {36, 48}, 6, 48, 1.f, walkBobEffect };
-    _animations[EnemyState::DYING][MovementDirection::UP] = { "", {36, 48}, 6, 48, 1.f, noBob };
-    _animations[EnemyState::DYING][MovementDirection::DOWN] = { "", {36, 48}, 6, 48, 1.f, noBob };
-    _animations[EnemyState::DYING][MovementDirection::SIDE] = { "", {36, 48}, 6, 48, 1.f, noBob };
 
-    for (auto const& [state, dirMap] : texturePaths) {
+    _animations[EnemyState::WALKING][MovementDirection::UP] = { "", type.frameSize, type.frameCount, type.stride, 1.f, walkBobEffect };
+    _animations[EnemyState::WALKING][MovementDirection::DOWN] = { "", type.frameSize, type.frameCount, type.stride, 1.f, walkBobEffect };
+    _animations[EnemyState::WALKING][MovementDirection::SIDE] = { "", type.frameSize, type.frameCount, type.stride, 1.f, walkBobEffect };
+    _animations[EnemyState::DYING][MovementDirection::UP] = { "", type.frameSize, type.frameCount, type.stride, 1.f, noBob };
+    _animations[EnemyState::DYING][MovementDirection::DOWN] = { "", type.frameSize, type.frameCount, type.stride, 1.f, noBob };
+    _animations[EnemyState::DYING][MovementDirection::SIDE] = { "", type.frameSize, type.frameCount, type.stride, 1.f, noBob };
+
+    // Sao chép đường dẫn texture từ EnemyType
+    for (auto const& [state, dirMap] : type.texturePaths) {
         for (auto const& [dir, texPath] : dirMap) {
             if (_animations.count(state) && _animations[state].count(dir)) {
                 _animations[state][dir].texturePath = texPath;
@@ -40,6 +47,7 @@ cenemy::cenemy(cgame* gameInstance, float speed, int initialHealth, const std::v
         }
     }
 
+    // Thiết lập vị trí và hướng ban đầu
     if (!_path.empty()) {
         _currentPosition = _path[0];
         _sprite.setPosition(_currentPosition.toVector2f());
@@ -48,7 +56,6 @@ cenemy::cenemy(cgame* gameInstance, float speed, int initialHealth, const std::v
     }
     else {
         _isActive = false;
-        _currentPathIndex = 0;
     }
 
     _currentState = EnemyState::WALKING;
@@ -57,6 +64,7 @@ cenemy::cenemy(cgame* gameInstance, float speed, int initialHealth, const std::v
     setAnimation(_currentState, _currentDirection);
     applyDirectionalFlip(directionVec);
 }
+
 
 void cenemy::setAnimation(EnemyState state, MovementDirection direction) {
     if (_animations.count(state) && _animations[state].count(direction)) {
@@ -133,47 +141,33 @@ void cenemy::render(sf::RenderWindow& window) {
     }
 }
 
-// Tệp: cenemy.cpp
-// Hãy thay thế hoàn toàn hàm updateMovement của bạn bằng hàm này
-
 void cenemy::updateMovement(sf::Time deltaTime) {
     if (hasReachedEnd()) {
         _isActive = false;
         return;
     }
 
-    // Tổng quãng đường có thể di chuyển trong frame này
-    // Lưu ý: Tốc độ của bạn đang được nhân 2.f, tôi giữ nguyên logic này
     float remainingMoveDistance = _speed * deltaTime.asSeconds() * 2.f;
 
-    // Sử dụng vòng lặp để xử lý việc đi qua waypoint và tiếp tục di chuyển mượt mà
     while (remainingMoveDistance > 0 && !hasReachedEnd()) {
         sf::Vector2f vectorToTarget = _targetPosition.toVector2f() - _currentPosition.toVector2f();
         float distanceToTarget = std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
 
-        // Nếu đã ở rất gần waypoint, tránh lỗi chia cho 0 và lấy waypoint tiếp theo
         if (distanceToTarget < 0.001f) {
             _currentPathIndex++;
             if (!hasReachedEnd()) {
                 _targetPosition = _path[_currentPathIndex];
             }
-            continue; // Bắt đầu lại vòng lặp với mục tiêu mới
+            continue;
         }
 
-        // Nếu quãng đường còn lại đủ để đi qua hoặc đến waypoint hiện tại
         if (remainingMoveDistance >= distanceToTarget) {
-            // Di chuyển kẻ địch đến chính xác waypoint
             _currentPosition = _targetPosition;
-
-            // Giảm quãng đường đã đi
             remainingMoveDistance -= distanceToTarget;
-
-            // Chọn waypoint tiếp theo
             _currentPathIndex++;
+
             if (!hasReachedEnd()) {
                 _targetPosition = _path[_currentPathIndex];
-
-                // Cập nhật hướng animation vì đã đi qua một khúc cua
                 sf::Vector2f newDirectionVec = _targetPosition.toVector2f() - _currentPosition.toVector2f();
                 MovementDirection newDirection = (std::abs(newDirectionVec.y) > std::abs(newDirectionVec.x))
                     ? ((newDirectionVec.y < 0) ? MovementDirection::UP : MovementDirection::DOWN)
@@ -187,12 +181,9 @@ void cenemy::updateMovement(sf::Time deltaTime) {
             }
         }
         else {
-            // Di chuyển về phía waypoint một đoạn bằng quãng đường còn lại
             sf::Vector2f normalizedDir = vectorToTarget / distanceToTarget;
             _currentPosition.x += normalizedDir.x * remainingMoveDistance;
             _currentPosition.y += normalizedDir.y * remainingMoveDistance;
-
-
             remainingMoveDistance = 0;
         }
     }
@@ -216,13 +207,22 @@ void cenemy::takeDamage(int damage) {
 int cenemy::getMoneyValue() const { return _moneyValue; }
 
 void cenemy::applyDirectionalFlip(const sf::Vector2f& directionVec) {
-    float flip = 1.f;
+    // Giữ nguyên scale Y, chỉ thay đổi scale X để lật ảnh
+    float scaleY = _sprite.getScale().y;
+    float scaleX = std::abs(_sprite.getScale().x); // Lấy scale dương để tính toán
+
     if (_currentDirection == MovementDirection::SIDE) {
-        if (directionVec.x > 0.01f) {
-            flip = -1.f;
+        if (directionVec.x < 0) { // Đi sang trái
+            _sprite.setScale(scaleX, scaleY);
+        }
+        else { // Đi sang phải
+            _sprite.setScale(-scaleX, scaleY);
         }
     }
-    _sprite.setScale(flip * _scale, _scale);
+    else {
+        // Khi đi lên/xuống, không lật ảnh
+        _sprite.setScale(scaleX, scaleY);
+    }
 }
 
 bool cenemy::isAlive() const { return _health > 0; }
