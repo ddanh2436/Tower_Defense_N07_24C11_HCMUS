@@ -4,8 +4,8 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <fstream>      
-#include <sstream>      
+#include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <Windows.h>
 #include "cgame.h"
@@ -21,7 +21,7 @@ constexpr float MENU_MUSIC_VOLUME = 50.f;
 constexpr float GAME_MUSIC_VOLUME = 70.f;
 
 // HÀM MỚI: Đọc danh sách các map từ file index
-std::vector<MapInfo> loadMapInfos(const std::string& indexPath) {
+static std::vector<MapInfo> loadMapInfos(const std::string& indexPath) {
     std::vector<MapInfo> maps;
     std::ifstream file(indexPath);
     if (!file.is_open()) {
@@ -55,7 +55,8 @@ std::vector<MapInfo> loadMapInfos(const std::string& indexPath) {
 }
 
 
-GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
+
+static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
     sf::Clock clock;
 
     SoundManager::stopBackgroundMusic();
@@ -114,7 +115,7 @@ GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
             restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
             restartButton.setPosition(windowCenter.x, windowCenter.y + 40);
 
-            sf::Text quitButton("Quit", font, 40);
+            sf::Text quitButton("Quit to Menu", font, 40); // Sửa text để rõ ràng hơn
             quitButton.setOrigin(quitButton.getLocalBounds().width / 2, quitButton.getLocalBounds().height / 2);
             quitButton.setPosition(windowCenter.x, windowCenter.y + 100);
 
@@ -134,16 +135,18 @@ GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                     if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                         if (nextButton.getGlobalBounds().contains(mousePos)) {
                             SoundManager::playSoundEffect("menu_click");
-                            // TODO: Xử lý chuyển sang màn tiếp theo (tăng selectedMapId hoặc chọn map mới)
-                            return GameState::ShowingMapSelection;
+                            // THAY ĐỔI: Trả về trạng thái mới để main() xử lý việc chuyển màn
+                            return GameState::GoToNextLevel;
                         }
                         if (restartButton.getGlobalBounds().contains(mousePos)) {
                             SoundManager::playSoundEffect("menu_click");
-                            return GameState::Playing;
+                            // THAY ĐỔI: Trả về Restarting để main() xử lý chơi lại màn hiện tại
+                            return GameState::Restarting;
                         }
                         if (quitButton.getGlobalBounds().contains(mousePos)) {
                             SoundManager::playSoundEffect("menu_click");
-                            return GameState::Exiting;
+                            // THAY ĐỔI: Trả về menu chính thay vì thoát game
+                            return GameState::ShowingMenu;
                         }
                     }
                 }
@@ -171,9 +174,8 @@ GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                 SoundManager::resumeBackgroundMusic();
                 clock.restart();
             }
-            // SỬA ĐỔI: Restart từ menu pause sẽ quay về màn hình chọn map
             else if (pauseResult == GameState::Restarting) {
-                return GameState::Playing;
+                return GameState::Restarting; // THAY ĐỔI: Trả về Restarting để main() xử lý
             }
             else {
                 return pauseResult; // Exiting hoặc ShowingMenu
@@ -187,21 +189,19 @@ GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
 }
 
 
+
 int main() {
     SoundManager::initialize();
 
-    // THÊM MỚI: Tải thông tin các map trước khi tạo cửa sổ
     std::vector<MapInfo> mapInfos = loadMapInfos("data/maps_index.txt");
     if (mapInfos.empty()) {
         std::cerr << "No maps found or failed to load map index. Exiting." << std::endl;
-        // Hiển thị lỗi cho người dùng Windows thấy trước khi tắt
         MessageBoxA(NULL, "Could not find or load 'data/maps_index.txt'.\nPlease ensure the file exists and is correctly formatted.", "Fatal Error", MB_OK | MB_ICONERROR);
         return -1;
     }
 
     auto gameManager = std::make_unique<cgame>();
 
-    // GIỮ NGUYÊN: Toàn bộ logic fullscreen của bạn được giữ lại
     const auto fullscreenModes = sf::VideoMode::getFullscreenModes();
     sf::VideoMode selectedMode;
     bool fullscreen = false;
@@ -222,12 +222,11 @@ int main() {
     window->setFramerateLimit(60);
 
     GameState currentState = GameState::ShowingMenu;
-    std::string selectedMapId = ""; // THÊM MỚI: Lưu ID map được chọn
+    std::string selectedMapId = "";
 
     std::cout << "Khoi chay Tower Defense SFML." << std::endl;
     SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
 
-    // SỬA ĐỔI: Vòng lặp chính với state machine được cập nhật
     while (currentState != GameState::Exiting && window->isOpen()) {
         SoundManager::update();
 
@@ -239,7 +238,6 @@ int main() {
             currentState = showMenu(*window);
             break;
 
-            // THÊM MỚI: Case xử lý màn hình chọn map
         case GameState::ShowingMapSelection:
         {
             if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH) {
@@ -256,7 +254,6 @@ int main() {
         }
         break;
 
-        // SỬA ĐỔI: Case playing để tải map trước khi chạy
         case GameState::Playing:
         {
             std::cout << "Chuyen sang trang thai Playing Game cho map: " << selectedMapId << std::endl;
@@ -276,8 +273,43 @@ int main() {
         }
         break;
 
-        // Case này không còn cần thiết vì đã được xử lý bởi logic trả về của runGame
+        // THÊM MỚI: Case xử lý logic chuyển sang màn chơi tiếp theo
+        case GameState::GoToNextLevel:
+        {
+            // Tìm iterator của map hiện tại trong vector mapInfos
+            auto currentMapIt = std::find_if(mapInfos.begin(), mapInfos.end(), [&](const MapInfo& mi) {
+                return mi.id == selectedMapId;
+                });
+
+            if (currentMapIt != mapInfos.end()) {
+                // Di chuyển đến map tiếp theo
+                currentMapIt++;
+
+                // Nếu là map cuối cùng, quay lại map đầu tiên
+                if (currentMapIt == mapInfos.end()) {
+                    currentMapIt = mapInfos.begin();
+                    std::cout << "Completed last level. Looping back to first level." << std::endl;
+                }
+
+                // Cập nhật ID map được chọn để chơi ở vòng lặp tiếp theo
+                selectedMapId = currentMapIt->id;
+                std::cout << "Preparing next level: " << selectedMapId << std::endl;
+
+                // Đặt trạng thái thành Playing để bắt đầu màn mới
+                currentState = GameState::Playing;
+            }
+            else {
+                // Trường hợp dự phòng nếu không tìm thấy map hiện tại
+                std::cerr << "Error: Could not find current map '" << selectedMapId << "' to determine next level. Returning to menu." << std::endl;
+                currentState = GameState::ShowingMenu;
+            }
+        }
+        break;
+
         case GameState::Restarting:
+            // Khi Restarting, chúng ta chỉ cần đặt lại trạng thái là Playing.
+            // ID map hiện tại (selectedMapId) không đổi.
+            std::cout << "Restarting level: " << selectedMapId << std::endl;
             currentState = GameState::Playing;
             break;
 

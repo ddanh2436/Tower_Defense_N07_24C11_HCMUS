@@ -8,8 +8,8 @@
 class cgame;
 struct EnemyType;
 
-enum class EnemyState { WALKING, DYING, DEAD };
-enum class MovementDirection { UP, DOWN, SIDE };
+enum  EnemyState { WALKING, DYING, DEAD };
+enum  MovementDirection { UP, DOWN, SIDE };
 
 struct Animation {
     std::string texturePath;
