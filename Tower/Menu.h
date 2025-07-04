@@ -14,7 +14,8 @@ enum class GameState {
     SettingsScreen,
     Exiting,
     Paused,
-    Restarting
+    Restarting,
+    GoToNextLevel
 };
 
 // Struct mới để lưu thông tin về một map
