@@ -254,10 +254,20 @@ void ctower::sell() {
     if (_currentState != State::SELLING) {
         _currentState = State::SELLING;
         _effectTimer = sf::Time::Zero;
-        _effectDuration = sf::seconds(0.5f);
+        _effectDuration = sf::seconds(0.2f);
     }
 }
 
 bool ctower::isPendingRemoval() const {
     return _isPendingRemoval;
+}
+
+bool ctower::isBusy() const {
+    return _currentState == State::CONSTRUCTING ||
+        _currentState == State::UPGRADING ||
+        _currentState == State::SELLING;
+}
+
+ctower::State ctower::getCurrentState() const {
+    return _currentState;
 }

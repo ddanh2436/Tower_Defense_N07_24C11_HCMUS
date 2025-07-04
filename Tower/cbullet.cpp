@@ -4,7 +4,7 @@
 #include <cmath>
 
 cbullet::cbullet(const std::string& texturePath, const cpoint& startPosition, const sf::Vector2f& targetDirection, float speed, int damage)
-    : _position(startPosition), _speed(speed), _damage(damage), _isActive(true), _gracePeriod(sf::seconds(0.05f)) {
+    : _position(startPosition), _speed(speed), _damage(damage), _isActive(true), _gracePeriod(sf::seconds(0.05f)), _textureLoaded(true) {
 
     _sprite.setTexture(TextureManager::getTexture(texturePath));
 
@@ -23,6 +23,7 @@ cbullet::cbullet(const std::string& texturePath, const cpoint& startPosition, co
         _velocity = sf::Vector2f(0, -_speed);
     }
 }
+
 
 void cbullet::update(sf::Time deltaTime) {
     if (!_isActive) return;

@@ -8,7 +8,7 @@
 #include <sstream>
 #include <map>
 #include <functional>
-
+    
 int CURRENT_TILE_SIZE = 60; 
 
 // Hàm helper để tải texture
@@ -209,11 +209,6 @@ void cmap::assignTileTextures() {
     }
 }
 
-// ... Dán (paste) các hàm còn lại vào đây ...
-// VD: loadTileTextures, tất cả các hàm add...At, calculateEnemyPath, render, ...
-// Đảm bảo các hàm duyệt grid (như calculateEnemyPath, render) cũng dùng getMapHeightTiles() và getMapWidthTiles()
-
-// Dưới đây là các hàm còn lại đã được sửa lỗi
 namespace std {
     template <>
     struct hash<sf::Vector2i> {
