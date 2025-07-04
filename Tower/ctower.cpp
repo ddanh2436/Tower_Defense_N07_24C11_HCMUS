@@ -119,7 +119,7 @@ void ctower::update(sf::Time deltaTime, std::vector<cenemy>& enemies, std::vecto
         sf::Vector2f targetDirection = _target->getPosition() - _position.toVector2f();
         gameBullets.emplace_back(_bulletTexturePath, _position, targetDirection, _currentLevelData.bulletSpeed, _currentLevelData.damage);
         _fireCooldown = sf::seconds(_currentLevelData.fireRate);
-        SoundManager::playSoundEffect("tower_shoot");
+        SoundManager::playSoundEffect("assets/tower_shoot.ogg");
     }
 }
 
