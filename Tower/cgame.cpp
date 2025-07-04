@@ -164,7 +164,7 @@ void cgame::setupEnemyTypes() {
 
 void cgame::resetGameStats() {
     _isPaused = false;
-    _lives = 1;
+    _lives = 10;
     _money = 1000;
     _currentWave = 0;
     _enemiesPerWave = 5;
@@ -829,4 +829,12 @@ void cgame::updateUpgradePanel() {
 
 bool cgame::hasWon() const {
     return _levelWon;
+}
+
+int cgame::getLives() const {
+    return _lives;
+}
+
+int cgame::getMaxLives() const {
+    return _maxLives;
 }

@@ -51,6 +51,10 @@ public:
     const TowerLevelData* getTowerNextLevelData(const std::string& typeId, int currentLevel) const;
     sf::Texture& getTexture(const std::string& texturePath);
 
+    // <-- THÊM MỚI: Các hàm để lấy thông tin mạng cho hệ thống tính sao -->
+    int getLives() const;
+    int getMaxLives() const;
+
 private:
     cmap* _map;
     std::vector<cenemy> _enemies;
@@ -80,6 +84,7 @@ private:
     sf::Text _sellText;
     sf::Text _sellValueText;
     int _lives;
+    int _maxLives; // <-- THÊM MỚI: Biến lưu số mạng tối đa
     int _money;
     int _currentWave;
     int _enemiesPerWave;
