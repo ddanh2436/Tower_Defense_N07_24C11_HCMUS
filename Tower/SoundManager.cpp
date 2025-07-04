@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm> 
 #include <iomanip> 
+#include <map>
 
 namespace SoundManager {
 
@@ -39,9 +40,6 @@ namespace SoundManager {
         std::cout << "SoundManager initializing... Global sound is " << (isGlobalSoundEnabled ? "ON" : "OFF") << std::endl;
         std::cout << "Game music is initially " << (gameMusicOn ? "ON" : "OFF") << std::endl;
         std::cout << "Master volume is initially " << masterVolumeSetting << std::endl;
-        loadSoundEffect("menu_click", "assets/menu_click.wav");
-        loadSoundEffect("tower_shoot", "assets/tower_shoot.wav");
-        loadSoundEffect("enemy_explode", "assets/enemy_explode.wav");
     }
 
     void toggleGlobalSound() {

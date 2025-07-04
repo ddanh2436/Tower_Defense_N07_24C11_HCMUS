@@ -125,6 +125,7 @@ private:
     void handleUpgrade();
     void renderTowerUI(sf::RenderWindow& window);
     void handleSell();
+    void updateUpgradePanel();
 };
 
 #endif // CGAME_H

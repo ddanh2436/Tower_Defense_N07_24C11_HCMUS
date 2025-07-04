@@ -43,7 +43,7 @@ public:
         IDLE,
         ATTACKING,
         SELLING,
-        UPGRADING // <-- THÊM MỚI: Trạng thái cho hiệu ứng nâng cấp
+        UPGRADING
     };
     const TowerLevelData& getCurrentLevelData() const { return _currentLevelData; }
 
@@ -74,9 +74,7 @@ private:
     sf::Time _effectDuration;
     bool _isPendingRemoval;
 
-    // <-- THÊM MỚI: Con trỏ lưu dữ liệu cấp độ tiếp theo khi đang nâng cấp
     const TowerLevelData* _pendingUpgradeData;
-    // <-- KẾT THÚC THÊM MỚI
 
     void setAnimation(const TowerLevelData& levelData);
     void updateAnimation(sf::Time deltaTime);
@@ -97,9 +95,14 @@ public:
     int getLevel() const { return _level; }
     std::string getTypeId() const { return _typeId; }
 
-    // Các hàm hỗ trợ cho việc bán tháp
+    // Các hàm hỗ trợ
     void sell();
     bool isPendingRemoval() const;
+    bool isBusy() const;
+
+    // <-- THÊM MỚI: Hàm lấy trạng thái hiện tại của trụ
+    State getCurrentState() const;
+    // <-- KẾT THÚC THÊM MỚI
 };
 
 #endif // CTOWER_H

@@ -458,10 +458,12 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
             }
             if (_isUpgradePanelVisible) {
                 if (_upgradeButton.getGlobalBounds().contains(mouseWorldPos)) {
+                    // Sửa đổi ở đây
                     handleUpgrade();
                     return;
                 }
                 if (_sellButton.getGlobalBounds().contains(mouseWorldPos)) {
+                    // Sửa đổi ở đây
                     handleSell();
                     return;
                 }
@@ -511,79 +513,42 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
 }
 
 void cgame::handleTowerSelection(const sf::Vector2f& mousePos) {
-    _selectedTower = nullptr;
-    _isUpgradePanelVisible = false;
-
+    bool towerClicked = false;
     for (auto& tower : _towers) {
         if (tower.getGlobalBounds().contains(mousePos)) {
+            // <-- SỬA ĐỔI: Ngăn không cho chọn trụ đang xây ở cấp 1
+            // Tránh việc UI hiện "BUSY..." cho trụ vừa được đặt xuống
+            if (tower.getCurrentState() == ctower::State::CONSTRUCTING && tower.getLevel() == 1) {
+                _selectedTower = nullptr;
+                _isUpgradePanelVisible = false;
+                return; // Không làm gì cả, không cho phép chọn
+            }
+            // <-- KẾT THÚC SỬA ĐỔI
+
             _selectedTower = &tower;
             _isUpgradePanelVisible = true;
-
-            sf::Vector2f towerPos = tower.getPosition();
-            float buttonWidth = 90.f, buttonHeight = 35.f, buttonSpacing = 10.f;
-            float totalWidth = buttonWidth * 2 + buttonSpacing;
-            float startX = towerPos.x - totalWidth / 2.f;
-            float buttonY = towerPos.y - 120;
-
-            _upgradeButton.setSize({ buttonWidth, buttonHeight });
-            _upgradeButton.setOrigin(0, 0);
-            _upgradeButton.setPosition(startX, buttonY);
-
-            if (tower.canUpgrade()) {
-                _upgradeButton.setFillColor(sf::Color(30, 144, 255));
-                _upgradeText.setString("UPGRADE");
-                _costText.setString(std::to_string(tower.getUpgradeCost()) + " G");
-            }
-            else {
-                _upgradeButton.setFillColor(sf::Color(80, 80, 80));
-                _upgradeText.setString("MAX LEVEL");
-                _costText.setString("");
-            }
-            _upgradeText.setFont(_gameFont);
-            _upgradeText.setCharacterSize(14);
-            sf::FloatRect textBounds = _upgradeText.getLocalBounds();
-            _upgradeText.setOrigin(textBounds.left + textBounds.width / 2.f, textBounds.top + textBounds.height / 2.f);
-            _upgradeText.setPosition(_upgradeButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 - 5));
-
-            _costText.setFont(_gameFont);
-            _costText.setCharacterSize(12);
-            sf::FloatRect costBounds = _costText.getLocalBounds();
-            _costText.setOrigin(costBounds.left + costBounds.width / 2.f, costBounds.top + costBounds.height / 2.f);
-            _costText.setPosition(_upgradeButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 + 8));
-
-            _sellButton.setSize({ buttonWidth, buttonHeight });
-            _sellButton.setOrigin(0, 0);
-            _sellButton.setPosition(startX + buttonWidth + buttonSpacing, buttonY);
-            _sellButton.setFillColor(sf::Color(220, 50, 50));
-            _sellText.setFont(_gameFont);
-            _sellText.setString("SELL");
-            _sellText.setCharacterSize(14);
-            sf::FloatRect sellTextBounds = _sellText.getLocalBounds();
-            _sellText.setOrigin(sellTextBounds.left + sellTextBounds.width / 2.f, sellTextBounds.top + sellTextBounds.height / 2.f);
-            _sellText.setPosition(_sellButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 - 5));
-
-            _sellValueText.setFont(_gameFont);
-            _sellValueText.setString(std::to_string(tower.getSellValue()) + " G");
-            _sellValueText.setCharacterSize(12);
-            sf::FloatRect sellValueBounds = _sellValueText.getLocalBounds();
-            _sellValueText.setOrigin(sellValueBounds.left + sellValueBounds.width / 2.f, sellValueBounds.top + sellValueBounds.height / 2.f);
-            _sellValueText.setPosition(_sellButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 + 8));
-            return;
+            towerClicked = true;
+            // Logic vẽ vời đã được chuyển đi, nên ta thoát ngay khi tìm thấy
+            break;
         }
+    }
+
+    // Nếu không click trúng trụ nào, bỏ chọn
+    if (!towerClicked) {
+        _selectedTower = nullptr;
+        _isUpgradePanelVisible = false;
     }
 }
 
 void cgame::handleUpgrade() {
-    if (_selectedTower && _selectedTower->canUpgrade()) {
+    // <-- SỬA ĐỔI: Điều kiện kiểm tra isBusy đã đủ để chống spam
+    if (_selectedTower && _selectedTower->canUpgrade() && !_selectedTower->isBusy()) {
         int upgradeCost = _selectedTower->getUpgradeCost();
-
-        // ---- SỬA LỖI: Kiểm tra chi phí > 0 và sửa logic cập nhật panel ----
         if (upgradeCost > 0 && _money >= upgradeCost) {
             _money -= upgradeCost;
             _selectedTower->upgrade();
-            SoundManager::playSoundEffect("assets/tower_upgrade.wav");
-
-            handleTowerSelection(_selectedTower->getPosition());
+            SoundManager::playSoundEffect("tower_upgrade");
+            // Bỏ dòng handleTowerSelection ở đây, vì cgame::update() sẽ lo việc cập nhật UI
         }
         else if (upgradeCost <= 0) {
             std::cerr << "Loi: Chi phi nang cap khong hop le (" << upgradeCost << ")" << std::endl;
@@ -595,17 +560,13 @@ void cgame::handleUpgrade() {
 }
 
 void cgame::handleSell() {
-    if (!_selectedTower) return;
+    // <-- SỬA ĐỔI: Thêm điều kiện kiểm tra isBusy
+    if (!_selectedTower || _selectedTower->isBusy()) return;
+
     int sellValue = _selectedTower->getSellValue();
     _money += sellValue;
-
-    // <-- SỬA ĐỔI: Gọi hàm sell() để bắt đầu hiệu ứng thay vì xóa ngay
     _selectedTower->sell();
-    // _towers.erase(std::remove_if(_towers.begin(), _towers.end(), [this](const ctower& tower) { return &tower == _selectedTower; }), _towers.end()); // DÒNG CŨ BỊ XÓA
-
-    SoundManager::playSoundEffect("assets/tower_sell.wav");
-
-    // Bỏ chọn tháp
+    SoundManager::playSoundEffect("tower_sell");
     _selectedTower = nullptr;
     _isUpgradePanelVisible = false;
 }
@@ -662,6 +623,11 @@ void cgame::update(sf::Time deltaTime) {
     updateBullets(modifiedDeltaTime);
     handleCollisions();
     cleanupInactiveObjects();
+
+    // <-- THÊM MỚI: Luôn gọi hàm cập nhật UI trong mỗi vòng lặp game
+    // Điều này đảm bảo UI luôn phản ánh đúng trạng thái của trụ
+    updateUpgradePanel();
+    // <-- KẾT THÚC THÊM MỚI
 
     std::stringstream ssLives, ssMoney, ssWave;
     ssLives << _lives;
@@ -785,4 +751,78 @@ void cgame::setPaused(bool paused) {
 
 bool cgame::isPaused() const {
     return _isPaused;
+}
+
+void cgame::updateUpgradePanel() {
+    // Nếu không có trụ nào được chọn hoặc panel không hiển thị, thì không làm gì cả
+    if (!_selectedTower || !_isUpgradePanelVisible) {
+        return;
+    }
+
+    // Lấy tham chiếu đến trụ được chọn cho tiện
+    ctower& tower = *_selectedTower;
+
+    // --- Logic vẽ vời được chuyển từ handleTowerSelection sang đây ---
+    sf::Vector2f towerPos = tower.getPosition();
+    float buttonWidth = 90.f, buttonHeight = 35.f, buttonSpacing = 10.f;
+    float totalWidth = buttonWidth * 2 + buttonSpacing;
+    float startX = towerPos.x - totalWidth / 2.f;
+    float buttonY = towerPos.y - 120;
+
+    _upgradeButton.setSize({ buttonWidth, buttonHeight });
+    _upgradeButton.setOrigin(0, 0);
+    _upgradeButton.setPosition(startX, buttonY);
+
+    if (tower.isBusy()) {
+        _upgradeButton.setFillColor(sf::Color(80, 80, 80));
+        _upgradeText.setString("BUSY...");
+        _costText.setString("");
+    }
+    else if (tower.canUpgrade()) {
+        _upgradeButton.setFillColor(sf::Color(30, 144, 255));
+        _upgradeText.setString("UPGRADE");
+        _costText.setString(std::to_string(tower.getUpgradeCost()) + " G");
+    }
+    else {
+        _upgradeButton.setFillColor(sf::Color(80, 80, 80));
+        _upgradeText.setString("MAX LEVEL");
+        _costText.setString("");
+    }
+
+    _upgradeText.setFont(_gameFont);
+    _upgradeText.setCharacterSize(14);
+    sf::FloatRect textBounds = _upgradeText.getLocalBounds();
+    _upgradeText.setOrigin(textBounds.left + textBounds.width / 2.f, textBounds.top + textBounds.height / 2.f);
+    _upgradeText.setPosition(_upgradeButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 - 5));
+
+    _costText.setFont(_gameFont);
+    _costText.setCharacterSize(12);
+    sf::FloatRect costBounds = _costText.getLocalBounds();
+    _costText.setOrigin(costBounds.left + costBounds.width / 2.f, costBounds.top + costBounds.height / 2.f);
+    _costText.setPosition(_upgradeButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 + 8));
+
+    _sellButton.setSize({ buttonWidth, buttonHeight });
+    _sellButton.setOrigin(0, 0);
+    _sellButton.setPosition(startX + buttonWidth + buttonSpacing, buttonY);
+
+    if (tower.isBusy()) {
+        _sellButton.setFillColor(sf::Color(80, 80, 80));
+    }
+    else {
+        _sellButton.setFillColor(sf::Color(220, 50, 50));
+    }
+
+    _sellText.setFont(_gameFont);
+    _sellText.setString("SELL");
+    _sellText.setCharacterSize(14);
+    sf::FloatRect sellTextBounds = _sellText.getLocalBounds();
+    _sellText.setOrigin(sellTextBounds.left + sellTextBounds.width / 2.f, sellTextBounds.top + sellTextBounds.height / 2.f);
+    _sellText.setPosition(_sellButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 - 5));
+
+    _sellValueText.setFont(_gameFont);
+    _sellValueText.setString(std::to_string(tower.getSellValue()) + " G");
+    _sellValueText.setCharacterSize(12);
+    sf::FloatRect sellValueBounds = _sellValueText.getLocalBounds();
+    _sellValueText.setOrigin(sellValueBounds.left + sellValueBounds.width / 2.f, sellValueBounds.top + sellValueBounds.height / 2.f);
+    _sellValueText.setPosition(_sellButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 + 8));
 }
