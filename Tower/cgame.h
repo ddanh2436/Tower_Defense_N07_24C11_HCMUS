@@ -47,6 +47,7 @@ public:
     void setPaused(bool paused);
     bool isPaused() const;
     bool isGameOver() const;
+    bool hasWon() const;
     const TowerLevelData* getTowerNextLevelData(const std::string& typeId, int currentLevel) const;
     sf::Texture& getTexture(const std::string& texturePath);
 

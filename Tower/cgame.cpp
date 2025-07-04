@@ -261,7 +261,7 @@ void cgame::loadFont() {
 }
 
 void cgame::setupUI() {
-    _uiPanel.setSize(sf::Vector2f(250, 120));
+    _uiPanel.setSize(sf::Vector2f(200, 120));
     _uiPanel.setPosition(10, 10);
     _uiPanel.setFillColor(sf::Color(30, 30, 40, 200));
     _uiPanel.setOutlineThickness(2.f);
@@ -825,4 +825,8 @@ void cgame::updateUpgradePanel() {
     sf::FloatRect sellValueBounds = _sellValueText.getLocalBounds();
     _sellValueText.setOrigin(sellValueBounds.left + sellValueBounds.width / 2.f, sellValueBounds.top + sellValueBounds.height / 2.f);
     _sellValueText.setPosition(_sellButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 + 8));
+}
+
+bool cgame::hasWon() const {
+    return _levelWon;
 }

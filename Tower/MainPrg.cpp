@@ -55,7 +55,7 @@ static std::vector<MapInfo> loadMapInfos(const std::string& indexPath) {
 }
 
 
-
+// --- HÀM runGame ĐÃ ĐƯỢC CẬP NHẬT HOÀN CHỈNH ---
 static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
     sf::Clock clock;
 
@@ -87,10 +87,9 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
             gameManager.update(deltaTime);
         }
 
+        // --- BẮT ĐẦU KHỐI LOGIC SỬA ĐỔI ---
         if (gameManager.isGameOver()) {
             SoundManager::stopBackgroundMusic();
-            SoundManager::playVictoryMusic();
-
             sf::Font font;
             if (!font.loadFromFile("assets/pixel_font.ttf")) { return GameState::ShowingMenu; }
 
@@ -102,65 +101,116 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
             panel.setOrigin(panel.getSize().x / 2.0f, panel.getSize().y / 2.0f);
             panel.setPosition(windowCenter);
 
-            sf::Text victoryText("VICTORY!", font, 50);
-            victoryText.setFillColor(sf::Color::Yellow);
-            victoryText.setOrigin(victoryText.getLocalBounds().width / 2, victoryText.getLocalBounds().height / 2);
-            victoryText.setPosition(windowCenter.x, windowCenter.y - 90);
+            // --- SỬA ĐỔI: Kiểm tra xem người chơi thắng hay thua ---
+            if (gameManager.hasWon()) {
+                // --- MÀN HÌNH CHIẾN THẮNG (Code gốc của bạn) ---
+                SoundManager::playVictoryMusic();
 
-            sf::Text nextButton("Next Level", font, 40);
-            nextButton.setOrigin(nextButton.getLocalBounds().width / 2, nextButton.getLocalBounds().height / 2);
-            nextButton.setPosition(windowCenter.x, windowCenter.y - 20);
+                sf::Text victoryText("VICTORY!", font, 50);
+                victoryText.setFillColor(sf::Color::Yellow);
+                victoryText.setOrigin(victoryText.getLocalBounds().width / 2, victoryText.getLocalBounds().height / 2);
+                victoryText.setPosition(windowCenter.x, windowCenter.y - 90);
 
-            sf::Text restartButton("Restart", font, 40);
-            restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
-            restartButton.setPosition(windowCenter.x, windowCenter.y + 40);
+                sf::Text nextButton("Next Level", font, 40);
+                nextButton.setOrigin(nextButton.getLocalBounds().width / 2, nextButton.getLocalBounds().height / 2);
+                nextButton.setPosition(windowCenter.x, windowCenter.y - 20);
 
-            sf::Text quitButton("Quit to Menu", font, 40); // Sửa text để rõ ràng hơn
-            quitButton.setOrigin(quitButton.getLocalBounds().width / 2, quitButton.getLocalBounds().height / 2);
-            quitButton.setPosition(windowCenter.x, windowCenter.y + 100);
+                sf::Text restartButton("Restart", font, 40);
+                restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
+                restartButton.setPosition(windowCenter.x, windowCenter.y + 40);
 
-            while (window.isOpen()) {
-                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                nextButton.setFillColor(sf::Color::White);
-                restartButton.setFillColor(sf::Color::White);
-                quitButton.setFillColor(sf::Color::White);
+                sf::Text quitButton("Quit to Menu", font, 40);
+                quitButton.setOrigin(quitButton.getLocalBounds().width / 2, quitButton.getLocalBounds().height / 2);
+                quitButton.setPosition(windowCenter.x, windowCenter.y + 100);
 
-                if (nextButton.getGlobalBounds().contains(mousePos)) nextButton.setFillColor(sf::Color::Yellow);
-                if (restartButton.getGlobalBounds().contains(mousePos)) restartButton.setFillColor(sf::Color::Yellow);
-                if (quitButton.getGlobalBounds().contains(mousePos)) quitButton.setFillColor(sf::Color::Yellow);
+                while (window.isOpen()) {
+                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                    nextButton.setFillColor(sf::Color::White);
+                    restartButton.setFillColor(sf::Color::White);
+                    quitButton.setFillColor(sf::Color::White);
 
-                sf::Event event;
-                while (window.pollEvent(event)) {
-                    if (event.type == sf::Event::Closed) return GameState::Exiting;
-                    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                        if (nextButton.getGlobalBounds().contains(mousePos)) {
-                            SoundManager::playSoundEffect("menu_click");
-                            // THAY ĐỔI: Trả về trạng thái mới để main() xử lý việc chuyển màn
-                            return GameState::GoToNextLevel;
-                        }
-                        if (restartButton.getGlobalBounds().contains(mousePos)) {
-                            SoundManager::playSoundEffect("menu_click");
-                            // THAY ĐỔI: Trả về Restarting để main() xử lý chơi lại màn hiện tại
-                            return GameState::Restarting;
-                        }
-                        if (quitButton.getGlobalBounds().contains(mousePos)) {
-                            SoundManager::playSoundEffect("menu_click");
-                            // THAY ĐỔI: Trả về menu chính thay vì thoát game
-                            return GameState::ShowingMenu;
+                    if (nextButton.getGlobalBounds().contains(mousePos)) nextButton.setFillColor(sf::Color::Yellow);
+                    if (restartButton.getGlobalBounds().contains(mousePos)) restartButton.setFillColor(sf::Color::Yellow);
+                    if (quitButton.getGlobalBounds().contains(mousePos)) quitButton.setFillColor(sf::Color::Yellow);
+
+                    sf::Event endEvent;
+                    while (window.pollEvent(endEvent)) {
+                        if (endEvent.type == sf::Event::Closed) return GameState::Exiting;
+                        if (endEvent.type == sf::Event::MouseButtonPressed && endEvent.mouseButton.button == sf::Mouse::Left) {
+                            if (nextButton.getGlobalBounds().contains(mousePos)) {
+                                SoundManager::playSoundEffect("menu_click");
+                                return GameState::GoToNextLevel;
+                            }
+                            if (restartButton.getGlobalBounds().contains(mousePos)) {
+                                SoundManager::playSoundEffect("menu_click");
+                                return GameState::Restarting;
+                            }
+                            if (quitButton.getGlobalBounds().contains(mousePos)) {
+                                SoundManager::playSoundEffect("menu_click");
+                                return GameState::ShowingMenu;
+                            }
                         }
                     }
-                }
 
-                window.clear();
-                gameManager.render(window);
-                window.draw(panel);
-                window.draw(victoryText);
-                window.draw(nextButton);
-                window.draw(restartButton);
-                window.draw(quitButton);
-                window.display();
+                    window.clear();
+                    gameManager.render(window);
+                    window.draw(panel);
+                    window.draw(victoryText);
+                    window.draw(nextButton);
+                    window.draw(restartButton);
+                    window.draw(quitButton);
+                    window.display();
+                }
+            }
+            else {
+                // --- THÊM MỚI: Màn hình thua cuộc ---
+                sf::Text titleText("GAME OVER", font, 50);
+                titleText.setFillColor(sf::Color::Red);
+                titleText.setOrigin(titleText.getLocalBounds().width / 2, titleText.getLocalBounds().height / 2);
+                titleText.setPosition(windowCenter.x, windowCenter.y - 70);
+
+                sf::Text restartButton("Restart", font, 40);
+                restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
+                restartButton.setPosition(windowCenter.x, windowCenter.y + 20);
+
+                sf::Text quitButton("Quit to Menu", font, 40);
+                quitButton.setOrigin(quitButton.getLocalBounds().width / 2, quitButton.getLocalBounds().height / 2);
+                quitButton.setPosition(windowCenter.x, windowCenter.y + 80);
+
+                while (window.isOpen()) {
+                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                    restartButton.setFillColor(sf::Color::White);
+                    quitButton.setFillColor(sf::Color::White);
+
+                    if (restartButton.getGlobalBounds().contains(mousePos)) restartButton.setFillColor(sf::Color::Yellow);
+                    if (quitButton.getGlobalBounds().contains(mousePos)) quitButton.setFillColor(sf::Color::Yellow);
+
+                    sf::Event endEvent;
+                    while (window.pollEvent(endEvent)) {
+                        if (endEvent.type == sf::Event::Closed) return GameState::Exiting;
+                        if (endEvent.type == sf::Event::MouseButtonPressed && endEvent.mouseButton.button == sf::Mouse::Left) {
+                            if (restartButton.getGlobalBounds().contains(mousePos)) {
+                                SoundManager::playSoundEffect("menu_click");
+                                return GameState::Restarting;
+                            }
+                            if (quitButton.getGlobalBounds().contains(mousePos)) {
+                                SoundManager::playSoundEffect("menu_click");
+                                return GameState::ShowingMenu;
+                            }
+                        }
+                    }
+
+                    window.clear();
+                    gameManager.render(window);
+                    window.draw(panel);
+                    window.draw(titleText);
+                    window.draw(restartButton);
+                    window.draw(quitButton);
+                    window.display();
+                }
             }
         }
+        // --- KẾT THÚC KHỐI LOGIC SỬA ĐỔI ---
 
         window.clear(sf::Color(25, 25, 25));
         gameManager.render(window);
@@ -175,7 +225,7 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                 clock.restart();
             }
             else if (pauseResult == GameState::Restarting) {
-                return GameState::Restarting; // THAY ĐỔI: Trả về Restarting để main() xử lý
+                return GameState::Restarting;
             }
             else {
                 return pauseResult; // Exiting hoặc ShowingMenu
