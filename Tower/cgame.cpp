@@ -547,7 +547,7 @@ void cgame::handleUpgrade() {
         if (upgradeCost > 0 && _money >= upgradeCost) {
             _money -= upgradeCost;
             _selectedTower->upgrade();
-            SoundManager::playSoundEffect("tower_upgrade");
+            SoundManager::playSoundEffect("assets/tower_upgrade.ogg");
             // Bỏ dòng handleTowerSelection ở đây, vì cgame::update() sẽ lo việc cập nhật UI
         }
         else if (upgradeCost <= 0) {
@@ -566,7 +566,7 @@ void cgame::handleSell() {
     int sellValue = _selectedTower->getSellValue();
     _money += sellValue;
     _selectedTower->sell();
-    SoundManager::playSoundEffect("tower_sell");
+    SoundManager::playSoundEffect("assets/tower_sell.ogg");
     _selectedTower = nullptr;
     _isUpgradePanelVisible = false;
 }

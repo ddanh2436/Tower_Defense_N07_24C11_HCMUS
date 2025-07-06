@@ -92,7 +92,7 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 gameManager.setPaused(true);
-                SoundManager::playSoundEffect("menu_click");
+                SoundManager::playSoundEffect("assets/menu_click.ogg");
             }
             if (!gameManager.isPaused()) {
                 gameManager.handleInput(event, window);
@@ -167,9 +167,9 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                     while (window.pollEvent(endEvent)) {
                         if (endEvent.type == sf::Event::Closed) return GameState::Exiting;
                         if (endEvent.type == sf::Event::MouseButtonPressed && endEvent.mouseButton.button == sf::Mouse::Left) {
-                            if (nextButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("menu_click"); return GameState::GoToNextLevel; }
-                            if (restartButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("menu_click"); return GameState::Restarting; }
-                            if (quitButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("menu_click"); return GameState::ShowingMenu; }
+                            if (nextButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("assets/menu_click.ogg"); return GameState::GoToNextLevel; }
+                            if (restartButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("assets/menu_click.ogg"); return GameState::Restarting; }
+                            if (quitButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("assets/menu_click.ogg"); return GameState::ShowingMenu; }
                         }
                     }
                     window.clear();
@@ -251,6 +251,11 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
 
 int main() {
     SoundManager::initialize();
+    SoundManager::loadSoundEffect("assets/tower_shoot.ogg", "assets/tower_shoot.ogg");
+    SoundManager::loadSoundEffect("assets/tower_place.wav", "assets/tower_place.wav");
+    SoundManager::loadSoundEffect("assets/tower_upgrade.ogg", "assets/tower_upgrade.ogg");
+    SoundManager::loadSoundEffect("assets/tower_sell.ogg", "assets/tower_sell.ogg");
+    SoundManager::loadSoundEffect("assets/menu_click.ogg", "assets/menu_click.ogg");
     std::vector<MapInfo> mapInfos = loadMapInfos("data/maps_index.txt");
     if (mapInfos.empty()) {
         std::cerr << "No maps found or failed to load map index. Exiting." << std::endl;
