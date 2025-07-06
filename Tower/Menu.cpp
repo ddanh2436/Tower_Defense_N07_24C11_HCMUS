@@ -97,15 +97,15 @@ GameState showMenu(sf::RenderWindow& window) {
                 if (event.key.code == sf::Keyboard::Up) {
                     if (selectedItemIndex > 0) selectedItemIndex--;
                     else selectedItemIndex = static_cast<int>(menuItems.size() - 1);
-                    SoundManager::playSoundEffect("menu_click");
+                    SoundManager::playSoundEffect("assets/menu_click.ogg");
                 }
                 else if (event.key.code == sf::Keyboard::Down) {
                     if (selectedItemIndex < static_cast<int>(menuItems.size()) - 1) selectedItemIndex++;
                     else selectedItemIndex = 0;
-                    SoundManager::playSoundEffect("menu_click");
+                    SoundManager::playSoundEffect("assets/menu_click.ogg");
                 }
                 else if (event.key.code == sf::Keyboard::Return) {
-                    SoundManager::playSoundEffect("menu_click");
+                    SoundManager::playSoundEffect("assets/menu_click.ogg");
                     // SỬA ĐỔI: Chuyển sang màn hình chọn map thay vì chơi game ngay
                     if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                     if (menuStrings[selectedItemIndex] == "Load Game") { std::cout << "Chuc nang Load Game chua duoc thuc hien." << std::endl; }
@@ -119,7 +119,7 @@ GameState showMenu(sf::RenderWindow& window) {
                     for (size_t i = 0; i < menuItems.size(); ++i) {
                         if (menuItems[i].getGlobalBounds().contains(mousePos)) {
                             selectedItemIndex = static_cast<int>(i);
-                            SoundManager::playSoundEffect("menu_click");
+                            SoundManager::playSoundEffect("assets/menu_click.ogg");
                             // SỬA ĐỔI: Chuyển sang màn hình chọn map thay vì chơi game ngay
                             if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                             if (menuStrings[selectedItemIndex] == "Load Game") {
@@ -217,21 +217,21 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
             }
             if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Escape) {
-                    SoundManager::playSoundEffect("menu_click");
+                    SoundManager::playSoundEffect("assets/menu_click.ogg");
                     return ""; // Trả về chuỗi rỗng để báo hiệu quay lại
                 }
                 if (event.key.code == sf::Keyboard::Up) {
                     if (selectedItemIndex > 0) selectedItemIndex--;
                     else selectedItemIndex = mapItems.size() - 1;
-                    SoundManager::playSoundEffect("menu_click");
+                    SoundManager::playSoundEffect("assets/menu_click.ogg");
                 }
                 else if (event.key.code == sf::Keyboard::Down) {
                     if (selectedItemIndex < (int)mapItems.size() - 1) selectedItemIndex++;
                     else selectedItemIndex = 0;
-                    SoundManager::playSoundEffect("menu_click");
+                    SoundManager::playSoundEffect("assets/menu_click.ogg");
                 }
                 else if (event.key.code == sf::Keyboard::Return) {
-                    SoundManager::playSoundEffect("menu_click");
+                    SoundManager::playSoundEffect("assets/menu_click.ogg");
                     if (!maps.empty()) return maps[selectedItemIndex].id; // Trả về ID của map đã chọn
                 }
             }
@@ -240,7 +240,7 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
                     sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
                     for (size_t i = 0; i < mapItems.size(); ++i) {
                         if (mapItems[i].getGlobalBounds().contains(mousePos)) {
-                            SoundManager::playSoundEffect("menu_click");
+                            SoundManager::playSoundEffect("assets/menu_click.ogg");
                             return maps[i].id;
                         }
                     }
@@ -408,7 +408,7 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
                 return GameState::Exiting;
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
-                SoundManager::playSoundEffect("menu_click");
+                SoundManager::playSoundEffect("assets/menu_click.ogg");
                 return GameState::ShowingMenu;
             }
             if (event.type == sf::Event::MouseButtonPressed) {
@@ -418,12 +418,12 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
                     if (soundTexturesLoaded && globalSoundButtonSprite.getGlobalBounds().contains(mousePos)) {
                         SoundManager::toggleGlobalSound();
                         globalSoundButtonSprite.setTexture(SoundManager::getGlobalSoundState() ? soundOnTexture : soundOffTexture);
-                        SoundManager::playSoundEffect("menu_click");
+                        SoundManager::playSoundEffect("assets/menu_click.ogg");
                     }
                     else if (soundTexturesLoaded && gameMusicButtonSprite.getGlobalBounds().contains(mousePos)) {
                         SoundManager::toggleGameMusic();
                         gameMusicButtonSprite.setTexture(SoundManager::getGameMusicState() ? soundOnTexture : soundOffTexture);
-                        SoundManager::playSoundEffect("menu_click");
+                        SoundManager::playSoundEffect("assets/menu_click.ogg");
                     }
                     else if (minusButtonText.getGlobalBounds().contains(mousePos)) {
                         SoundManager::adjustMasterVolume(-10.f);
@@ -432,7 +432,7 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
                         // Đặt lại vị trí X của volumeValueText để nó căn giữa các nút +/-
                         float newPosX_minus = controlBlockLeftAlignX + minusButtonText.getLocalBounds().width + controlInternalSpacing + volumeValueText.getLocalBounds().width / 2.f;
                         volumeValueText.setPosition(newPosX_minus, minusButtonText.getPosition().y);
-                        SoundManager::playSoundEffect("menu_click");
+                        SoundManager::playSoundEffect("assets/menu_click.ogg");
                     }
                     else if (plusButtonText.getGlobalBounds().contains(mousePos)) {
                         SoundManager::adjustMasterVolume(10.f);
@@ -440,7 +440,7 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
                         centerTextOrigin(volumeValueText); // Căn giữa lại
                         float newPosX_plus = controlBlockLeftAlignX + minusButtonText.getLocalBounds().width + controlInternalSpacing + volumeValueText.getLocalBounds().width / 2.f;
                         volumeValueText.setPosition(newPosX_plus, plusButtonText.getPosition().y);
-                        SoundManager::playSoundEffect("menu_click");
+                        SoundManager::playSoundEffect("assets/menu_click.ogg");
                     }
                 }
             }
@@ -543,8 +543,8 @@ GameState showPauseMenu(sf::RenderWindow& window) {
             if (alphaRatio >= 1.f) {
                 if (event.type == sf::Event::KeyPressed) {
                     if (event.key.code == sf::Keyboard::Escape) { return GameState::Playing; }
-                    if (event.key.code == sf::Keyboard::Up) { selectedItemIndex = (selectedItemIndex + menuItems.size() - 1) % static_cast<int>(menuItems.size()); SoundManager::playSoundEffect("menu_click"); }
-                    else if (event.key.code == sf::Keyboard::Down) { selectedItemIndex = (selectedItemIndex + 1) % menuItems.size(); SoundManager::playSoundEffect("menu_click"); }
+                    if (event.key.code == sf::Keyboard::Up) { selectedItemIndex = (selectedItemIndex + menuItems.size() - 1) % static_cast<int>(menuItems.size()); SoundManager::playSoundEffect("assets/menu_click.ogg"); }
+                    else if (event.key.code == sf::Keyboard::Down) { selectedItemIndex = (selectedItemIndex + 1) % menuItems.size(); SoundManager::playSoundEffect("assets/menu_click.ogg"); }
                     else if (event.key.code == sf::Keyboard::Return) {
                         if (selectedItemIndex == 0) return GameState::Playing;
                         if (selectedItemIndex == 1) return GameState::Restarting;
