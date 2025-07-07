@@ -18,6 +18,7 @@ namespace SoundManager {
     const std::string GAME_MUSIC_FILEPATH = "assets/game_music.ogg"; 
     const std::string MENU_MUSIC_FILEPATH = "assets/menu_music.ogg";
     const std::string VICTORY_MUSIC_FILEPATH = "assets/victory_music.ogg";
+	const std::string LOSE_MUSIC_FILEPATH = "assets/lose_music.ogg";
 
 
     void applyAllVolumeSettings() {

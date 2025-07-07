@@ -340,7 +340,7 @@ void cgame::updateEnemies(sf::Time deltaTime) {
             enemy.update(deltaTime);
             if (enemy.hasReachedEnd()) {
                 _lives--;
-                SoundManager::playSoundEffect("life_lost");
+                SoundManager::playSoundEffect("assets/life_lost.ogg");
                 enemy.setActive(false);
                 if (_lives <= 0) {
                     _isGameOver = true;

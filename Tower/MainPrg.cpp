@@ -19,6 +19,7 @@ constexpr unsigned int DEFAULT_WINDOW_WIDTH = 1024;
 constexpr unsigned int DEFAULT_WINDOW_HEIGHT = 768;
 const std::string MENU_MUSIC_PATH = "assets/menu_music.ogg";
 const std::string GAME_MUSIC_PATH = "assets/game_music.ogg";
+const std::string LOSE_MUSIC_FILEPATH = "assets/lose_music.ogg"; 
 constexpr float MENU_MUSIC_VOLUME = 50.f;
 constexpr float GAME_MUSIC_VOLUME = 70.f;
 
@@ -191,6 +192,7 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
             }
             else {
                 // ... (Màn hình thua cuộc giữ nguyên)
+                SoundManager::playBackgroundMusic(LOSE_MUSIC_FILEPATH, 70.f, false);
                 sf::Text titleText("GAME OVER", font, 50);
                 titleText.setFillColor(sf::Color::Red);
                 titleText.setOrigin(titleText.getLocalBounds().width / 2, titleText.getLocalBounds().height / 2);
@@ -211,8 +213,8 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                     while (window.pollEvent(endEvent)) {
                         if (endEvent.type == sf::Event::Closed) return GameState::Exiting;
                         if (endEvent.type == sf::Event::MouseButtonPressed && endEvent.mouseButton.button == sf::Mouse::Left) {
-                            if (restartButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("menu_click"); return GameState::Restarting; }
-                            if (quitButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("menu_click"); return GameState::ShowingMenu; }
+                            if (restartButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("assets/menu_click.ogg"); return GameState::Restarting; }
+                            if (quitButton.getGlobalBounds().contains(mousePos)) { SoundManager::playSoundEffect("assets/menu_click.ogg"); return GameState::ShowingMenu; }
                         }
                     }
                     window.clear();
@@ -258,6 +260,7 @@ int main() {
     SoundManager::loadSoundEffect("assets/tower_upgrade.ogg", "assets/tower_upgrade.ogg");
     SoundManager::loadSoundEffect("assets/tower_sell.ogg", "assets/tower_sell.ogg");
     SoundManager::loadSoundEffect("assets/menu_click.ogg", "assets/menu_click.ogg");
+    SoundManager::loadSoundEffect("assets/life_lost.ogg", "assets/life_lost.ogg");
     std::vector<MapInfo> mapInfos = loadMapInfos("data/maps_index.txt");
     if (mapInfos.empty()) {
         std::cerr << "No maps found or failed to load map index. Exiting." << std::endl;
