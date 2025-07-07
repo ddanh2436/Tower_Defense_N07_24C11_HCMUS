@@ -14,11 +14,12 @@ enum  MovementDirection { UP, DOWN, SIDE };
 struct Animation {
     std::string texturePath;
     sf::Vector2i frameSize;
-    int frameCount;
-    int stride;
-    float duration;
+    int frameCount = 0; // Default initialization
+    int stride = 0;     // Default initialization
+    float duration = 0.0f; // Default initialization
     std::vector<float> yOffsets;
 };
+
 
 class cenemy {
 public:

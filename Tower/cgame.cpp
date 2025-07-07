@@ -5,6 +5,8 @@
 #include <random>
 #include <algorithm>
 
+static int nextTowerId = 0;
+
 cgame::cgame() : _rng(std::random_device{}()) {
     _map = nullptr;
 
@@ -165,6 +167,7 @@ void cgame::setupEnemyTypes() {
 void cgame::resetGameStats() {
     _isPaused = false;
     _lives = 10;
+    _maxLives = 10;
     _money = 1000;
     _currentWave = 0;
     _enemiesPerWave = 5;
@@ -180,6 +183,7 @@ void cgame::resetGameStats() {
     _currentWaveEnemyTypeIndex = -1;
     _isFastForward = false;
     _gameSpeedMultiplier = 2.0f;
+    _ffButtonSprite.setColor(sf::Color::White);
 
     _enemies.clear();
     _towers.clear();
@@ -188,6 +192,7 @@ void cgame::resetGameStats() {
     _selectingTowerToBuild = false;
     _selectedTower = nullptr;
     _isUpgradePanelVisible = false;
+    nextTowerId = 0;
 }
 
 void cgame::startNextWave() {
@@ -486,10 +491,12 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                         // ---- SỬA LỖI: Kiểm tra chi phí > 0 trước khi trừ tiền ----
                         if (buildCost > 0 && _money >= buildCost) {
                             cpoint towerPosition = _map->getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
-                            _towers.emplace_back(this, _selectedTowerType, blueprint[0], towerPosition);
+                            _towers.emplace_back(this, _selectedTowerType, blueprint[0], towerPosition,nextTowerId);
                             SoundManager::playSoundEffect("assets/tower_place.wav");
                             _money -= buildCost;
                             _selectingTowerToBuild = false;
+                            _selectedTower = nullptr;
+                            _isUpgradePanelVisible = false;
                         }
                         else if (buildCost <= 0) {
                             std::cerr << "Loi: Chi phi xay dung khong hop le (" << buildCost << ")" << std::endl;

@@ -29,7 +29,6 @@ struct TowerLevelData {
     int idle_numFrames;
     float idle_animationSpeed;
 
-    // --- Chỉ số chiến đấu ---
     float range;
     float fireRate;
     int damage;
@@ -48,6 +47,7 @@ public:
     const TowerLevelData& getCurrentLevelData() const { return _currentLevelData; }
 
 private:
+    int _id; // THÊM: ID duy nhất cho mỗi trụ
     sf::Sprite _sprite;
     cpoint _position;
     sf::Time _fireCooldown;
@@ -69,7 +69,6 @@ private:
     cenemy* _target;
     int _totalCostInvested;
 
-    // Các biến cho hiệu ứng
     sf::Time _effectTimer;
     sf::Time _effectDuration;
     bool _isPendingRemoval;
@@ -78,8 +77,10 @@ private:
 
     void setAnimation(const TowerLevelData& levelData);
     void updateAnimation(sf::Time deltaTime);
+
 public:
-    ctower(cgame* game, const std::string& typeId, const TowerLevelData& initialLevelData, const cpoint& position);
+    // SỬA ĐỔI: Thêm tham số 'id' vào constructor
+    ctower(cgame* game, const std::string& typeId, const TowerLevelData& initialLevelData, const cpoint& position, int id);
 
     cenemy* findTarget(std::vector<cenemy>& enemies);
     void update(sf::Time deltaTime, std::vector<cenemy>& enemies, std::vector<cbullet>& gameBullets);
@@ -94,15 +95,12 @@ public:
     sf::FloatRect getGlobalBounds() const;
     int getLevel() const { return _level; }
     std::string getTypeId() const { return _typeId; }
+    int getId() const { return _id; } // THÊM: Hàm lấy ID của trụ
 
-    // Các hàm hỗ trợ
     void sell();
     bool isPendingRemoval() const;
     bool isBusy() const;
-
-    // <-- THÊM MỚI: Hàm lấy trạng thái hiện tại của trụ
     State getCurrentState() const;
-    // <-- KẾT THÚC THÊM MỚI
 };
 
 #endif // CTOWER_H
