@@ -3,10 +3,6 @@
 
 #include <SFML/System/Vector2.hpp>
 
-// cpoint.h (Điều chỉnh cho SFML)
-// Lớp này có thể được sử dụng để biểu diễn cả tọa độ grid (int) và tọa độ pixel (float).
-// Hoặc bạn có thể dùng trực tiếp sf::Vector2i và sf::Vector2f.
-// Để đơn giản, chúng ta sẽ giữ lại cpoint nhưng làm cho nó linh hoạt hơn.
 
 class cpoint {
 public:

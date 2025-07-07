@@ -28,18 +28,20 @@ int determineStars(const cgame& gameManager) {
     int lives = gameManager.getLives();
     int maxLives = gameManager.getMaxLives();
 
-    if (lives <= 0) return 0; // Thua cuộc
+    std::cout << "[DEBUG] Calculating stars... Lives: " << lives << " / MaxLives: " << maxLives << std::endl;
+
+    if (maxLives <= 0 || lives <= 0) {
+        return 0;
+    }
 
     // Dùng số thực để phép chia chính xác
-    float livesPercent = static_cast<float>(lives) / maxLives;
-
-    if (livesPercent >= 0.99f) { // Gần như hoặc hoàn toàn không mất máu
+    if (lives == maxLives) {        // Phải còn nguyên vẹn 100% mạng
         return 3;
     }
-    else if (livesPercent >= 0.5f) { // Còn lại ít nhất một nửa số mạng
+    else if (lives >= maxLives / 2) { // Còn lại từ 50% mạng trở lên
         return 2;
     }
-    else { // Còn lại dưới một nửa số mạng
+    else {                          // Còn lại dưới 50% mạng (nhưng vẫn > 0)
         return 1;
     }
 }

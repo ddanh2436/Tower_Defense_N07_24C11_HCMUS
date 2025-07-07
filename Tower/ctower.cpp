@@ -5,14 +5,12 @@
 #include "SoundManager.h"
 #include <algorithm>
 
-// =======================================================================
-// ==================== HÀM ĐƯỢC SỬA ĐỔI ===================================
-// =======================================================================
 
-ctower::ctower(cgame* game, const std::string& typeId, const TowerLevelData& initialLevelData, const cpoint& position)
+ctower::ctower(cgame* game, const std::string& typeId, const TowerLevelData& initialLevelData, const cpoint& position, int id)
     : _gameInstance(game),
     _typeId(typeId),
     _position(position),
+    _id(id), // Gán ID được truyền vào
     _currentState(State::CONSTRUCTING),
     _level(initialLevelData.level),
     _currentLevelData(initialLevelData),
@@ -22,7 +20,7 @@ ctower::ctower(cgame* game, const std::string& typeId, const TowerLevelData& ini
     _currentFrame(0),
     _totalCostInvested(0),
     _isPendingRemoval(false),
-    _pendingUpgradeData(nullptr) // <-- THÊM MỚI: Khởi tạo con trỏ
+    _pendingUpgradeData(nullptr)
 {
     _totalCostInvested = initialLevelData.cost;
     _bulletTexturePath = "assets/bullet.png";
@@ -52,6 +50,7 @@ ctower::ctower(cgame* game, const std::string& typeId, const TowerLevelData& ini
     setAnimation(initialLevelData);
     _sprite.setPosition(_position.toVector2f());
 }
+
 
 void ctower::upgrade() {
     const TowerLevelData* nextLevelData = _gameInstance->getTowerNextLevelData(_typeId, _level);
