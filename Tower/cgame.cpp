@@ -4,6 +4,8 @@
 #include <sstream>
 #include <random>
 #include <algorithm>
+#include <fstream>
+#include <cmath>
 
 static int nextTowerId = 0;
 
@@ -27,7 +29,7 @@ cgame::~cgame() {
 
 void cgame::loadMap(const std::string& mapId, const std::string& dataFilePath) {
     std::cout << "Loading map: " << mapId << " from " << dataFilePath << std::endl;
-
+    _currentMapId = mapId;
     // Xóa map cũ nếu có
     if (_map) {
         delete _map;
@@ -100,15 +102,12 @@ const TowerLevelData* cgame::getTowerNextLevelData(const std::string& typeId, in
 }
 
 
-// Tệp: cgame.cpp
-
 void cgame::setupEnemyTypes() {
     _availableEnemyTypes.clear();
 
-    // --- GOBLIN (Và các quái vật gốc khác) ---
+    // --- GOBLIN ---
     EnemyType goblin;
     goblin.health = 120; goblin.speed = 20.f; goblin.scale = 2.0f; goblin.moneyValue = 30;
-    // Thêm thông số animation cho quái vật gốc
     goblin.frameSize = { 36, 48 }; goblin.frameCount = 6; goblin.stride = 48;
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U_Walk.png";
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D_Walk.png";
@@ -119,7 +118,7 @@ void cgame::setupEnemyTypes() {
     _availableEnemyTypes.push_back(goblin);
 
     // --- WOLF ---
-    EnemyType wolf = goblin; // Sao chép toàn bộ thông số từ goblin (bao gồm cả animation)
+    EnemyType wolf = goblin;
     wolf.health = 60; wolf.speed = 35.f; wolf.scale = 1.2f; wolf.moneyValue = 20;
     wolf.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U1_Walk.png";
     wolf.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D1_Walk.png";
@@ -161,7 +160,6 @@ void cgame::setupEnemyTypes() {
     slime1.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D3_Death2.png";
     slime1.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S3_Death2.png";
     _availableEnemyTypes.push_back(slime1);
-
 }
 
 void cgame::resetGameStats() {
@@ -220,17 +218,15 @@ void cgame::spawnEnemy() {
         const auto& path = _map->getEnemyPath();
         if (path.empty()) return;
 
-        // 1. Lấy thông tin gốc của loại quái vật
         const EnemyType& baseType = _availableEnemyTypes.at(_currentWaveEnemyTypeIndex);
 
-        // 2. Tạo một bản sao tạm thời để thay đổi chỉ số theo wave
         EnemyType finalType = baseType;
         finalType.health = static_cast<int>(baseType.health * std::pow(1.3, _currentWave - 1));
         finalType.speed = baseType.speed * (1.f + (_currentWave - 1) * 0.05f);
         finalType.moneyValue = baseType.moneyValue + (_currentWave * 2);
 
-        // 3. Sử dụng hàm khởi tạo mới, gọn gàng với các chỉ số cuối cùng
-        _enemies.emplace_back(this, finalType, path);
+        // SỬA ĐỔI: Truyền vào typeIndex để đối tượng quái biết nó là loại nào
+        _enemies.emplace_back(this, finalType, _currentWaveEnemyTypeIndex, path);
 
         _enemiesSpawnedThisWave++;
     }
@@ -372,16 +368,12 @@ void cgame::updateBullets(sf::Time deltaTime) {
 void cgame::cleanupInactiveObjects() {
     _enemies.erase(std::remove_if(_enemies.begin(), _enemies.end(), [](const cenemy& e) { return e.isReadyForRemoval(); }), _enemies.end());
     _bullets.erase(std::remove_if(_bullets.begin(), _bullets.end(), [](const cbullet& b) { return !b.isActive(); }), _bullets.end());
-
-    // <-- THÊM MỚI: Logic dọn dẹp các tháp đã bán và hoàn thành hiệu ứng
-    _towers.erase(std::remove_if(_towers.begin(), _towers.end(),
-        [](const ctower& t) { return t.isPendingRemoval(); }),
-        _towers.end());
+    _towers.erase(std::remove_if(_towers.begin(), _towers.end(), [](const ctower& t) { return t.isPendingRemoval(); }), _towers.end());
 }
 
 
 void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
-    if (!_selectingTowerToBuild ||!_map) return;
+    if (!_selectingTowerToBuild || !_map) return;
     sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
     sf::Vector2f mouseWorldPos = window.mapPixelToCoords(mousePixelPos);
     sf::Vector2i gridCoords = _map->getGridCoordinates(mouseWorldPos);
@@ -415,8 +407,6 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
         if (event.key.code == sf::Keyboard::Num1) {
             const auto& blueprint = _towerBlueprints.at("ArcherTower");
             int buildCost = blueprint[0].cost;
-
-            // ---- SỬA LỖI: Chỉ cho phép chọn khi chi phí > 0 ----
             if (buildCost > 0 && _money >= buildCost) {
                 _selectingTowerToBuild = true;
                 _selectedTowerType = "ArcherTower";
@@ -450,7 +440,6 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {
             sf::Vector2f mouseWorldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-
             if (_pauseButtonSprite.getGlobalBounds().contains(mouseWorldPos)) {
                 setPaused(true);
                 SoundManager::playSoundEffect("assets/menu_click.wav");
@@ -463,17 +452,14 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
             }
             if (_isUpgradePanelVisible) {
                 if (_upgradeButton.getGlobalBounds().contains(mouseWorldPos)) {
-                    // Sửa đổi ở đây
                     handleUpgrade();
                     return;
                 }
                 if (_sellButton.getGlobalBounds().contains(mouseWorldPos)) {
-                    // Sửa đổi ở đây
                     handleSell();
                     return;
                 }
             }
-
             if (_selectingTowerToBuild) {
                 sf::Vector2i gridCoords = _map->getGridCoordinates(mouseWorldPos);
                 if (_map->isBuildable(gridCoords.y, gridCoords.x)) {
@@ -487,11 +473,9 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                     if (!tileIsOccupied) {
                         const auto& blueprint = _towerBlueprints.at(_selectedTowerType);
                         int buildCost = blueprint[0].cost;
-
-                        // ---- SỬA LỖI: Kiểm tra chi phí > 0 trước khi trừ tiền ----
                         if (buildCost > 0 && _money >= buildCost) {
                             cpoint towerPosition = _map->getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
-                            _towers.emplace_back(this, _selectedTowerType, blueprint[0], towerPosition,nextTowerId);
+                            _towers.emplace_back(this, _selectedTowerType, blueprint[0], towerPosition, nextTowerId++);
                             SoundManager::playSoundEffect("assets/tower_place.wav");
                             _money -= buildCost;
                             _selectingTowerToBuild = false;
@@ -523,24 +507,17 @@ void cgame::handleTowerSelection(const sf::Vector2f& mousePos) {
     bool towerClicked = false;
     for (auto& tower : _towers) {
         if (tower.getGlobalBounds().contains(mousePos)) {
-            // <-- SỬA ĐỔI: Ngăn không cho chọn trụ đang xây ở cấp 1
-            // Tránh việc UI hiện "BUSY..." cho trụ vừa được đặt xuống
             if (tower.getCurrentState() == ctower::State::CONSTRUCTING && tower.getLevel() == 1) {
                 _selectedTower = nullptr;
                 _isUpgradePanelVisible = false;
-                return; // Không làm gì cả, không cho phép chọn
+                return;
             }
-            // <-- KẾT THÚC SỬA ĐỔI
-
             _selectedTower = &tower;
             _isUpgradePanelVisible = true;
             towerClicked = true;
-            // Logic vẽ vời đã được chuyển đi, nên ta thoát ngay khi tìm thấy
             break;
         }
     }
-
-    // Nếu không click trúng trụ nào, bỏ chọn
     if (!towerClicked) {
         _selectedTower = nullptr;
         _isUpgradePanelVisible = false;
@@ -548,14 +525,12 @@ void cgame::handleTowerSelection(const sf::Vector2f& mousePos) {
 }
 
 void cgame::handleUpgrade() {
-    // <-- SỬA ĐỔI: Điều kiện kiểm tra isBusy đã đủ để chống spam
     if (_selectedTower && _selectedTower->canUpgrade() && !_selectedTower->isBusy()) {
         int upgradeCost = _selectedTower->getUpgradeCost();
         if (upgradeCost > 0 && _money >= upgradeCost) {
             _money -= upgradeCost;
             _selectedTower->upgrade();
             SoundManager::playSoundEffect("assets/tower_upgrade.ogg");
-            // Bỏ dòng handleTowerSelection ở đây, vì cgame::update() sẽ lo việc cập nhật UI
         }
         else if (upgradeCost <= 0) {
             std::cerr << "Loi: Chi phi nang cap khong hop le (" << upgradeCost << ")" << std::endl;
@@ -567,9 +542,7 @@ void cgame::handleUpgrade() {
 }
 
 void cgame::handleSell() {
-    // <-- SỬA ĐỔI: Thêm điều kiện kiểm tra isBusy
     if (!_selectedTower || _selectedTower->isBusy()) return;
-
     int sellValue = _selectedTower->getSellValue();
     _money += sellValue;
     _selectedTower->sell();
@@ -577,8 +550,6 @@ void cgame::handleSell() {
     _selectedTower = nullptr;
     _isUpgradePanelVisible = false;
 }
-
-
 
 void cgame::updateInterMission(sf::Time deltaTime) {
     if (_intermissionTimer > sf::Time::Zero) {
@@ -623,19 +594,13 @@ void cgame::update(sf::Time deltaTime) {
             }
         }
     }
-
     updateEnemies(modifiedDeltaTime);
     if (_isGameOver) return;
     updateTowers(modifiedDeltaTime);
     updateBullets(modifiedDeltaTime);
     handleCollisions();
     cleanupInactiveObjects();
-
-    // <-- THÊM MỚI: Luôn gọi hàm cập nhật UI trong mỗi vòng lặp game
-    // Điều này đảm bảo UI luôn phản ánh đúng trạng thái của trụ
     updateUpgradePanel();
-    // <-- KẾT THÚC THÊM MỚI
-
     std::stringstream ssLives, ssMoney, ssWave;
     ssLives << _lives;
     ssMoney << _money;
@@ -643,7 +608,6 @@ void cgame::update(sf::Time deltaTime) {
     _livesText.setString(ssLives.str());
     _moneyText.setString(ssMoney.str());
     _waveText.setString(ssWave.str());
-
     if (_isGameOver) {
         _messageText.setString("GAME OVER");
     }
@@ -658,13 +622,12 @@ void cgame::update(sf::Time deltaTime) {
 }
 
 void cgame::render(sf::RenderWindow& window) {
-    if (_map) { // Kiểm tra an toàn
+    if (_map) {
         _map->render(window);
     }
     for (auto& tower : _towers) tower.render(window);
     for (auto& enemy : _enemies) enemy.render(window);
     for (auto& bullet : _bullets) bullet.render(window);
-
     window.draw(_uiPanel);
     if (_heartIcon.getSize().x > 0) window.draw(_livesIconSprite);
     window.draw(_livesText);
@@ -672,16 +635,13 @@ void cgame::render(sf::RenderWindow& window) {
     window.draw(_moneyText);
     if (_waveIcon.getSize().x > 0) window.draw(_waveIconSprite);
     window.draw(_waveText);
-
     float pauseButtonX = window.getSize().x - _pauseButtonSprite.getGlobalBounds().width - 20.f;
     _pauseButtonSprite.setPosition(pauseButtonX, 20.f);
     float ffButtonX = pauseButtonX - _ffButtonSprite.getGlobalBounds().width - 10.f;
     _ffButtonSprite.setPosition(ffButtonX, 20.f);
     window.draw(_ffButtonSprite);
     window.draw(_pauseButtonSprite);
-
     renderTowerUI(window);
-
     sf::Vector2f windowSize = sf::Vector2f(window.getSize());
     if (!_messageText.getString().isEmpty()) {
         sf::FloatRect textBounds = _messageText.getLocalBounds();
@@ -711,15 +671,12 @@ void cgame::renderTowerUI(sf::RenderWindow& window) {
         rangeCircle.setOrigin(radius, radius);
         rangeCircle.setPosition(_selectedTower->getPosition());
         window.draw(rangeCircle);
-
         window.draw(_upgradeButton);
         window.draw(_upgradeText);
         if (_selectedTower->canUpgrade()) window.draw(_costText);
-
         window.draw(_sellButton);
         window.draw(_sellText);
         window.draw(_sellValueText);
-
         std::stringstream levelText;
         levelText << "Level " << _selectedTower->getLevel();
         sf::Text towerLevel;
@@ -761,25 +718,16 @@ bool cgame::isPaused() const {
 }
 
 void cgame::updateUpgradePanel() {
-    // Nếu không có trụ nào được chọn hoặc panel không hiển thị, thì không làm gì cả
-    if (!_selectedTower || !_isUpgradePanelVisible) {
-        return;
-    }
-
-    // Lấy tham chiếu đến trụ được chọn cho tiện
+    if (!_selectedTower || !_isUpgradePanelVisible) return;
     ctower& tower = *_selectedTower;
-
-    // --- Logic vẽ vời được chuyển từ handleTowerSelection sang đây ---
     sf::Vector2f towerPos = tower.getPosition();
     float buttonWidth = 90.f, buttonHeight = 35.f, buttonSpacing = 10.f;
     float totalWidth = buttonWidth * 2 + buttonSpacing;
     float startX = towerPos.x - totalWidth / 2.f;
     float buttonY = towerPos.y - 120;
-
     _upgradeButton.setSize({ buttonWidth, buttonHeight });
     _upgradeButton.setOrigin(0, 0);
     _upgradeButton.setPosition(startX, buttonY);
-
     if (tower.isBusy()) {
         _upgradeButton.setFillColor(sf::Color(80, 80, 80));
         _upgradeText.setString("BUSY...");
@@ -795,37 +743,31 @@ void cgame::updateUpgradePanel() {
         _upgradeText.setString("MAX LEVEL");
         _costText.setString("");
     }
-
     _upgradeText.setFont(_gameFont);
     _upgradeText.setCharacterSize(14);
     sf::FloatRect textBounds = _upgradeText.getLocalBounds();
     _upgradeText.setOrigin(textBounds.left + textBounds.width / 2.f, textBounds.top + textBounds.height / 2.f);
     _upgradeText.setPosition(_upgradeButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 - 5));
-
     _costText.setFont(_gameFont);
     _costText.setCharacterSize(12);
     sf::FloatRect costBounds = _costText.getLocalBounds();
     _costText.setOrigin(costBounds.left + costBounds.width / 2.f, costBounds.top + costBounds.height / 2.f);
     _costText.setPosition(_upgradeButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 + 8));
-
     _sellButton.setSize({ buttonWidth, buttonHeight });
     _sellButton.setOrigin(0, 0);
     _sellButton.setPosition(startX + buttonWidth + buttonSpacing, buttonY);
-
     if (tower.isBusy()) {
         _sellButton.setFillColor(sf::Color(80, 80, 80));
     }
     else {
         _sellButton.setFillColor(sf::Color(220, 50, 50));
     }
-
     _sellText.setFont(_gameFont);
     _sellText.setString("SELL");
     _sellText.setCharacterSize(14);
     sf::FloatRect sellTextBounds = _sellText.getLocalBounds();
     _sellText.setOrigin(sellTextBounds.left + sellTextBounds.width / 2.f, sellTextBounds.top + sellTextBounds.height / 2.f);
     _sellText.setPosition(_sellButton.getPosition() + sf::Vector2f(buttonWidth / 2, buttonHeight / 2 - 5));
-
     _sellValueText.setFont(_gameFont);
     _sellValueText.setString(std::to_string(tower.getSellValue()) + " G");
     _sellValueText.setCharacterSize(12);
@@ -844,4 +786,117 @@ int cgame::getLives() const {
 
 int cgame::getMaxLives() const {
     return _maxLives;
+}
+
+std::string cgame::getCurrentMapId() const {
+    return _currentMapId;
+}
+
+void cgame::saveGame(const std::string& filename) const {
+    std::ofstream saveFile(filename);
+    if (!saveFile.is_open()) {
+        std::cerr << "Error: Could not open save file for writing: " << filename << std::endl;
+        return;
+    }
+
+    saveFile << "map_id " << _currentMapId << std::endl;
+    saveFile << "lives " << _lives << std::endl;
+    saveFile << "money " << _money << std::endl;
+    saveFile << "wave " << _currentWave << std::endl;
+
+    // LƯU TRẠNG THÁI CHI TIẾT CỦA WAVE
+    saveFile << "wave_in_progress " << (_waveInProgress ? 1 : 0) << std::endl;
+    saveFile << "wave_enemy_type " << _currentWaveEnemyTypeIndex << std::endl;
+    saveFile << "enemies_spawned " << _enemiesSpawnedThisWave << std::endl;
+    saveFile << "spawn_timer " << _timeSinceLastSpawn.asSeconds() << std::endl;
+
+    // Lưu trụ
+    int validTowers = 0;
+    for (const auto& tower : _towers) if (!tower.isPendingRemoval()) validTowers++;
+    saveFile << "towers_count " << validTowers << std::endl;
+    for (const auto& tower : _towers) {
+        if (!tower.isPendingRemoval()) {
+            saveFile << "tower " << tower.getTypeId() << " " << tower.getLevel() << " "
+                << tower.getPosition().x << " " << tower.getPosition().y << std::endl;
+        }
+    }
+
+    // LƯU TRẠNG THÁI CỦA TỪNG CON QUÁI
+    saveFile << "enemies_on_map_count " << _enemies.size() << std::endl;
+    for (const auto& enemy : _enemies) {
+        if (enemy.isActive() && enemy.isAlive()) {
+            saveFile << "enemy " << enemy.getTypeIndex() << " " << enemy.getHealth() << " "
+                << enemy.getPosition().x << " " << enemy.getPosition().y << " "
+                << enemy.getPathIndex() << std::endl;
+        }
+    }
+
+    std::cout << "Game saved successfully to " << filename << std::endl;
+    saveFile.close();
+}
+
+bool cgame::loadGame(const std::string& filename) {
+    std::ifstream saveFile(filename);
+    if (!saveFile.is_open()) {
+        std::cerr << "Info: No save file found at: " << filename << std::endl;
+        return false;
+    }
+
+    resetGameStats();
+    std::string key;
+    int towersCount = 0, enemiesOnMapCount = 0;
+
+    while (saveFile >> key) {
+        if (key == "map_id") saveFile >> _currentMapId;
+        else if (key == "lives") saveFile >> _lives;
+        else if (key == "money") saveFile >> _money;
+        else if (key == "wave") saveFile >> _currentWave;
+        // TẢI TRẠNG THÁI CHI TIẾT CỦA WAVE
+        else if (key == "wave_in_progress") { int v; saveFile >> v; _waveInProgress = (v == 1); }
+        else if (key == "wave_enemy_type") saveFile >> _currentWaveEnemyTypeIndex;
+        else if (key == "enemies_spawned") saveFile >> _enemiesSpawnedThisWave;
+        else if (key == "spawn_timer") { float s; saveFile >> s; _timeSinceLastSpawn = sf::seconds(s); }
+        // Tải trụ
+        else if (key == "towers_count") saveFile >> towersCount;
+        else if (key == "tower") {
+            std::string typeId; int level; float posX, posY;
+            saveFile >> typeId >> level >> posX >> posY;
+            auto it = _towerBlueprints.find(typeId);
+            if (it != _towerBlueprints.end()) {
+                const auto& towerLevels = it->second;
+                if (level > 0 && static_cast<size_t>(level) <= towerLevels.size()) {
+                    const TowerLevelData& levelData = towerLevels[level - 1];
+                    _towers.emplace_back(this, typeId, levelData, cpoint(posX, posY), nextTowerId++);
+                }
+            }
+        }
+        // TẢI TỪNG CON QUÁI
+        else if (key == "enemies_on_map_count") {
+            saveFile >> enemiesOnMapCount;
+            if (enemiesOnMapCount > 0) _enemies.reserve(enemiesOnMapCount);
+        }
+        else if (key == "enemy") {
+            if (!_map) continue;
+            int typeIndex, pathIndex; float health, posX, posY;
+            saveFile >> typeIndex >> health >> posX >> posY >> pathIndex;
+            if (typeIndex >= 0 && static_cast<size_t>(typeIndex) < _availableEnemyTypes.size()) {
+                const EnemyType& baseType = _availableEnemyTypes.at(typeIndex);
+                const auto& path = _map->getEnemyPath();
+                _enemies.emplace_back(this, baseType, typeIndex, path);
+                cenemy& newEnemy = _enemies.back();
+                newEnemy.setHealth(health);
+                newEnemy.setPosition(cpoint(posX, posY));
+                newEnemy.setPathIndex(pathIndex);
+            }
+        }
+    }
+
+    if (_waveInProgress) {
+        _enemiesPerWave = 5 + _currentWave * 2;
+        _messageText.setString(""); 
+    }
+
+    std::cout << "Game loaded successfully from " << filename << std::endl;
+    saveFile.close();
+    return true;
 }

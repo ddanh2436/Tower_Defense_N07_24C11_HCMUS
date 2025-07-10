@@ -55,8 +55,12 @@ public:
     int getLives() const;
     int getMaxLives() const;
 
+    void saveGame(const std::string& filename) const;
+    bool loadGame(const std::string& filename);
+    std::string getCurrentMapId() const;
 private:
     cmap* _map;
+    std::string _currentMapId;
     std::vector<cenemy> _enemies;
     std::vector<ctower> _towers;
     std::vector<cbullet> _bullets;

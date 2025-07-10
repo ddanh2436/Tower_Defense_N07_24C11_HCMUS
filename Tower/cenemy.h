@@ -8,23 +8,23 @@
 class cgame;
 struct EnemyType;
 
-enum  EnemyState { WALKING, DYING, DEAD };
-enum  MovementDirection { UP, DOWN, SIDE };
+enum EnemyState { WALKING, DYING, DEAD };
+enum MovementDirection { UP, DOWN, SIDE };
 
 struct Animation {
     std::string texturePath;
     sf::Vector2i frameSize;
-    int frameCount = 0; // Default initialization
-    int stride = 0;     // Default initialization
-    float duration = 0.0f; // Default initialization
+    int frameCount = 0;
+    int stride = 0;
+    float duration = 0.0f;
     std::vector<float> yOffsets;
 };
 
 
 class cenemy {
 public:
-    // Hàm khởi tạo mới, chỉ nhận vào EnemyType
-    cenemy(cgame* gameInstance, const EnemyType& type, const std::vector<cpoint>& path);
+    // SỬA ĐỔI: Thêm typeIndex vào hàm khởi tạo
+    cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const std::vector<cpoint>& path);
 
     void update(sf::Time deltaTime);
     void render(sf::RenderWindow& window);
@@ -38,6 +38,14 @@ public:
     bool isReadyForRemoval() const;
     int getMoneyValue() const;
 
+    // --- CÁC HÀM MỚI ĐỂ HỖ TRỢ LƯU/TẢI GAME ---
+    int getTypeIndex() const;
+    float getHealth() const;
+    int getPathIndex() const;
+    void setHealth(float newHealth);
+    void setPosition(const cpoint& pos);
+    void setPathIndex(int newPathIndex);
+
 private:
     void updateMovement(sf::Time deltaTime);
     void setAnimation(EnemyState state, MovementDirection direction);
@@ -50,10 +58,11 @@ private:
     std::vector<cpoint> _path;
     size_t _currentPathIndex;
     float _speed;
-    int _health;
+    float _health; // SỬA ĐỔI: Chuyển sang float để lưu máu chính xác hơn
     int _maxHealth;
     bool _isActive;
     int _moneyValue;
+    int _typeIndex; // THÊM MỚI: Biến để lưu chỉ số của loại quái vật
     EnemyState _currentState;
     MovementDirection _currentDirection;
     std::map<EnemyState, std::map<MovementDirection, Animation>> _animations;

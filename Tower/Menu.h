@@ -15,7 +15,10 @@ enum class GameState {
     Exiting,
     Paused,
     Restarting,
-    GoToNextLevel
+    GoToNextLevel,
+    ConfirmExit,     
+    LoadingGame,      // <-- THÊM MỚI
+    ExitWithSave
 };
 
 // Struct mới để lưu thông tin về một map
@@ -31,5 +34,6 @@ GameState showMenu(sf::RenderWindow& window);
 std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<MapInfo>& maps);
 GameState showSettingsScreen(sf::RenderWindow& window);
 GameState showPauseMenu(sf::RenderWindow& window);
+GameState showConfirmExitScreen(sf::RenderWindow& window);
 
 #endif // MENU_H
