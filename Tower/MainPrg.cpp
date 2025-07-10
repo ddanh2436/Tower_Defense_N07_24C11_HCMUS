@@ -11,7 +11,7 @@
 #include "cgame.h"
 #include "Menu.h"
 #include "SoundManager.h"
-#include "TextureManager.h" // <-- THÊM MỚI: Cần thiết để tải texture ngôi sao
+#include "TextureManager.h"
 
 #pragma comment(lib, "user32.lib")
 
@@ -19,34 +19,30 @@ constexpr unsigned int DEFAULT_WINDOW_WIDTH = 1024;
 constexpr unsigned int DEFAULT_WINDOW_HEIGHT = 768;
 const std::string MENU_MUSIC_PATH = "assets/menu_music.ogg";
 const std::string GAME_MUSIC_PATH = "assets/game_music.ogg";
-const std::string LOSE_MUSIC_FILEPATH = "assets/lose_music.ogg"; 
+const std::string LOSE_MUSIC_FILEPATH = "assets/lose_music.ogg";
 constexpr float MENU_MUSIC_VOLUME = 50.f;
 constexpr float GAME_MUSIC_VOLUME = 70.f;
 
+const std::string SAVE_GAME_FILENAME = "data/savegame.txt";
 
-// <-- THÊM MỚI: HÀM TÍNH TOÁN SỐ SAO DỰA TRÊN MẠNG CÒN LẠI -->
+
 int determineStars(const cgame& gameManager) {
     int lives = gameManager.getLives();
     int maxLives = gameManager.getMaxLives();
-
     std::cout << "[DEBUG] Calculating stars... Lives: " << lives << " / MaxLives: " << maxLives << std::endl;
-
     if (maxLives <= 0 || lives <= 0) {
         return 0;
     }
-
-    // Dùng số thực để phép chia chính xác
-    if (lives == maxLives) {        // Phải còn nguyên vẹn 100% mạng
+    if (lives == maxLives) {
         return 3;
     }
-    else if (lives >= maxLives / 2) { // Còn lại từ 50% mạng trở lên
+    else if (lives >= maxLives / 2) {
         return 2;
     }
-    else {                          // Còn lại dưới 50% mạng (nhưng vẫn > 0)
+    else {
         return 1;
     }
 }
-
 
 static std::vector<MapInfo> loadMapInfos(const std::string& indexPath) {
     std::vector<MapInfo> maps;
@@ -77,21 +73,23 @@ static std::vector<MapInfo> loadMapInfos(const std::string& indexPath) {
     return maps;
 }
 
-
+// HÀM runGame ĐÃ ĐƯỢC CẬP NHẬT HOÀN CHỈNH
 static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
     sf::Clock clock;
     SoundManager::stopBackgroundMusic();
     if (SoundManager::getGameMusicState()) {
         SoundManager::playBackgroundMusic(GAME_MUSIC_PATH, GAME_MUSIC_VOLUME);
     }
-    bool inGame = true;
-    while (inGame && window.isOpen()) {
+
+    while (window.isOpen()) {
         sf::Time deltaTime = clock.restart();
         sf::Event event;
         SoundManager::update();
+
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                return GameState::Exiting;
+                // Thoát khỏi runGame để vòng lặp main xử lý việc đóng cửa sổ
+                return GameState::ConfirmExit;
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 gameManager.setPaused(true);
@@ -101,11 +99,12 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                 gameManager.handleInput(event, window);
             }
         }
+
         if (!gameManager.isPaused()) {
             gameManager.update(deltaTime);
         }
 
-        // <-- THAY ĐỔI: Toàn bộ khối logic màn hình kết thúc được cập nhật -->
+        // --- Logic màn hình kết thúc game (Thắng/Thua) ---
         if (gameManager.isGameOver()) {
             SoundManager::stopBackgroundMusic();
             sf::Font font;
@@ -125,7 +124,6 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                 victoryText.setOrigin(victoryText.getLocalBounds().width / 2, victoryText.getLocalBounds().height / 2);
                 victoryText.setPosition(windowCenter.x, windowCenter.y - 130);
 
-                // --- THÊM MỚI: LOGIC TẠO NGÔI SAO ---
                 int starsEarned = determineStars(gameManager);
                 std::vector<sf::Sprite> starSprites;
                 sf::Texture& starFilledTexture = TextureManager::getTexture("assets/star.png");
@@ -141,12 +139,11 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                     }
                     star.setScale(0.5f, 0.5f);
                     sf::FloatRect starBounds = star.getLocalBounds();
-                    float totalStarsWidth = 3 * starBounds.width * 0.5f + 2 * 15.f; // 3 sao + 2 khoảng cách
+                    float totalStarsWidth = 3 * starBounds.width * 0.5f + 2 * 15.f;
                     float startX = windowCenter.x - totalStarsWidth / 2.0f;
                     star.setPosition(startX + i * (starBounds.width * 0.5f + 15.f), windowCenter.y - 70);
                     starSprites.push_back(star);
                 }
-                // --- KẾT THÚC LOGIC TẠO NGÔI SAO ---
 
                 sf::Text nextButton("Next Level", font, 40);
                 nextButton.setOrigin(nextButton.getLocalBounds().width / 2, nextButton.getLocalBounds().height / 2);
@@ -179,11 +176,9 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                     gameManager.render(window);
                     window.draw(panel);
                     window.draw(victoryText);
-                    // --- THÊM MỚI: VẼ CÁC NGÔI SAO ---
                     for (const auto& star : starSprites) {
                         window.draw(star);
                     }
-                    // --- KẾT THÚC VẼ NGÔI SAO ---
                     window.draw(nextButton);
                     window.draw(restartButton);
                     window.draw(quitButton);
@@ -191,7 +186,6 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
                 }
             }
             else {
-                // ... (Màn hình thua cuộc giữ nguyên)
                 SoundManager::playBackgroundMusic(LOSE_MUSIC_FILEPATH, 70.f, false);
                 sf::Text titleText("GAME OVER", font, 50);
                 titleText.setFillColor(sf::Color::Red);
@@ -228,28 +222,45 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager) {
             }
         }
 
+        // --- Render game và xử lý Pause ---
         window.clear(sf::Color(25, 25, 25));
         gameManager.render(window);
+
         if (gameManager.isPaused()) {
             SoundManager::pauseBackgroundMusic();
             GameState pauseResult = showPauseMenu(window);
-            if (pauseResult == GameState::Playing) {
+
+            if (pauseResult == GameState::Playing) { // Người dùng chọn "Resume"
                 gameManager.setPaused(false);
                 SoundManager::resumeBackgroundMusic();
                 clock.restart();
             }
             else if (pauseResult == GameState::Restarting) {
-                return GameState::Restarting;
+                return GameState::Restarting; // Thoát khỏi runGame để main loop xử lý
             }
-            else {
-                return pauseResult;
+            else if (pauseResult == GameState::ConfirmExit) { // Người dùng chọn "Quit Game"
+                gameManager.render(window); // Vẽ lại game một lần trước khi hiện dialog
+                GameState choice = showConfirmExitScreen(window);
+
+                if (choice == GameState::ExitWithSave) {
+                    gameManager.saveGame(SAVE_GAME_FILENAME);
+                    return GameState::ShowingMenu; // FIX: Quay về menu chính
+                }
+                else if (choice == GameState::Exiting) { // Người dùng chọn "Quit to Menu"
+                    return GameState::ShowingMenu; // FIX: Quay về menu chính
+                }
+                else { // Người dùng chọn "Cancel"
+                    gameManager.setPaused(false);
+                    SoundManager::resumeBackgroundMusic();
+                    clock.restart();
+                }
             }
         }
-        else {
-            window.display();
-        }
+
+        window.display();
     }
-    return GameState::ShowingMenu;
+
+    return GameState::Exiting; // Mặc định nếu vòng lặp kết thúc
 }
 
 
@@ -286,6 +297,8 @@ int main() {
     std::string selectedMapId = "";
     std::cout << "Khoi chay Tower Defense SFML." << std::endl;
     SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
+
+    // VÒNG LẶP GAME CHÍNH ĐÃ ĐƯỢC CẬP NHẬT
     while (currentState != GameState::Exiting && window->isOpen()) {
         SoundManager::update();
         switch (currentState) {
@@ -295,6 +308,7 @@ int main() {
             }
             currentState = showMenu(*window);
             break;
+
         case GameState::ShowingMapSelection: {
             if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH) {
                 SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
@@ -308,6 +322,7 @@ int main() {
                 currentState = GameState::ShowingMenu;
             }
         } break;
+
         case GameState::Playing: {
             std::cout << "Chuyen sang trang thai Playing Game cho map: " << selectedMapId << std::endl;
             auto it = std::find_if(mapInfos.begin(), mapInfos.end(), [&](const MapInfo& mi) {
@@ -322,6 +337,50 @@ int main() {
                 currentState = GameState::ShowingMenu;
             }
         } break;
+
+        case GameState::LoadingGame: {
+            bool loadSuccess = gameManager->loadGame(SAVE_GAME_FILENAME);
+            if (loadSuccess) {
+                selectedMapId = gameManager->getCurrentMapId();
+                auto it = std::find_if(mapInfos.begin(), mapInfos.end(), [&](const MapInfo& mi) {
+                    return mi.id == selectedMapId;
+                    });
+
+                if (it != mapInfos.end()) {
+                    gameManager->loadMap(it->id, it->dataFile);
+                    gameManager->loadGame(SAVE_GAME_FILENAME);
+                    currentState = runGame(*window, *gameManager);
+                }
+                else {
+                    std::cerr << "Error: Save file is corrupted. Could not find map ID: " << selectedMapId << std::endl;
+                    currentState = GameState::ShowingMenu;
+                }
+            }
+            else {
+                std::cout << "No save file found or failed to load. Returning to menu." << std::endl;
+                currentState = GameState::ShowingMenu;
+            }
+            break;
+        }
+
+                                   // CASE NÀY GIỜ CHỈ DÀNH RIÊNG CHO VIỆC NHẤN NÚT 'X' TRÊN CỬA SỔ
+        case GameState::ConfirmExit: {
+            gameManager->render(*window);
+            GameState choice = showConfirmExitScreen(*window);
+
+            if (choice == GameState::ExitWithSave) {
+                gameManager->saveGame(SAVE_GAME_FILENAME);
+                currentState = GameState::Exiting; // Thoát hẳn game
+            }
+            else if (choice == GameState::Exiting) {
+                currentState = GameState::Exiting; // Thoát hẳn game
+            }
+            else { // Người dùng chọn "Cancel"
+                currentState = runGame(*window, *gameManager);
+            }
+            break;
+        }
+
         case GameState::GoToNextLevel: {
             auto currentMapIt = std::find_if(mapInfos.begin(), mapInfos.end(), [&](const MapInfo& mi) {
                 return mi.id == selectedMapId;
@@ -341,17 +400,25 @@ int main() {
                 currentState = GameState::ShowingMenu;
             }
         } break;
+
         case GameState::Restarting:
             std::cout << "Restarting level: " << selectedMapId << std::endl;
             currentState = GameState::Playing;
             break;
+
         case GameState::SettingsScreen:
             if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH) {
                 SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
             }
             currentState = showSettingsScreen(*window);
             break;
+
         case GameState::Exiting:
+            // Vòng lặp sẽ tự kết thúc
+            break;
+
+        default:
+            currentState = GameState::ShowingMenu;
             break;
         }
     }

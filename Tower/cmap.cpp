@@ -7,9 +7,14 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <cmath>
 #include <functional>
     
 int CURRENT_TILE_SIZE = 60; 
+
+bool isPathTile(const MapTile& tile) {
+    return tile.type == TileType::PATH || tile.type == TileType::START || tile.type == TileType::END;
+}
 
 // Hàm helper để tải texture
 bool loadTextureSFML(sf::Texture& texture, const std::string& filename, bool smooth = false) {
@@ -218,71 +223,114 @@ namespace std {
     };
 }
 
+// *** THAY THẾ TOÀN BỘ HÀM CŨ BẰNG PHIÊN BẢN NÀY ***
+
 void cmap::calculateEnemyPath() {
     _enemyPath.clear();
     const int H = getMapHeightTiles();
     const int W = getMapWidthTiles();
     if (H == 0 || W == 0) return;
 
+    // --- BƯỚC 1: TÌM ĐƯỜNG ĐI TRÊN LƯỚI BẰNG BFS (Giữ nguyên, đã ổn định) ---
     sf::Vector2i start(-1, -1), end(-1, -1);
     for (int r = 0; r < H; ++r) {
         for (int c = 0; c < W; ++c) {
-            if (_grid[r][c].type == TileType::START) start = { r, c };
-            if (_grid[r][c].type == TileType::END) end = { r, c };
+            if (_grid[r][c].type == TileType::START) start = { c, r }; // {x, y} -> {cột, hàng}
+            if (_grid[r][c].type == TileType::END) end = { c, r };
         }
     }
 
-    if (start == sf::Vector2i(-1, -1) || end == sf::Vector2i(-1, -1)) {
+    if (start.x == -1 || end.x == -1) {
         std::cerr << "Loi: Khong tim thay START hoac END!" << std::endl;
         return;
     }
 
     std::queue<sf::Vector2i> q;
-    std::vector<std::vector<bool>> visited(H, std::vector<bool>(W, false));
     std::unordered_map<sf::Vector2i, sf::Vector2i> cameFrom;
-
     q.push(start);
-    visited[start.x][start.y] = true;
-    const int dr[] = { -1, 1, 0, 0 };
-    const int dc[] = { 0, 0, -1, 1 };
+    cameFrom[start] = start;
+
+    const int dr[] = { -1, 1, 0, 0 }; // delta row
+    const int dc[] = { 0, 0, -1, 1 }; // delta col
     bool found = false;
 
     while (!q.empty()) {
         sf::Vector2i curr = q.front(); q.pop();
         if (curr == end) { found = true; break; }
         for (int i = 0; i < 4; ++i) {
-            int nr = curr.x + dr[i];
-            int nc = curr.y + dc[i];
-            if (nr >= 0 && nr < H && nc >= 0 && nc < W) {
-                TileType t = _grid[nr][nc].type;
-                if (!visited[nr][nc] && (t == TileType::PATH || t == TileType::END)) {
-                    visited[nr][nc] = true;
-                    cameFrom[{nr, nc}] = curr;
-                    q.push({ nr, nc });
+            sf::Vector2i next = { curr.x + dc[i], curr.y + dr[i] };
+            if (next.y >= 0 && next.y < H && next.x >= 0 && next.x < W && cameFrom.find(next) == cameFrom.end()) {
+                TileType t = _grid[next.y][next.x].type;
+                if (t == TileType::PATH || t == TileType::END) {
+                    cameFrom[next] = curr;
+                    q.push(next);
                 }
             }
         }
     }
 
     if (!found) {
-        std::cerr << "Can't find path from START to END!" << std::endl;
+        std::cerr << "Khong the tim duong di tu START den END!" << std::endl;
         return;
     }
 
-    std::vector<cpoint> reversedPath;
-    sf::Vector2i curr = end;
-    while (curr != start) {
-        reversedPath.push_back(getPixelPosition(curr.x, curr.y));
-        curr = cameFrom[curr];
+    std::vector<sf::Vector2i> gridPath;
+    for (sf::Vector2i curr = end; curr != start; curr = cameFrom[curr]) {
+        gridPath.push_back(curr);
     }
-    reversedPath.push_back(getPixelPosition(start.x, start.y));
-    std::reverse(reversedPath.begin(), reversedPath.end());
+    gridPath.push_back(start);
+    std::reverse(gridPath.begin(), gridPath.end());
 
-    _enemyPath.push_back(getPixelPosition(start.x, -1));
-    _enemyPath.insert(_enemyPath.end(), reversedPath.begin(), reversedPath.end());
-    _enemyPath.push_back(getPixelPosition(end.x, W));
+    if (gridPath.size() < 2) return;
 
-    std::cout << "Enemy path calculated using BFS. So diem: " << _enemyPath.size() << std::endl;
+    // --- BƯỚC 2: TẠO ĐƯỜNG ĐI CHỈ DỰA TRÊN CÁC ĐIỂM RẼ (THEO YÊU CẦU MỚI) ---
+
+    // Lọc ra các điểm rẽ (start, corners, end)
+    std::vector<sf::Vector2i> turnPoints;
+    turnPoints.push_back(gridPath[0]); // Luôn thêm điểm bắt đầu
+    for (size_t i = 1; i < gridPath.size() - 1; ++i) {
+        sf::Vector2i dirIn = gridPath[i] - gridPath[i - 1];
+        sf::Vector2i dirOut = gridPath[i + 1] - gridPath[i];
+        if (dirIn != dirOut) { // Đây là một góc cua
+            turnPoints.push_back(gridPath[i]);
+        }
+    }
+    turnPoints.push_back(gridPath.back()); // Luôn thêm điểm kết thúc
+
+    // --- BƯỚC 3: TẠO ĐƯỜNG ĐI PIXEL TỪ CÁC ĐIỂM RẼ ---
+
+    // Lấy tọa độ Y của điểm đầu tiên để áp dụng offset nếu muốn
+    float initialYOffset = 0;
+    // float y_offset = 50.0f; // << BẠN CÓ THỂ ĐẶT GIÁ TRỊ OFFSET Ở ĐÂY
+
+    // Thêm điểm bắt đầu ngoài màn hình
+    cpoint startPoint = getPixelPosition(start.y, -1, PositionContext::EnemyPath);
+    startPoint.y += initialYOffset;
+    _enemyPath.push_back(startPoint);
+
+    // Thêm các điểm rẽ vào đường đi cuối cùng
+    for (const auto& gridPoint : turnPoints) {
+        // Lấy tâm pixel của ô tại điểm rẽ
+        cpoint waypoint = getPixelPosition(gridPoint.y, gridPoint.x);
+
+        // **GHI CHÚ THEO YÊU CẦU CỦA BẠN**
+        // Nếu bạn muốn áp dụng việc "+50.f" vào chính đường đi,
+        // bạn có thể làm điều đó ở đây. Ví dụ:
+        // waypoint.y += y_offset;
+
+        _enemyPath.push_back(waypoint);
+    }
+
+    // Thêm điểm kết thúc ngoài màn hình
+    cpoint endPoint = getPixelPosition(end.y, W, PositionContext::EnemyPath);
+
+    // Đảm bảo quái vật đi ra khỏi màn hình theo đường thẳng ngang
+    if (_enemyPath.size() > 1) {
+        endPoint.y = _enemyPath.back().y;
+    }
+    _enemyPath.push_back(endPoint);
+
+    std::cout << "TAO DUONG DI THEO DIEM RE. So diem tham chieu: " << _enemyPath.size() << std::endl;
 }
 
 void cmap::render(sf::RenderWindow& window) {
