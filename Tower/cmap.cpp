@@ -224,7 +224,7 @@ namespace std {
 }
 
 // *** THAY THẾ TOÀN BỘ HÀM CŨ BẰNG PHIÊN BẢN NÀY ***
-
+    
 void cmap::calculateEnemyPath() {
     _enemyPath.clear();
     const int H = getMapHeightTiles();
