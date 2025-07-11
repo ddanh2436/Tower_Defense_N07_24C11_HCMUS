@@ -164,8 +164,8 @@ void cgame::setupEnemyTypes() {
 
 void cgame::resetGameStats() {
     _isPaused = false;
-    _lives = 10;
-    _maxLives = 10;
+    _lives = 1;
+    _maxLives = 1;
     _money = 1000;
     _currentWave = 0;
     _enemiesPerWave = 5;
@@ -263,7 +263,7 @@ void cgame::handleCollisions() {
                         // In ra console để kiểm tra
                         std::cout << "An enemy was killed! Total kills: " << _enemiesDefeated << std::endl;
 
-                        SoundManager::playSoundEffect("assets/enemy_explode.wav");
+                        SoundManager::playSoundEffect("assets/enemy_explode.ogg");
                     }
 
                     // Thoát vòng lặp enemy vì đạn này đã trúng mục tiêu và hết tác dụng
@@ -364,6 +364,7 @@ void cgame::updateEnemies(sf::Time deltaTime) {
                 if (_lives <= 0) {
                     _isGameOver = true;
                     _messageText.setString("GAME OVER!");
+                    SoundManager::playLoseMusic();
                 }
             }
         }

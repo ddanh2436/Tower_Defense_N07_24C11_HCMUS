@@ -153,6 +153,10 @@ namespace SoundManager {
         playBackgroundMusic(VICTORY_MUSIC_FILEPATH, 70.f, false);
     }
 
+    void playLoseMusic() {
+        playBackgroundMusic(LOSE_MUSIC_FILEPATH, 70.f, false);
+    }
+
     void update() {
         playingSoundEffects.erase(
             std::remove_if(playingSoundEffects.begin(), playingSoundEffects.end(),

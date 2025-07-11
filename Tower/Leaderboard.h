@@ -8,9 +8,17 @@
 // Struct để lưu một mục trong bảng xếp hạng
 struct ScoreEntry {
     std::string playerName;
-    long score;
-    int enemiesDefeated;
-    float timeTaken; // Lưu dưới dạng giây
+    long score = 0; // Initialize to 0
+    int enemiesDefeated = 0; // Initialize to 0
+    float timeTaken = 0.0f; // Initialize to 0.0f
+
+    // Default constructor
+    ScoreEntry() = default;
+
+    // Parameterized constructor for convenience
+    ScoreEntry(const std::string& name, long s, int enemies, float time)
+        : playerName(name), score(s), enemiesDefeated(enemies), timeTaken(time) {
+    }
 };
 
 class Leaderboard {

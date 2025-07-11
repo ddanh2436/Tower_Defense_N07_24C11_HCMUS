@@ -328,7 +328,7 @@ int main() {
     auto gameManager = std::make_unique<cgame>();
     Leaderboard leaderboard;
 
-    const auto fullscreenModes = sf::VideoMode::getFullscreenModes();
+    const auto& fullscreenModes = sf::VideoMode::getFullscreenModes();
     sf::VideoMode selectedMode;
     bool fullscreen = false;
     if (!fullscreenModes.empty()) {
