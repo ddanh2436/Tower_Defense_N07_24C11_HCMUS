@@ -191,10 +191,18 @@ void cgame::resetGameStats() {
     _selectedTower = nullptr;
     _isUpgradePanelVisible = false;
     nextTowerId = 0;
+
+    _enemiesDefeated = 0;
+    _levelTime = sf::Time::Zero;
+    _levelIsActive = false;
 }
 
 void cgame::startNextWave() {
     if (_waveInProgress || _isGameOver || _levelWon) return;
+
+    if (_currentWave == 0) {
+        _levelIsActive = true;
+    }
 
     if (!_availableEnemyTypes.empty()) {
         std::uniform_int_distribution<int> dist(0, static_cast<int>(_availableEnemyTypes.size() - 1));
@@ -232,18 +240,33 @@ void cgame::spawnEnemy() {
     }
 }
 
+// Dán đoạn code này vào file cgame.cpp, thay thế hoàn toàn cho hàm handleCollisions cũ
+
 void cgame::handleCollisions() {
     for (auto& bullet : _bullets) {
         if (!bullet.canCollide()) continue;
+
         for (auto& enemy : _enemies) {
-            if (enemy.isActive() && enemy.isAlive()) {
+            // Chỉ kiểm tra va chạm với enemy còn thực sự sống (trạng thái WALKING)
+            if (enemy.isAlive()) {
                 if (bullet.getGlobalBounds().intersects(enemy.getGlobalBounds())) {
-                    enemy.takeDamage(bullet.getDamage());
-                    bullet.setActive(false);
-                    if (!enemy.isAlive()) {
+                    bullet.setActive(false); // Vô hiệu hóa đạn ngay khi trúng
+
+                    // Hàm takeDamage giờ sẽ trả về 'true' nếu cú đánh đó giết chết enemy
+                    bool wasKilledByThisHit = enemy.takeDamage(bullet.getDamage());
+
+                    // Nếu hàm trả về true, ta mới tính tiền và tăng kill
+                    if (wasKilledByThisHit) {
                         _money += enemy.getMoneyValue();
+                        _enemiesDefeated++; // <-- SẼ ĐƯỢC CỘNG ĐIỂM CHÍNH XÁC TẠI ĐÂY
+
+                        // In ra console để kiểm tra
+                        std::cout << "An enemy was killed! Total kills: " << _enemiesDefeated << std::endl;
+
                         SoundManager::playSoundEffect("assets/enemy_explode.wav");
                     }
+
+                    // Thoát vòng lặp enemy vì đạn này đã trúng mục tiêu và hết tác dụng
                     break;
                 }
             }
@@ -567,12 +590,25 @@ void cgame::updateInterMission(sf::Time deltaTime) {
 
 void cgame::update(sf::Time deltaTime) {
     sf::Time modifiedDeltaTime = deltaTime * (_isFastForward ? _gameSpeedMultiplier : 1.0f);
+
+    // ================== CẬP NHẬT ĐỒNG HỒ ĐẾM GIỜ ==================
+    if (_levelIsActive && !_isGameOver && !_levelWon) {
+        _levelTime += modifiedDeltaTime;
+    }
+    // ============================================================
+
     if (_levelWon) {
         _messageText.setString("VICTORY!");
         _timerText.setString("");
+        _levelIsActive = false; // Dừng đếm giờ khi thắng
         return;
     }
-    if (_isPaused || _isGameOver) return;
+
+    if (_isPaused || _isGameOver) {
+        if (_isGameOver) _levelIsActive = false; // Dừng đếm giờ khi thua
+        return;
+    }
+
     if (_inIntermission) {
         updateInterMission(modifiedDeltaTime);
         return;
@@ -585,7 +621,7 @@ void cgame::update(sf::Time deltaTime) {
         }
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
             _waveInProgress = false;
-            if (_currentWave >= 5) {
+            if (_currentWave >= 1) { // Bạn có thể thay 5 bằng tổng số wave của map
                 _levelWon = true;
             }
             else {
@@ -899,4 +935,23 @@ bool cgame::loadGame(const std::string& filename) {
     std::cout << "Game loaded successfully from " << filename << std::endl;
     saveFile.close();
     return true;
+}
+
+int cgame::getEnemiesDefeated() const {
+    return _enemiesDefeated;
+}
+
+sf::Time cgame::getLevelTime() const {
+    return _levelTime;
+}
+
+long cgame::calculateScore() const {
+    // Công thức tính điểm: (số quái * 100) - (thời gian tính bằng giây)
+    // Bạn có thể tùy chỉnh công thức này cho phù hợp
+    long score = _enemiesDefeated * 100;
+    long timePenalty = static_cast<long>(_levelTime.asSeconds());
+    score -= timePenalty;
+
+    // Đảm bảo điểm không bị âm
+    return std::max(0L, score);
 }

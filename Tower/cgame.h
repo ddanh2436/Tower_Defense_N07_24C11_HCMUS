@@ -12,6 +12,7 @@
 #include <random>
 #include <sstream>
 
+// Giữ nguyên các hằng số và struct EnemyType
 const std::string FONT_PATH = "assets/pixel_font.ttf";
 const std::string TOWER_TEXTURE_PATH = "assets/4.png";
 const std::string BULLET_TEXTURE_PATH = "bullet.png";
@@ -51,13 +52,19 @@ public:
     const TowerLevelData* getTowerNextLevelData(const std::string& typeId, int currentLevel) const;
     sf::Texture& getTexture(const std::string& texturePath);
 
-    // <-- THÊM MỚI: Các hàm để lấy thông tin mạng cho hệ thống tính sao -->
     int getLives() const;
     int getMaxLives() const;
 
     void saveGame(const std::string& filename) const;
     bool loadGame(const std::string& filename);
     std::string getCurrentMapId() const;
+
+    // ================== THÊM MỚI CHO LEADERBOARD ==================
+    int getEnemiesDefeated() const;
+    sf::Time getLevelTime() const;
+    long calculateScore() const;
+    // =============================================================
+
 private:
     cmap* _map;
     std::string _currentMapId;
@@ -88,7 +95,7 @@ private:
     sf::Text _sellText;
     sf::Text _sellValueText;
     int _lives;
-    int _maxLives; // <-- THÊM MỚI: Biến lưu số mạng tối đa
+    int _maxLives;
     int _money;
     int _currentWave;
     int _enemiesPerWave;
@@ -116,6 +123,12 @@ private:
     bool _isPaused;
     bool _isFastForward;
     float _gameSpeedMultiplier;
+
+    // ================== THÊM MỚI CHO LEADERBOARD ==================
+    int _enemiesDefeated;
+    sf::Time _levelTime;
+    bool _levelIsActive;
+    // =============================================================
 
     void loadFont();
     void setupUI();

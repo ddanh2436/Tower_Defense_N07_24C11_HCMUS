@@ -47,7 +47,9 @@ GameState showMenu(sf::RenderWindow& window) {
     gameTitleText.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 5.0f));
 
     std::vector<sf::Text> menuItems;
-    std::vector<std::string> menuStrings = { "New Game", "Load Game", "Settings", "Exit" };
+    // ================== THÊM MỚI "LEADERBOARD" VÀO MENU ==================
+    std::vector<std::string> menuStrings = { "New Game", "Load Game", "Leaderboard", "Settings", "Exit" };
+    // ===================================================================
 
     unsigned int pixelCharSize = 20;
     float itemHeight = static_cast<float>(pixelCharSize) * 1.5f;
@@ -105,10 +107,13 @@ GameState showMenu(sf::RenderWindow& window) {
                 }
                 else if (event.key.code == sf::Keyboard::Return) {
                     SoundManager::playSoundEffect("assets/menu_click.ogg");
+                    // ================== XỬ LÝ SỰ KIỆN CHO LEADERBOARD ==================
                     if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                     if (menuStrings[selectedItemIndex] == "Load Game") return GameState::LoadingGame;
+                    if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
                     if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                     if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
+                    // ====================================================================
                 }
             }
             if (event.type == sf::Event::MouseButtonPressed) {
@@ -118,10 +123,13 @@ GameState showMenu(sf::RenderWindow& window) {
                         if (menuItems[i].getGlobalBounds().contains(mousePos)) {
                             selectedItemIndex = static_cast<int>(i);
                             SoundManager::playSoundEffect("assets/menu_click.ogg");
+                            // ================== XỬ LÝ SỰ KIỆN CHO LEADERBOARD ==================
                             if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                             if (menuStrings[selectedItemIndex] == "Load Game") return GameState::LoadingGame;
+                            else if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
                             else if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                             else if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
+                            // ====================================================================
                             break;
                         }
                     }
@@ -150,7 +158,6 @@ GameState showMenu(sf::RenderWindow& window) {
                 itemBounds.left - arrowBounds.width - arrowOffset,
                 itemBounds.top + (itemBounds.height / 2.f) - (arrowBounds.height / 2.f)
             );
-            // <-- SỬA ĐỔI: Tô màu mũi tên thành vàng để đồng bộ -->
             arrowSprite.setColor(sf::Color::Yellow);
         }
 
@@ -169,6 +176,7 @@ GameState showMenu(sf::RenderWindow& window) {
     }
     return GameState::Exiting;
 }
+
 
 std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<MapInfo>& maps) {
     sf::Font pixelFont;
@@ -829,4 +837,29 @@ GameState showConfirmExitScreen(sf::RenderWindow& window) {
         window.display();
     }
     return GameState::Exiting;
+}
+
+GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboard) {
+    // Vòng lặp chính cho màn hình leaderboard
+    while (window.isOpen()) {
+        sf::Event event;
+        // Xử lý sự kiện
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                return GameState::Exiting; // Thoát game nếu người dùng đóng cửa sổ
+            }
+            // Nếu người dùng nhấn phím Escape, quay trở lại menu chính
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                SoundManager::playSoundEffect("assets/menu_click.ogg");
+                return GameState::ShowingMenu;
+            }
+        }
+
+        // Vẽ màn hình
+        window.clear(sf::Color(15, 30, 50)); // Màu nền tối
+        leaderboard.draw(window); // Gọi hàm draw của lớp Leaderboard
+        window.display();
+    }
+
+    return GameState::ShowingMenu; // Mặc định quay về menu
 }

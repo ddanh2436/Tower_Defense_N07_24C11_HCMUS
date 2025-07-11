@@ -142,6 +142,7 @@
     <ClCompile Include="cpoint.cpp" />
     <ClCompile Include="ctool.cpp" />
     <ClCompile Include="ctower.cpp" />
+    <ClCompile Include="Leaderboard.cpp" />
     <ClCompile Include="MainPrg.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="SoundManager.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="cpoint.h" />
     <ClInclude Include="ctool.h" />
     <ClInclude Include="ctower.h" />
+    <ClInclude Include="Leaderboard.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="TextureManager.h" />
