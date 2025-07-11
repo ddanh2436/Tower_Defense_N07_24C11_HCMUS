@@ -21,6 +21,37 @@ layout
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 endlayout
 decorations
+addHouse1At 0 17
+addTent1At 1 15
+addDecor10At 2 20
+addHouse2At 5 6
+addDecor11At 7 5
+addTent4At 6 3
+addDecor3At 6 10
+addDecor8At 7 10
+addLamp1At 2 27
+addPointer4At 2 1
+addTree2At 16 7
+addDecor4At 15 7
+addLog4At 15 8
+addStone15At 16 9
+addHouse2At 5 12
+addDecor14At 6 17
+addLamp2At 5 11
+addHouse4At 8 0
+addHouse3At 13 0
+addDecor8At 16 4
+addTree2At 5 29
+addShadow6AndTree1At 5 23
+addCamp6At 12 2
+addDecor9At 12 3
+addHouse1At 10 6
+addHouse1At 10 12
+addLamp2At 10 11
+addTent2At 10 16
+addDecor2At 11 10
+addDecor3At 16 3
+addDecor13At 10 15
 enddecorations
 waves
 wave 0 10 1500
