@@ -29,7 +29,7 @@ public:
     void update(sf::Time deltaTime);
     void render(sf::RenderWindow& window);
     bool isAlive() const;
-    void takeDamage(int damage);
+    bool takeDamage(int damage);
     sf::Vector2f getPosition() const;
     sf::FloatRect getGlobalBounds() const;
     bool isActive() const { return _isActive; }

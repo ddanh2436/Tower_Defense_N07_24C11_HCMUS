@@ -5,11 +5,10 @@
 
 const float HEALTH_BAR_Y_OFFSET = 4.f;
 
-// SỬA ĐỔI: Thêm typeIndex vào hàm khởi tạo
 cenemy::cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const std::vector<cpoint>& path)
     : _gameInstance(gameInstance),
     _path(path),
-    _typeIndex(typeIndex), // THÊM MỚI: Khởi tạo biến typeIndex
+    _typeIndex(typeIndex),
     _speed(type.speed),
     _health(type.health),
     _maxHealth(type.health),
@@ -64,8 +63,33 @@ cenemy::cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const 
     applyDirectionalFlip(directionVec);
 }
 
-// ... (Các hàm update, render, updateMovement, v.v. của bạn giữ nguyên) ...
-// ... (Tôi sẽ dán lại đầy đủ để bạn không bị sót) ...
+// =========================================================================
+// HÀM TAKE DAMAGE ĐÃ ĐƯỢC VIẾT LẠI HOÀN TOÀN ĐỂ SỬA LỖI
+// =========================================================================
+bool cenemy::takeDamage(int damage) {
+    if (!isAlive()) { // Nếu đã chết hoặc đang trong trạng thái chết, không nhận thêm sát thương
+        return false;
+    }
+
+    _health -= damage;
+
+    // Cập nhật thanh máu
+    float healthPercent = (_maxHealth > 0) ? (static_cast<float>(_health) / _maxHealth) : 0.0f;
+    _healthBarFill.setSize({ _healthBarBackground.getSize().x * healthPercent, _healthBarBackground.getSize().y });
+    if (healthPercent > 0.6f) _healthBarFill.setFillColor(sf::Color::Green);
+    else if (healthPercent > 0.3f) _healthBarFill.setFillColor(sf::Color::Yellow);
+    else _healthBarFill.setFillColor(sf::Color::Red);
+
+    // Kiểm tra xem enemy có chết sau khi nhận sát thương không
+    if (_health <= 0) {
+        _health = 0; // Đảm bảo máu không bị âm
+        _currentState = EnemyState::DYING; // Chuyển sang trạng thái "chết"
+        setAnimation(_currentState, _currentDirection); // Bắt đầu animation chết
+        return true; // **QUAN TRỌNG**: Báo cho cgame biết rằng enemy đã bị tiêu diệt
+    }
+
+    return false; // Nếu chưa chết, trả về false
+}
 
 void cenemy::setAnimation(EnemyState state, MovementDirection direction) {
     if (_animations.count(state) && _animations[state].count(direction)) {
@@ -89,22 +113,20 @@ void cenemy::setAnimation(EnemyState state, MovementDirection direction) {
 
 void cenemy::update(sf::Time deltaTime) {
     if (_currentState == EnemyState::DEAD) return;
+
+    // Logic animation
     auto it_state = _animations.find(_currentState);
-    if (it_state == _animations.end()) {
-        std::cerr << "Error: Animation state " << static_cast<int>(_currentState) << " not found!" << std::endl;
-        return;
-    }
+    if (it_state == _animations.end()) return;
     auto it_dir = it_state->second.find(_currentDirection);
-    if (it_dir == it_state->second.end()) {
-        std::cerr << "Error: Animation direction for state " << static_cast<int>(_currentState) << " not found!" << std::endl;
-        return;
-    }
+    if (it_dir == it_state->second.end()) return;
     const Animation& currentAnim = it_dir->second;
+
     if (_timePerFrame > sf::Time::Zero) {
         _elapsedTime += deltaTime;
         if (_elapsedTime >= _timePerFrame) {
             _elapsedTime -= _timePerFrame;
             int frameCount = currentAnim.frameCount;
+
             if (_currentState == EnemyState::DYING) {
                 _currentFrame++;
                 if (_currentFrame >= frameCount) {
@@ -120,9 +142,13 @@ void cenemy::update(sf::Time deltaTime) {
             _sprite.setTextureRect(_currentFrameRect);
         }
     }
+
+    // Logic di chuyển
     if (_currentState == EnemyState::WALKING) {
         updateMovement(deltaTime);
     }
+
+    // Cập nhật vị trí cuối cùng để render
     sf::Vector2f finalRenderPosition = _currentPosition.toVector2f();
     if (!currentAnim.yOffsets.empty() && _currentFrame < currentAnim.yOffsets.size()) {
         finalRenderPosition.y += currentAnim.yOffsets[_currentFrame];
@@ -133,18 +159,21 @@ void cenemy::update(sf::Time deltaTime) {
 void cenemy::render(sf::RenderWindow& window) {
     if (isReadyForRemoval()) return;
     window.draw(_sprite);
-    if (isAlive()) {
+    if (isAlive()) { // Chỉ vẽ thanh máu khi còn sống
         auto it_state = _animations.find(_currentState);
         if (it_state == _animations.end()) return;
         auto it_dir = it_state->second.find(_currentDirection);
         if (it_dir == it_state->second.end()) return;
         const Animation& currentAnim = it_dir->second;
+
         sf::Vector2f basePosition = _currentPosition.toVector2f();
         float spriteHalfHeight = (currentAnim.frameSize.y * _sprite.getScale().y) / 2.f;
         float healthBarX = basePosition.x;
         float healthBarY = basePosition.y - spriteHalfHeight - HEALTH_BAR_Y_OFFSET;
+
         _healthBarBackground.setPosition(healthBarX, healthBarY);
         _healthBarFill.setPosition(healthBarX - _healthBarBackground.getSize().x / 2.f, healthBarY);
+
         window.draw(_healthBarBackground);
         window.draw(_healthBarFill);
     }
@@ -155,10 +184,11 @@ void cenemy::updateMovement(sf::Time deltaTime) {
         _isActive = false;
         return;
     }
-    float remainingMoveDistance = _speed * deltaTime.asSeconds() * 2.f;
+    float remainingMoveDistance = _speed * deltaTime.asSeconds() * 2.f; // Nhân 2.f có thể là để bù trừ logic nào đó, giữ nguyên
     while (remainingMoveDistance > 0 && !hasReachedEnd()) {
         sf::Vector2f vectorToTarget = _targetPosition.toVector2f() - _currentPosition.toVector2f();
         float distanceToTarget = std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
+
         if (distanceToTarget < 0.001f) {
             _currentPathIndex++;
             if (!hasReachedEnd()) {
@@ -166,6 +196,7 @@ void cenemy::updateMovement(sf::Time deltaTime) {
             }
             continue;
         }
+
         if (remainingMoveDistance >= distanceToTarget) {
             _currentPosition = _targetPosition;
             remainingMoveDistance -= distanceToTarget;
@@ -191,31 +222,6 @@ void cenemy::updateMovement(sf::Time deltaTime) {
         }
     }
 }
-void cenemy::takeDamage(int damage) {
-    if (!isAlive()) return;
-    _health -= damage;
-    if (_health <= 0) {
-        _health = 0;
-        if (_currentState != EnemyState::DYING) {
-            _currentState = EnemyState::DYING;
-            if (_animations.count(EnemyState::DYING) == 0 || _animations[EnemyState::DYING].count(_currentDirection) == 0) {
-                _currentDirection = MovementDirection::SIDE;
-            }
-            setAnimation(_currentState, _currentDirection);
-        }
-    }
-    float healthPercent = static_cast<float>(_health) / _maxHealth;
-    _healthBarFill.setSize({ _healthBarBackground.getSize().x * healthPercent, _healthBarBackground.getSize().y });
-    if (healthPercent > 0.6f) {
-        _healthBarFill.setFillColor(sf::Color::Green);
-    }
-    else if (healthPercent > 0.3f) {
-        _healthBarFill.setFillColor(sf::Color::Yellow);
-    }
-    else {
-        _healthBarFill.setFillColor(sf::Color::Red);
-    }
-}
 
 int cenemy::getMoneyValue() const { return _moneyValue; }
 
@@ -235,45 +241,25 @@ void cenemy::applyDirectionalFlip(const sf::Vector2f& directionVec) {
     }
 }
 
-bool cenemy::isAlive() const { return _health > 0; }
+bool cenemy::isAlive() const { return _health > 0 && _currentState == EnemyState::WALKING; }
 bool cenemy::hasReachedEnd() const { return _currentPathIndex >= _path.size(); }
 sf::Vector2f cenemy::getPosition() const { return _currentPosition.toVector2f(); }
 sf::FloatRect cenemy::getGlobalBounds() const { return _sprite.getGlobalBounds(); }
 bool cenemy::isReadyForRemoval() const { return _currentState == EnemyState::DEAD || hasReachedEnd(); }
-
-// --- TRIỂN KHAI CÁC HÀM MỚI ĐỂ HỖ TRỢ LƯU/TẢI GAME ---
-
-int cenemy::getTypeIndex() const {
-    return _typeIndex;
-}
-
-float cenemy::getHealth() const {
-    return _health;
-}
-
-int cenemy::getPathIndex() const {
-    return _currentPathIndex;
-}
-
+int cenemy::getTypeIndex() const { return _typeIndex; }
+float cenemy::getHealth() const { return _health; }
+int cenemy::getPathIndex() const { return _currentPathIndex; }
 void cenemy::setHealth(float newHealth) {
     _health = newHealth;
-    // Cập nhật lại thanh máu một cách trực quan
     if (_maxHealth > 0) {
         float healthPercent = (_health < 0) ? 0 : (_health / _maxHealth);
         _healthBarFill.setSize({ _healthBarBackground.getSize().x * healthPercent, _healthBarBackground.getSize().y });
-
         if (healthPercent > 0.6f) _healthBarFill.setFillColor(sf::Color::Green);
         else if (healthPercent > 0.3f) _healthBarFill.setFillColor(sf::Color::Yellow);
         else _healthBarFill.setFillColor(sf::Color::Red);
     }
 }
-
-void cenemy::setPosition(const cpoint& pos) {
-    _currentPosition = pos;
-    // Vị trí thực của sprite sẽ được cập nhật trong hàm update() chính,
-    // nên chúng ta chỉ cần thiết lập lại vị trí logic ở đây.
-}
-
+void cenemy::setPosition(const cpoint& pos) { _currentPosition = pos; }
 void cenemy::setPathIndex(int newPathIndex) {
     if (newPathIndex >= 0 && static_cast<size_t>(newPathIndex) <= _path.size()) {
         _currentPathIndex = newPathIndex;
