@@ -21,6 +21,28 @@ layout
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 endlayout
 decorations
+addPointer4At 2 0
+addCamp4At 1 6
+addBush5At 2 1
+addBush5At 2 2
+addFence6At 2 3
+addFence5At 2 4
+addCamp5At 1 5
+addBush4At 2 5
+addDirt6At 2 4
+addDecor8At 0 5
+addBox3At 0 6
+addGrass1At 1 4
+addGrass1At 1 3
+addGrass1At 0 3
+addGrass1At 0 4
+addTree2At 3 7
+addLamp5At 2 6
+addFence7At 4 7
+addFence1At 5 7
+addFence1At 5 8
+addFence1At 5 9
+addFence1At 5 10
 enddecorations
 waves
 wave 0 10 1500

@@ -55,6 +55,9 @@ void cmap::loadMapFromTxtFile(const std::string& filePath, const std::string& ma
     decorationFuncs["addShadow6AndTree1At"] = [this](int r, int c) { this->addShadow6AndTree1At(r, c); };
     decorationFuncs["addPlaceForTower1At"] = [this](int r, int c) { this->addPlaceForTower1At(r, c); };
     decorationFuncs["addLog1At"] = [this](int r, int c) { this->addLog1At(r, c); };
+    decorationFuncs["addLog2At"] = [this](int r, int c) { this->addLog2At(r, c); };
+    decorationFuncs["addLog3At"] = [this](int r, int c) { this->addLog3At(r, c); };
+    decorationFuncs["addLog4At"] = [this](int r, int c) { this->addLog4At(r, c); };
     decorationFuncs["addComboLogCampStoneFlowerGrassAt"] = [this](int r, int c) { this->addComboLogCampStoneFlowerGrassAt(r, c); };
     decorationFuncs["addCamp2At"] = [this](int r, int c) { this->addCamp2At(r, c); };
     decorationFuncs["addCamp4At"] = [this](int r, int c) { this->addCamp4At(r, c); };
@@ -84,7 +87,33 @@ void cmap::loadMapFromTxtFile(const std::string& filePath, const std::string& ma
     decorationFuncs["addStone7At"] = [this](int r, int c) { this->addStone7At(r, c); };
     decorationFuncs["addStone9At"] = [this](int r, int c) { this->addStone9At(r, c); };
     decorationFuncs["addStone12At"] = [this](int r, int c) { this->addStone12At(r, c); };
+    decorationFuncs["addStone15At"] = [this](int r, int c) { this->addStone15At(r, c); };
     decorationFuncs["addTree2At"] = [this](int r, int c) { this->addTree2At(r, c); };
+    decorationFuncs["addTent1At"] = [this](int r, int c) { this->addTent1At(r, c); };
+    decorationFuncs["addTent2At"] = [this](int r, int c) { this->addTent2At(r, c); };
+    decorationFuncs["addTent3At"] = [this](int r, int c) { this->addTent3At(r, c); };
+    decorationFuncs["addTent4At"] = [this](int r, int c) { this->addTent4At(r, c); };
+    decorationFuncs["addHouse1At"] = [this](int r, int c) { this->addHouse1At(r, c); };
+    decorationFuncs["addHouse2At"] = [this](int r, int c) { this->addHouse2At(r, c); };
+    decorationFuncs["addHouse3At"] = [this](int r, int c) { this->addHouse3At(r, c); };
+    decorationFuncs["addHouse4At"] = [this](int r, int c) { this->addHouse4At(r, c); };
+    decorationFuncs["addDecor1At"] = [this](int r, int c) { this->addDecor1At(r, c); };
+    decorationFuncs["addDecor2At"] = [this](int r, int c) { this->addDecor2At(r, c); };
+    decorationFuncs["addDecor3At"] = [this](int r, int c) { this->addDecor3At(r, c); };
+    decorationFuncs["addDecor4At"] = [this](int r, int c) { this->addDecor4At(r, c); };
+    decorationFuncs["addDecor5At"] = [this](int r, int c) { this->addDecor5At(r, c); };
+    decorationFuncs["addDecor6At"] = [this](int r, int c) { this->addDecor6At(r, c); };
+    decorationFuncs["addDecor7At"] = [this](int r, int c) { this->addDecor7At(r, c); };
+    decorationFuncs["addDecor8At"] = [this](int r, int c) { this->addDecor8At(r, c); };
+    decorationFuncs["addDecor9At"] = [this](int r, int c) { this->addDecor9At(r, c); };
+    decorationFuncs["addDecor10At"] = [this](int r, int c) { this->addDecor10At(r, c); };
+    decorationFuncs["addDecor11At"] = [this](int r, int c) { this->addDecor11At(r, c); };
+    decorationFuncs["addDecor12At"] = [this](int r, int c) { this->addDecor12At(r, c); };
+    decorationFuncs["addDecor13At"] = [this](int r, int c) { this->addDecor13At(r, c); };
+    decorationFuncs["addDecor14At"] = [this](int r, int c) { this->addDecor14At(r, c); };
+    decorationFuncs["addDecor15At"] = [this](int r, int c) { this->addDecor15At(r, c); };
+    decorationFuncs["addDecor16At"] = [this](int r, int c) { this->addDecor16At(r, c); };
+    decorationFuncs["addDecor17At"] = [this](int r, int c) { this->addDecor17At(r, c); };
 
     std::string line;
     bool inMapBlock = false, inLayoutSection = false, inDecorationsSection = false;
@@ -357,6 +386,9 @@ void cmap::render(sf::RenderWindow& window) {
     for (const auto& tree : _trees) { window.draw(tree.sprite); }
     for (const auto& pointer : _pointers) { window.draw(pointer.sprite); }
     for (const auto& box : _boxes) { window.draw(box.sprite); }
+    for (const auto& tent : _tents) { window.draw(tent.sprite); }
+    for (const auto& house : _houses) { window.draw(house.sprite); }
+    for (const auto& decor : _decors) { window.draw(decor.sprite); }
 }
 
 TileType cmap::getTileType(int row, int col) const {
@@ -456,9 +488,9 @@ void cmap::loadTileTextures() {
     if (!loadTextureSFML(_bush4_Texture, "assets/BushOverlay_4.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_bush5_Texture, "assets/BushOverlay_5.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_bush6_Texture, "assets/BushOverlay_6.png")) _texturesLoaded = false;
-    if (!loadTextureSFML(_grass1_Texture, "assets/Grass_1.png")) _texturesLoaded = false;
-    if (!loadTextureSFML(_grass2_Texture, "assets/Grass_2.png")) _texturesLoaded = false;
-    if (!loadTextureSFML(_grass3_Texture, "assets/Grass_3.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_grass1_Texture, "assets/GrassOverlay_1.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_grass2_Texture, "assets/GrassOverlay_2.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_grass3_Texture, "assets/GrassOverlay_3.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_tree1_Texture, "assets/Tree1.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_tree2_Texture, "assets/Tree2.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_shadow1_Texture, "assets/ShadowOverlay_1.png")) _texturesLoaded = false;
@@ -541,6 +573,31 @@ void cmap::loadTileTextures() {
     if (!loadTextureSFML(_box2_Texture, "assets/Box2.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_box3_Texture, "assets/Box3.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_box4_Texture, "assets/Box4.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_tent1_Texture, "assets/Tent1.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_tent2_Texture, "assets/Tent2.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_tent3_Texture, "assets/Tent3.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_tent4_Texture, "assets/Tent4.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_house1_Texture, "assets/House1.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_house2_Texture, "assets/House2.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_house3_Texture, "assets/House3.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_house4_Texture, "assets/House4.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor1_Texture, "assets/Decor1.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor2_Texture, "assets/Decor2.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor3_Texture, "assets/Decor3.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor4_Texture, "assets/Decor4.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor5_Texture, "assets/Decor5.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor6_Texture, "assets/Decor6.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor7_Texture, "assets/Decor7.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor8_Texture, "assets/Decor8.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor9_Texture, "assets/Decor9.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor10_Texture, "assets/Decor10.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor11_Texture, "assets/Decor11.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor12_Texture, "assets/Decor12.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor13_Texture, "assets/Decor13.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor14_Texture, "assets/Decor14.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor15_Texture, "assets/Decor15.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor16_Texture, "assets/Decor16.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_decor17_Texture, "assets/Decor17.png")) _texturesLoaded = false;
 }
 
 void cmap::addBushAt(int row, int col) {
@@ -585,6 +642,20 @@ void cmap::addLog1At(int row, int col) {
     _logs.emplace_back(_log1_Texture, row, col, scale);
 }
 
+void cmap::addLog2At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _logs.emplace_back(_log2_Texture, row, col, scale);
+}
+
+void cmap::addLog3At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _logs.emplace_back(_log3_Texture, row, col, scale);
+}
+
+void cmap::addLog4At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _logs.emplace_back(_log4_Texture, row, col, scale);
+}
 void cmap::addComboBush1GrassFlowerAt(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _bushes.emplace_back(_bush1_Texture, row, col, scale);
@@ -734,11 +805,140 @@ void cmap::addStone12At(int row, int col) {
     _stones.emplace_back(_stone12_Texture, row, col, scale);
 }
 
+void cmap::addStone15At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _stones.emplace_back(_stone15_Texture, row, col, scale);
+}
+
 void cmap::addTree2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _trees.emplace_back(_tree2_Texture, row, col, scale);
 }
 
+void cmap::addHouse1At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_house1_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addHouse2At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_house2_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addHouse3At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_house3_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addHouse4At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_house4_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addTent1At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_tent1_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addTent2At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_tent2_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addTent3At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_tent3_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addTent4At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_tent4_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor1At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor1_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor2At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor2_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor3At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor3_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor4At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor4_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor5At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor5_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor6At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor6_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor7At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor7_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor8At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor8_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor9At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor9_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor10At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor10_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor11At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor11_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor12At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor12_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor13At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor13_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor14At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor14_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor15At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor15_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor16At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor16_Texture, row, col, scale - 0.5f);
+}
+
+void cmap::addDecor17At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _trees.emplace_back(_decor17_Texture, row, col, scale - 0.5f);
+}
 void cmap::addComboFlowerGrassAt(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _flowers.emplace_back(_flower4_Texture, row, col, scale + 0.25f);
