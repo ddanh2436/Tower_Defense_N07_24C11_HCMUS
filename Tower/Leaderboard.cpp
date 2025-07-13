@@ -78,19 +78,22 @@ void Leaderboard::draw(sf::RenderWindow& window) {
     sf::Text killsHeader("Kills", _font, 48);
     sf::Text timeHeader("Time", _font, 48);
 
-	int rankHeaderWidth = rankHeader.getLocalBounds().width;
-	int nameHeaderWidth = nameHeader.getLocalBounds().width;
-	int scoreHeaderWidth = scoreHeader.getLocalBounds().width;
-	int killsHeaderWidth = killsHeader.getLocalBounds().width;
-	int timeHeaderWidth = timeHeader.getLocalBounds().width;
+    int rankHeaderWidth = static_cast<int>(rankHeader.getLocalBounds().width);
+	int nameHeaderWidth = static_cast<int>(nameHeader.getLocalBounds().width);
+	int scoreHeaderWidth = static_cast<int>(scoreHeader.getLocalBounds().width);
+	int killsHeaderWidth = static_cast<int>(killsHeader.getLocalBounds().width);
+    int timeHeaderWidth = static_cast<int>(timeHeader.getLocalBounds().width);
 
-    int AlignScoreHeaderMid = window.getSize().x / 2.f - rankHeaderWidth / 2;
 
-    rankHeader.setPosition(AlignScoreHeaderMid - 500, 160);
-    nameHeader.setPosition(AlignScoreHeaderMid - 350, 160);
-    scoreHeader.setPosition(AlignScoreHeaderMid, 160);
-    killsHeader.setPosition(AlignScoreHeaderMid + 350, 160);
-    timeHeader.setPosition(AlignScoreHeaderMid + 500, 160);
+    int AlignScoreHeaderMid = static_cast<int>(window.getSize().x / 2.f - rankHeaderWidth / 2.f);
+
+
+    rankHeader.setPosition(AlignScoreHeaderMid - 500.f, 160.f);
+    nameHeader.setPosition(AlignScoreHeaderMid - 350.f, 160.f);
+    scoreHeader.setPosition(static_cast<float>(AlignScoreHeaderMid), 160.f);
+    killsHeader.setPosition(AlignScoreHeaderMid + 350.f, 160.f);
+    timeHeader.setPosition(AlignScoreHeaderMid + 500.f, 160.f);
+
 
     rankHeader.setFillColor(sf::Color::Cyan);
     nameHeader.setFillColor(sf::Color::Cyan);
@@ -113,11 +116,12 @@ void Leaderboard::draw(sf::RenderWindow& window) {
         sf::Text killsText(std::to_string(entry.enemiesDefeated), _font, 36);
         sf::Text timeText(std::to_string(static_cast<int>(entry.timeTaken)) + "s", _font, 36);
 
-        rankText.setPosition(AlignScoreHeaderMid - 500 + rankHeaderWidth / 2 - rankText.getLocalBounds().width / 2, yPos);
-        nameText.setPosition(AlignScoreHeaderMid - 350, yPos);
-        scoreText.setPosition(AlignScoreHeaderMid , yPos);
-        killsText.setPosition(AlignScoreHeaderMid + 350 + killsHeaderWidth / 2 - killsText.getLocalBounds().width / 2, yPos);
-        timeText.setPosition(AlignScoreHeaderMid + 500, yPos);
+        rankText.setPosition(static_cast<float>(AlignScoreHeaderMid - 500 + rankHeaderWidth / 2) - rankText.getLocalBounds().width / 2.f, yPos);
+
+        nameText.setPosition(static_cast<float>(AlignScoreHeaderMid - 350), yPos);
+        scoreText.setPosition(static_cast<float>(AlignScoreHeaderMid), yPos);
+        killsText.setPosition(AlignScoreHeaderMid + 350 + static_cast<float>(killsHeaderWidth) / 2.f - killsText.getLocalBounds().width / 2.f, yPos);
+        timeText.setPosition(static_cast<float>(AlignScoreHeaderMid + 500), yPos);
    
         if (rank == 1) {
             rankText.setFillColor(sf::Color(255, 215, 0));
