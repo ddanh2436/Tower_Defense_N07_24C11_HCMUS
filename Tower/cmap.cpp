@@ -9,6 +9,7 @@
 #include <map>
 #include <cmath>
 #include <functional>
+#include <random>
     
 int CURRENT_TILE_SIZE = 60; 
 
@@ -294,6 +295,42 @@ void cmap::calculateEnemyPath(const std::string& mapId) {
 
 			 getPixelPosition(15.35, 32.35, PositionContext::EnemyPath)
         };
+    }
+    else if (strcmp(mapId.c_str(), "MAP_4") == 0) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::bernoulli_distribution boolRandom(0.5);
+        bool randomBool = boolRandom(gen);
+        if (randomBool == 1) {
+            _enemyPath = {
+                 getPixelPosition(8.35, -1.35, PositionContext::EnemyPath),
+
+                 getPixelPosition(8.35, 3.35),
+
+                 getPixelPosition(2.35, 3.35),
+
+                 getPixelPosition(2.35, 27.35),
+
+                 getPixelPosition(8.35, 27.35),
+
+                 getPixelPosition(8.35, 32.35, PositionContext::EnemyPath)
+            };
+        }
+        else {
+            _enemyPath = {
+                 getPixelPosition(8.35, -1.35, PositionContext::EnemyPath),
+
+                 getPixelPosition(8.35, 3.35),
+
+                 getPixelPosition(14.35, 3.35),
+
+                 getPixelPosition(14.35, 27.35),
+
+                 getPixelPosition(8.35, 27.35),
+
+                 getPixelPosition(8.35, 32.35, PositionContext::EnemyPath)
+            };
+        }
     }
 
     std::cout << "TAO DUONG DI THEO DIEM RE. So diem tham chieu: " << _enemyPath.size() << std::endl;
