@@ -216,6 +216,8 @@ void cgame::startNextWave() {
     _timeSinceLastSpawn = sf::Time::Zero;
     _messageText.setString("");
     _enemies.reserve(_enemiesPerWave);
+    _map->calculateEnemyPath(getCurrentMapId()); // Đặt lại đường đi của quái vật cho wave mới
+
     std::cout << "Wave " << _currentWave << " Start!" << std::endl;
 }
 
@@ -622,7 +624,7 @@ void cgame::update(sf::Time deltaTime) {
         }
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
             _waveInProgress = false;
-            if (_currentWave >= 1) { // Bạn có thể thay 5 bằng tổng số wave của map
+            if (_currentWave >= 2) { // Bạn có thể thay 5 bằng tổng số wave của map
                 _levelWon = true;
             }
             else {
