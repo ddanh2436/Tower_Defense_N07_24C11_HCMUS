@@ -39,10 +39,9 @@ addGrass1At 0 4
 addTree2At 3 7
 addLamp5At 2 6
 addFence7At 4 7
-addFence1At 5 7
-addFence1At 5 8
-addFence1At 5 9
-addFence1At 5 10
+addStone7At 4 8
+addLamp2At 4 9
+addBush5At 4 10
 enddecorations
 waves
 wave 0 10 1500

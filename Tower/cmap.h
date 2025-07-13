@@ -134,7 +134,7 @@ private:
     void loadTileTextures();
     void initializeGridFromMapData();
     void assignTileTextures();
-    void calculateEnemyPath();
+    void calculateEnemyPath(const std::string& mapId);
     void loadMapFromTxtFile(const std::string& filePath, const std::string& mapId);
 
     // Helper methods to add decorations
@@ -211,7 +211,7 @@ public:
     void render(sf::RenderWindow& window);
     TileType getTileType(int row, int col) const;
     bool isBuildable(int row, int col) const;
-    cpoint getPixelPosition(int row, int col, PositionContext context = PositionContext::EnemyPath) const;
+    cpoint getPixelPosition(float row, float col, PositionContext context = PositionContext::EnemyPath) const;
     sf::Vector2i getGridCoordinates(const sf::Vector2f& pixelPosition) const;
     const std::vector<cpoint>& getEnemyPath() const;
     cpoint getEnemyStartLocation() const;
