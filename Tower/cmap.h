@@ -134,7 +134,6 @@ private:
     void loadTileTextures();
     void initializeGridFromMapData();
     void assignTileTextures();
-    void calculateEnemyPath(const std::string& mapId);
     void loadMapFromTxtFile(const std::string& filePath, const std::string& mapId);
 
     // Helper methods to add decorations
@@ -208,6 +207,7 @@ private:
     void addDecor17At(int row, int col);
 public:
     cmap(const std::string& dataFilePath, const std::string& mapId);
+    void calculateEnemyPath(const std::string& mapId);
     void render(sf::RenderWindow& window);
     TileType getTileType(int row, int col) const;
     bool isBuildable(int row, int col) const;
