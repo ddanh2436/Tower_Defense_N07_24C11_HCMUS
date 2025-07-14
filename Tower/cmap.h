@@ -54,7 +54,9 @@ struct Dirt : public Decoration { using Decoration::Decoration; };
 struct Camp : public Decoration { using Decoration::Decoration; };
 struct Box : public Decoration { using Decoration::Decoration; };
 struct PlaceForTower : public Decoration { using Decoration::Decoration; };
-
+struct Tent : public Decoration { using Decoration::Decoration; };
+struct Decor : public Decoration { using Decoration::Decoration; };
+struct House : public Decoration { using Decoration::Decoration; };
 
 struct MapTile {
     sf::Sprite sprite;
@@ -85,6 +87,9 @@ private:
     std::vector<Log> _logs;
     std::vector<GrassOverlay> _grassesOverlay;
     std::vector<Fence> _fences;
+    std::vector<Tent> _tents;
+    std::vector<House> _houses;
+    std::vector<Decor> _decors;
     std::vector<std::vector<int>> _mapData;
 
 
@@ -114,7 +119,13 @@ private:
         _pointer1_Texture, _pointer2_Texture, _pointer3_Texture, _pointer4_Texture,
         _pointer5_Texture, _pointer6_Texture, _dirt1_Texture, _dirt2_Texture,
         _dirt3_Texture, _dirt4_Texture, _dirt5_Texture, _dirt6_Texture,
-        _box1_Texture, _box2_Texture, _box3_Texture, _box4_Texture;
+        _box1_Texture, _box2_Texture, _box3_Texture, _box4_Texture,
+        _tent1_Texture, _tent2_Texture, _tent3_Texture, _tent4_Texture,
+        _house1_Texture, _house2_Texture, _house3_Texture, _house4_Texture,
+        _decor1_Texture, _decor2_Texture, _decor3_Texture, _decor4_Texture, 
+        _decor5_Texture, _decor6_Texture, _decor7_Texture, _decor8_Texture, 
+        _decor9_Texture, _decor10_Texture, _decor11_Texture, _decor12_Texture, 
+        _decor13_Texture, _decor14_Texture, _decor15_Texture, _decor16_Texture, _decor17_Texture ;
 
     bool _texturesLoaded;
     std::vector<cpoint> _enemyPath; 
@@ -135,6 +146,9 @@ private:
     void addShadow6AndTree1At(int row, int col);
     void addPlaceForTower1At(int row, int col);
     void addLog1At(int row, int col);
+    void addLog2At(int row, int col);
+    void addLog3At(int row, int col);
+    void addLog4At(int row, int col);
     void addComboLogCampStoneFlowerGrassAt(int row, int col);
     void addCamp2At(int row, int col);
     void addCamp4At(int row, int col);
@@ -142,6 +156,7 @@ private:
     void addCamp6At(int row, int col);
     void addComboBush1GrassFlowerAt(int row, int col);
     void addFence1At(int row, int col);
+    void addFence3At(int row, int col);
     void addFence5At(int row, int col);
     void addFence6At(int row, int col);
     void addFence7At(int row, int col);
@@ -164,7 +179,33 @@ private:
     void addStone7At(int row, int col);
     void addStone9At(int row, int col);
     void addStone12At(int row, int col);
+    void addStone15At(int row, int col);
     void addTree2At(int row, int col);
+    void addTent1At(int row, int col);
+    void addTent2At(int row, int col);
+    void addTent3At(int row, int col);
+    void addTent4At(int row, int col);
+    void addHouse1At(int row, int col);
+    void addHouse2At(int row, int col);
+    void addHouse3At(int row, int col);
+    void addHouse4At(int row, int col);
+    void addDecor1At(int row, int col);
+    void addDecor2At(int row, int col);
+    void addDecor3At(int row, int col);
+    void addDecor4At(int row, int col);
+    void addDecor5At(int row, int col);
+    void addDecor6At(int row, int col);
+    void addDecor7At(int row, int col);
+    void addDecor8At(int row, int col);
+    void addDecor9At(int row, int col);
+    void addDecor10At(int row, int col);
+    void addDecor11At(int row, int col);
+    void addDecor12At(int row, int col);
+    void addDecor13At(int row, int col);
+    void addDecor14At(int row, int col);
+    void addDecor15At(int row, int col);
+    void addDecor16At(int row, int col);
+    void addDecor17At(int row, int col);
 public:
     cmap(const std::string& dataFilePath, const std::string& mapId);
     void calculateEnemyPath(const std::string& mapId);
