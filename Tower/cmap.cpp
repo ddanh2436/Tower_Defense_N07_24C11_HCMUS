@@ -13,12 +13,12 @@
     
 int CURRENT_TILE_SIZE = 60; 
 
-bool isPathTile(const MapTile& tile) {
+static bool isPathTile(const MapTile& tile) {
     return tile.type == TileType::PATH || tile.type == TileType::START || tile.type == TileType::END;
 }
 
 // Hàm helper để tải texture
-bool loadTextureSFML(sf::Texture& texture, const std::string& filename, bool smooth = false) {
+static bool loadTextureSFML(sf::Texture& texture, const std::string& filename, bool smooth = false) {
     if (!texture.loadFromFile(filename)) {
         std::cerr << "Error: Could not load texture: " << filename << std::endl;
         return false;
@@ -252,77 +252,75 @@ namespace std {
         }
     };
 }
-
-// *** THAY THẾ TOÀN BỘ HÀM CŨ BẰNG PHIÊN BẢN NÀY ***
     
 void cmap::calculateEnemyPath(const std::string& mapId) {
     if (strcmp(mapId.c_str(), "MAP_1") == 0) {
         _enemyPath = {
-             getPixelPosition(8.35, -1.35, PositionContext::EnemyPath), 
+             getPixelPosition(8.35f, -1.35f, PositionContext::EnemyPath), 
 
-             getPixelPosition(8.35, 6.35),
+             getPixelPosition(8.35f, 6.35f),
 
-             getPixelPosition(3.35, 6.35),
+             getPixelPosition(3.35f, 6.35f),
 
-             getPixelPosition(3.35, 12.35),
+             getPixelPosition(3.35f, 12.35f),
 
-             getPixelPosition(13.35, 12.35),
+             getPixelPosition(13.35f, 12.35f),
 
-             getPixelPosition(13.35, 18.35),
+             getPixelPosition(13.35f, 18.35f),
 
-             getPixelPosition(3.35, 18.35),
+             getPixelPosition(3.35f, 18.35f),
 
-             getPixelPosition(3.35, 24.35),
+             getPixelPosition(3.35f, 24.35f),
 
-			 getPixelPosition(8.35, 24.35),
+			 getPixelPosition(8.35f, 24.35f),
 
-             getPixelPosition(8.35, 25.35), getPixelPosition(8.35, 32.35, PositionContext::EnemyPath)
+             getPixelPosition(8.35f, 25.35f), getPixelPosition(8.35f, 32.35f, PositionContext::EnemyPath)
         };
     }
     else if (strcmp(mapId.c_str(), "MAP_2") == 0) {
         _enemyPath = {
-             getPixelPosition(3.35, -1.35, PositionContext::EnemyPath), 
+             getPixelPosition(3.35f, -1.35f, PositionContext::EnemyPath), 
 
-             getPixelPosition(3.35, 26.35),
+             getPixelPosition(3.35f, 26.35f),
 
-             getPixelPosition(8.35, 26.35),
+             getPixelPosition(8.35f, 26.35f),
 
-             getPixelPosition(8.35, 4.35),
+             getPixelPosition(8.35f, 4.35f),
 
-             getPixelPosition(13.35, 4.35),
+             getPixelPosition(13.35f, 4.35f),
 
-             getPixelPosition(13.35, 32.35, PositionContext::EnemyPath)
+             getPixelPosition(13.35f, 32.35f, PositionContext::EnemyPath)
         };
     }
     else if (strcmp(mapId.c_str(), "MAP_3") == 0) {
         _enemyPath = {
-             getPixelPosition(3.35, -1.35, PositionContext::EnemyPath), 
+             getPixelPosition(3.35f, -1.35f, PositionContext::EnemyPath), 
 
-             getPixelPosition(3.35, 5.35), 
+             getPixelPosition(3.35f, 5.35f), 
 
-			 getPixelPosition(5.35, 5.35),
+			 getPixelPosition(5.35f, 5.35f),
 
-			 getPixelPosition(5.35, 9.35),
+			 getPixelPosition(5.35f, 9.35f),
 
-			 getPixelPosition(7.35, 9.35),
+			 getPixelPosition(7.35f, 9.35f),
 
-			 getPixelPosition(7.35, 13.35),
+			 getPixelPosition(7.35f, 13.35f),
 
-			 getPixelPosition(9.35, 13.35),
+			 getPixelPosition(9.35f, 13.35f),
 
-			 getPixelPosition(9.35, 17.35),
+			 getPixelPosition(9.35f, 17.35f),
 
-			 getPixelPosition(11.35, 17.35),
+			 getPixelPosition(11.35f, 17.35f),
 
-			 getPixelPosition(11.35, 21.35),
+			 getPixelPosition(11.35f, 21.35f),
 
-			 getPixelPosition(13.35, 21.35),
+			 getPixelPosition(13.35f, 21.35f),
 
-             getPixelPosition(13.35, 25.35),
+             getPixelPosition(13.35f, 25.35f),
 
-			 getPixelPosition(15.35, 25.35),
+			 getPixelPosition(15.35f, 25.35f),
 
-			 getPixelPosition(15.35, 32.35, PositionContext::EnemyPath)
+			 getPixelPosition(15.35f, 32.35f, PositionContext::EnemyPath)
         };
     }
     else if (strcmp(mapId.c_str(), "MAP_4") == 0) {
@@ -332,32 +330,32 @@ void cmap::calculateEnemyPath(const std::string& mapId) {
         bool randomBool = boolRandom(gen);
         if (randomBool == 1) {
             _enemyPath = {
-                 getPixelPosition(8.35, -1.35, PositionContext::EnemyPath),
+                 getPixelPosition(8.35f, -1.35f, PositionContext::EnemyPath),
 
-                 getPixelPosition(8.35, 3.35),
+                 getPixelPosition(8.35f, 3.35f),
 
-                 getPixelPosition(2.35, 3.35),
+                 getPixelPosition(2.35f, 3.35f),
 
-                 getPixelPosition(2.35, 27.35),
+                 getPixelPosition(2.35f, 27.35f),
 
-                 getPixelPosition(8.35, 27.35),
+                 getPixelPosition(8.35f, 27.35f),
 
-                 getPixelPosition(8.35, 32.35, PositionContext::EnemyPath)
+                 getPixelPosition(8.35f, 32.35f, PositionContext::EnemyPath)
             };
         }
         else {
             _enemyPath = {
-                 getPixelPosition(8.35, -1.35, PositionContext::EnemyPath),
+                 getPixelPosition(8.35f, -1.35f, PositionContext::EnemyPath),
 
-                 getPixelPosition(8.35, 3.35),
+                 getPixelPosition(8.35f, 3.35f),
 
-                 getPixelPosition(14.35, 3.35),
+                 getPixelPosition(14.35f, 3.35f),
 
-                 getPixelPosition(14.35, 27.35),
+                 getPixelPosition(14.35f, 27.35f),
 
-                 getPixelPosition(8.35, 27.35),
+                 getPixelPosition(8.35f, 27.35f),
 
-                 getPixelPosition(8.35, 32.35, PositionContext::EnemyPath)
+                 getPixelPosition(8.35f, 32.35f, PositionContext::EnemyPath)
             };
         }
     }
@@ -438,7 +436,7 @@ cpoint cmap::getEnemyStartLocation() const {
     if (!_enemyPath.empty()) {
         return _enemyPath[0];
     }
-    return getPixelPosition(getMapHeightTiles() / 2, -1);
+    return getPixelPosition(static_cast<float>(getMapHeightTiles()) / 2.0f, -1.0f);
 }
 
 bool cmap::isDecorated(int row, int col) const {

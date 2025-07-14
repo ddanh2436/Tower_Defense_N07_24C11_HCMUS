@@ -19,7 +19,7 @@ namespace SoundManager {
     const std::string MENU_MUSIC_FILEPATH = "assets/menu_music.ogg";
     const std::string VICTORY_MUSIC_FILEPATH = "assets/victory_music.ogg";
 	const std::string LOSE_MUSIC_FILEPATH = "assets/lose_music.ogg";
-
+        
 
     void applyAllVolumeSettings() {
         if (backgroundMusic.getStatus() == sf::Music::Stopped) return;
