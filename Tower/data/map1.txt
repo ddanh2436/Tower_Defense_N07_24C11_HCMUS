@@ -48,7 +48,7 @@ addCamp5At 12 23
 addCamp6At 12 8
 addComboBush1GrassFlowerAt 12 3
 addComboBush1GrassFlowerAt 3 4
-addFence1At 7 0
+addFence1At 8 0
 addFence1At 10 0
 addFence1At 0 18
 addFence1At 0 19

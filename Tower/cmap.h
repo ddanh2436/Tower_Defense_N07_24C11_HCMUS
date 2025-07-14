@@ -156,6 +156,7 @@ private:
     void addCamp6At(int row, int col);
     void addComboBush1GrassFlowerAt(int row, int col);
     void addFence1At(int row, int col);
+    void addFence3At(int row, int col);
     void addFence5At(int row, int col);
     void addFence6At(int row, int col);
     void addFence7At(int row, int col);

@@ -66,6 +66,7 @@ void cmap::loadMapFromTxtFile(const std::string& filePath, const std::string& ma
     decorationFuncs["addCamp6At"] = [this](int r, int c) { this->addCamp6At(r, c); };
     decorationFuncs["addComboBush1GrassFlowerAt"] = [this](int r, int c) { this->addComboBush1GrassFlowerAt(r, c); };
     decorationFuncs["addFence1At"] = [this](int r, int c) { this->addFence1At(r, c); };
+    decorationFuncs["addFence3At"] = [this](int r, int c) { this->addFence1At(r, c); };
     decorationFuncs["addFence5At"] = [this](int r, int c) { this->addFence5At(r, c); };
     decorationFuncs["addFence6At"] = [this](int r, int c) { this->addFence6At(r, c); };
     decorationFuncs["addFence7At"] = [this](int r, int c) { this->addFence7At(r, c); };
@@ -684,6 +685,12 @@ void cmap::addCamp5At(int row, int col) {
 void cmap::addFence1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
     _fences.emplace_back(_fence1_Texture, row, col, scale);
+    _fences.back().sprite.move(0, -25);
+}
+
+void cmap::addFence3At(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _fences.emplace_back(_fence3_Texture, row, col, scale);
 }
 
 void cmap::addFence5At(int row, int col) {
@@ -818,107 +825,109 @@ void cmap::addTree2At(int row, int col) {
 
 void cmap::addHouse1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_house1_Texture, row, col, scale - 0.5f);
+    _houses.emplace_back(_house1_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addHouse2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_house2_Texture, row, col, scale - 0.5f);
+    _houses.emplace_back(_house2_Texture, row, col, scale - 0.56f);
+    _houses.back().sprite.move(0, -20);
 }
 
 void cmap::addHouse3At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_house3_Texture, row, col, scale - 0.5f);
+    _houses.emplace_back(_house3_Texture, row, col, scale - 0.6f);
+    _houses.back().sprite.move(0, 24);
 }
 
 void cmap::addHouse4At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_house4_Texture, row, col, scale - 0.5f);
+    _houses.emplace_back(_house4_Texture, row, col, scale - 0.64f);
 }
 
 void cmap::addTent1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_tent1_Texture, row, col, scale - 0.5f);
+    _tents.emplace_back(_tent1_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addTent2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_tent2_Texture, row, col, scale - 0.5f);
+    _tents.emplace_back(_tent2_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addTent3At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_tent3_Texture, row, col, scale - 0.5f);
+    _tents.emplace_back(_tent3_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addTent4At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_tent4_Texture, row, col, scale - 0.5f);
+    _tents.emplace_back(_tent4_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor1At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor1_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor1_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor2At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor2_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor2_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor3At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor3_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor3_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor4At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor4_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor4_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor5At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor5_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor5_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor6At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor6_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor6_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor7At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor7_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor7_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor8At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor8_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor8_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor9At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor9_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor9_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor10At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor10_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor10_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor11At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor11_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor11_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor12At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor12_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor12_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor13At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor13_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor13_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor14At(int row, int col) {
@@ -928,17 +937,17 @@ void cmap::addDecor14At(int row, int col) {
 
 void cmap::addDecor15At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor15_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor15_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor16At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor16_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor16_Texture, row, col, scale - 0.5f);
 }
 
 void cmap::addDecor17At(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
-    _trees.emplace_back(_decor17_Texture, row, col, scale - 0.5f);
+    _decors.emplace_back(_decor17_Texture, row, col, scale - 0.5f);
 }
 void cmap::addComboFlowerGrassAt(int row, int col) {
     float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
