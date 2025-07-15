@@ -107,8 +107,8 @@ void cgame::setupEnemyTypes() {
 
     // --- GOBLIN ---
     EnemyType goblin;
+    goblin.frameSize = { 48, 48 }; goblin.frameCount = 6; goblin.stride = 48;
     goblin.health = 120; goblin.speed = 20.f; goblin.scale = 2.0f; goblin.moneyValue = 30;
-    goblin.frameSize = { 36, 48 }; goblin.frameCount = 6; goblin.stride = 48;
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U_Walk.png";
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D_Walk.png";
     goblin.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S_Walk.png";
@@ -160,6 +160,41 @@ void cgame::setupEnemyTypes() {
     slime1.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D3_Death2.png";
     slime1.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S3_Death2.png";
     _availableEnemyTypes.push_back(slime1);
+
+
+    // --- HORSERIDER ---
+	EnemyType horserider;
+    horserider.frameSize = { 96, 96 }; horserider.frameCount = 6; horserider.stride = 96;
+    horserider.health = 200; horserider.speed = 40.f; horserider.scale = 1.5f; horserider.moneyValue = 40;
+    horserider.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U4_Walk.png";
+    horserider.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D4_Walk.png";
+    horserider.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S4_Walk.png";
+    horserider.texturePaths[EnemyState::DYING][MovementDirection::UP] = "assets/U4_Death.png";
+    horserider.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D4_Death.png";
+    horserider.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S4_Death.png";
+    _availableEnemyTypes.push_back(horserider);
+
+    // --- RAT ---
+    EnemyType rat = horserider;
+    rat.health = 400; rat.speed = 15.f; rat.scale = 2.0f; rat.moneyValue = 50;
+    rat.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U5_Walk.png";
+    rat.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D5_Walk.png";
+    rat.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S5_Walk.png";
+    rat.texturePaths[EnemyState::DYING][MovementDirection::UP] = "assets/U5_Death.png";
+    rat.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D5_Death.png";
+    rat.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S5_Death.png";
+    _availableEnemyTypes.push_back(rat);
+
+    // --- WIZARD ---
+    EnemyType wizard = horserider;  
+    wizard.health = 5000; wizard.speed = 15.f; wizard.scale = 2.0f; wizard.moneyValue = 1000;
+    wizard.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U6_Walk.png";
+    wizard.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D6_Walk.png";
+    wizard.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S6_Walk.png";
+    wizard.texturePaths[EnemyState::DYING][MovementDirection::UP] = "assets/U6_Death.png";
+    wizard.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D6_Death.png";
+    wizard.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S6_Death.png";
+    _availableEnemyTypes.push_back(wizard);
 }
 
 void cgame::resetGameStats() {

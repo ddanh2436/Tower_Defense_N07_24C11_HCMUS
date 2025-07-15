@@ -257,71 +257,71 @@ namespace std {
 void cmap::calculateEnemyPath(const std::string& mapId) {
     if (strcmp(mapId.c_str(), "MAP_1") == 0) {
         _enemyPath = {
-             getPixelPosition(8.35f, -1.35f, PositionContext::EnemyPath), 
+             getPixelPosition(8.5f, -1.5f, PositionContext::EnemyPath), 
 
-             getPixelPosition(8.35f, 6.35f),
+             getPixelPosition(8.5f, 6.5f),
 
-             getPixelPosition(3.35f, 6.35f),
+             getPixelPosition(3.5f, 6.5f),
 
-             getPixelPosition(3.35f, 12.35f),
+             getPixelPosition(3.5f, 12.5f),
 
-             getPixelPosition(13.35f, 12.35f),
+             getPixelPosition(13.5f, 12.5f),
 
-             getPixelPosition(13.35f, 18.35f),
+             getPixelPosition(13.5f, 18.5f),
 
-             getPixelPosition(3.35f, 18.35f),
+             getPixelPosition(3.5f, 18.5f),
 
-             getPixelPosition(3.35f, 24.35f),
+             getPixelPosition(3.5f, 24.5f),
 
-			 getPixelPosition(8.35f, 24.35f),
+			 getPixelPosition(8.5f, 24.5f),
 
-             getPixelPosition(8.35f, 25.35f), getPixelPosition(8.35f, 32.35f, PositionContext::EnemyPath)
+             getPixelPosition(8.5f, 25.5f), getPixelPosition(8.5f, 32.5f, PositionContext::EnemyPath)
         };
     }
     else if (strcmp(mapId.c_str(), "MAP_2") == 0) {
         _enemyPath = {
-             getPixelPosition(3.35f, -1.35f, PositionContext::EnemyPath), 
+             getPixelPosition(3.5f, -1.5f, PositionContext::EnemyPath), 
 
-             getPixelPosition(3.35f, 26.35f),
+             getPixelPosition(3.5f, 26.5f),
 
-             getPixelPosition(8.35f, 26.35f),
+             getPixelPosition(8.5f, 26.5f),
 
-             getPixelPosition(8.35f, 4.35f),
+             getPixelPosition(8.5f, 4.5f),
 
-             getPixelPosition(13.35f, 4.35f),
+             getPixelPosition(13.5f, 4.5f),
 
-             getPixelPosition(13.35f, 32.35f, PositionContext::EnemyPath)
+             getPixelPosition(13.5f, 32.5f, PositionContext::EnemyPath)
         };
     }
     else if (strcmp(mapId.c_str(), "MAP_3") == 0) {
         _enemyPath = {
-             getPixelPosition(3.35f, -1.35f, PositionContext::EnemyPath), 
+             getPixelPosition(3.5f, -1.5f, PositionContext::EnemyPath), 
 
-             getPixelPosition(3.35f, 5.35f), 
+             getPixelPosition(3.5f, 5.5f), 
 
-			 getPixelPosition(5.35f, 5.35f),
+			 getPixelPosition(5.5f, 5.5f),
 
-			 getPixelPosition(5.35f, 9.35f),
+			 getPixelPosition(5.5f, 9.5f),
 
-			 getPixelPosition(7.35f, 9.35f),
+			 getPixelPosition(7.5f, 9.5f),
 
-			 getPixelPosition(7.35f, 13.35f),
+			 getPixelPosition(7.5f, 13.5f),
 
-			 getPixelPosition(9.35f, 13.35f),
+			 getPixelPosition(9.5f, 13.5f),
 
-			 getPixelPosition(9.35f, 17.35f),
+			 getPixelPosition(9.5f, 17.5f),
 
-			 getPixelPosition(11.35f, 17.35f),
+			 getPixelPosition(11.5f, 17.5f),
 
-			 getPixelPosition(11.35f, 21.35f),
+			 getPixelPosition(11.5f, 21.5f),
 
-			 getPixelPosition(13.35f, 21.35f),
+			 getPixelPosition(13.5f, 21.5f),
 
-             getPixelPosition(13.35f, 25.35f),
+             getPixelPosition(13.5f, 25.5f),
 
-			 getPixelPosition(15.35f, 25.35f),
+			 getPixelPosition(15.5f, 25.5f),
 
-			 getPixelPosition(15.35f, 32.35f, PositionContext::EnemyPath)
+			 getPixelPosition(15.5f, 32.5f, PositionContext::EnemyPath)
         };
     }
     else if (strcmp(mapId.c_str(), "MAP_4") == 0) {
@@ -331,32 +331,32 @@ void cmap::calculateEnemyPath(const std::string& mapId) {
         bool randomBool = boolRandom(gen);
         if (randomBool == 1) {
             _enemyPath = {
-                 getPixelPosition(8.35f, -1.35f, PositionContext::EnemyPath),
+                 getPixelPosition(8.5f, -1.5f, PositionContext::EnemyPath),
 
-                 getPixelPosition(8.35f, 3.35f),
+                 getPixelPosition(8.5f, 3.5f),
 
-                 getPixelPosition(2.35f, 3.35f),
+                 getPixelPosition(2.5f, 3.5f),
 
-                 getPixelPosition(2.35f, 27.35f),
+                 getPixelPosition(2.5f, 27.5f),
 
-                 getPixelPosition(8.35f, 27.35f),
+                 getPixelPosition(8.5f, 27.5f),
 
-                 getPixelPosition(8.35f, 32.35f, PositionContext::EnemyPath)
+                 getPixelPosition(8.5f, 32.5f, PositionContext::EnemyPath)
             };
         }
         else {
             _enemyPath = {
-                 getPixelPosition(8.35f, -1.35f, PositionContext::EnemyPath),
+                 getPixelPosition(8.5f, -1.5f, PositionContext::EnemyPath),
 
-                 getPixelPosition(8.35f, 3.35f),
+                 getPixelPosition(8.5f, 3.5f),
 
-                 getPixelPosition(14.35f, 3.35f),
+                 getPixelPosition(14.5f, 3.5f),
 
-                 getPixelPosition(14.35f, 27.35f),
+                 getPixelPosition(14.5f, 27.5f),
 
-                 getPixelPosition(8.35f, 27.35f),
+                 getPixelPosition(8.5f, 27.5f),
 
-                 getPixelPosition(8.35f, 32.35f, PositionContext::EnemyPath)
+                 getPixelPosition(8.5f, 32.5f, PositionContext::EnemyPath)
             };
         }
     }
