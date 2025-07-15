@@ -248,7 +248,7 @@ sf::FloatRect cenemy::getGlobalBounds() const { return _sprite.getGlobalBounds()
 bool cenemy::isReadyForRemoval() const { return _currentState == EnemyState::DEAD || hasReachedEnd(); }
 int cenemy::getTypeIndex() const { return _typeIndex; }
 float cenemy::getHealth() const { return _health; }
-int cenemy::getPathIndex() const { return _currentPathIndex; }
+size_t cenemy::getPathIndex() const { return _currentPathIndex; }
 void cenemy::setHealth(float newHealth) {
     _health = newHealth;
     if (_maxHealth > 0) {
