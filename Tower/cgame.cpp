@@ -500,7 +500,7 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                         const auto& blueprint = _towerBlueprints.at(_selectedTowerType);
                         int buildCost = blueprint[0].cost;
                         if (buildCost > 0 && _money >= buildCost) {
-                            cpoint towerPosition = _map->getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
+                            cpoint towerPosition = _map->getPixelPosition(static_cast<float>(gridCoords.y), static_cast<float>(gridCoords.x), PositionContext::TowerPlacement);
                             _towers.emplace_back(this, _selectedTowerType, blueprint[0], towerPosition, nextTowerId++);
                             SoundManager::playSoundEffect("assets/tower_place.wav");
                             _money -= buildCost;

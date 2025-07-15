@@ -41,7 +41,7 @@ public:
     // --- CÁC HÀM MỚI ĐỂ HỖ TRỢ LƯU/TẢI GAME ---
     int getTypeIndex() const;
     float getHealth() const;
-    int getPathIndex() const;
+    size_t getPathIndex() const;
     void setHealth(float newHealth);
     void setPosition(const cpoint& pos);
     void setPathIndex(int newPathIndex);
