@@ -239,21 +239,52 @@ void cgame::startNextWave() {
         _levelIsActive = true;
     }
 
-    if (!_availableEnemyTypes.empty()) {
-        std::uniform_int_distribution<int> dist(0, static_cast<int>(_availableEnemyTypes.size() - 1));
-        _currentWaveEnemyTypeIndex = dist(_rng);
+    const int TOTAL_WAVES_FOR_MAP_4 = 2;
+    const bool isLastWaveOfMap4 = (getCurrentMapId() == "MAP_4" && (_currentWave + 1) == TOTAL_WAVES_FOR_MAP_4);
+
+    _currentWave++; 
+
+
+    if (isLastWaveOfMap4) {
+   
+        std::cout << "BOSS WAVE! A single powerful WIZARD appears." << std::endl;
+
+        
+        _currentWaveEnemyTypeIndex = 7;
+
+
+        _enemiesPerWave = 1;
+    }
+    else {
+
+        std::vector<int> allowedEnemyIndices;
+        for (size_t i = 0; i < _availableEnemyTypes.size(); ++i) {
+            if (i != 6 && i != 7) { // Loại bỏ RAT và WIZARD
+                allowedEnemyIndices.push_back(static_cast<int>(i));
+            }
+        }
+
+        if (!allowedEnemyIndices.empty()) {
+            std::uniform_int_distribution<int> dist(0, static_cast<int>(allowedEnemyIndices.size() - 1));
+            int randomIndex = dist(_rng);
+            _currentWaveEnemyTypeIndex = allowedEnemyIndices[randomIndex];
+        }
+        else {
+            std::cerr << "Warning: No allowed enemies for this wave. Defaulting to type 0." << std::endl;
+            _currentWaveEnemyTypeIndex = 0;
+        }
+
+        _enemiesPerWave = 5 + _currentWave * 2;
     }
 
-    _currentWave++;
     _enemiesSpawnedThisWave = 0;
-    _enemiesPerWave = 5 + _currentWave * 2;
     _waveInProgress = true;
     _timeSinceLastSpawn = sf::Time::Zero;
     _messageText.setString("");
     _enemies.reserve(_enemiesPerWave);
-    _map->calculateEnemyPath(getCurrentMapId()); // Đặt lại đường đi của quái vật cho wave mới
+    _map->calculateEnemyPath(getCurrentMapId());
 
-    std::cout << "Wave " << _currentWave << " Start!" << std::endl;
+    std::cout << "Wave " << _currentWave << " Start! Enemies to spawn: " << _enemiesPerWave << std::endl;
 }
 
 void cgame::spawnEnemy() {
@@ -438,7 +469,7 @@ void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
     sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
     sf::Vector2f mouseWorldPos = window.mapPixelToCoords(mousePixelPos);
     sf::Vector2i gridCoords = _map->getGridCoordinates(mouseWorldPos);
-    cpoint tileCenterPixelPos = _map->getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
+    cpoint tileCenterPixelPos = _map->getPixelPosition(static_cast<float>(gridCoords.y), static_cast<float>(gridCoords.x), PositionContext::TowerPlacement);
     _towerPlacementPreview.setPosition(tileCenterPixelPos.toVector2f());
     bool isOccupied = false;
     for (const auto& tower : _towers) {
@@ -535,7 +566,7 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                         const auto& blueprint = _towerBlueprints.at(_selectedTowerType);
                         int buildCost = blueprint[0].cost;
                         if (buildCost > 0 && _money >= buildCost) {
-                            cpoint towerPosition = _map->getPixelPosition(gridCoords.y, gridCoords.x, PositionContext::TowerPlacement);
+                            cpoint towerPosition = _map->getPixelPosition(static_cast<float>(gridCoords.y), static_cast<float>(gridCoords.x), PositionContext::TowerPlacement);
                             _towers.emplace_back(this, _selectedTowerType, blueprint[0], towerPosition, nextTowerId++);
                             SoundManager::playSoundEffect("assets/tower_place.wav");
                             _money -= buildCost;
@@ -651,23 +682,37 @@ void cgame::update(sf::Time deltaTime) {
         updateInterMission(modifiedDeltaTime);
         return;
     }
+
     if (_waveInProgress) {
         _timeSinceLastSpawn += modifiedDeltaTime;
         if (_timeSinceLastSpawn >= _spawnInterval && _enemiesSpawnedThisWave < _enemiesPerWave) {
             spawnEnemy();
             _timeSinceLastSpawn = sf::Time::Zero;
         }
+
+        // Kiểm tra điều kiện kết thúc wave: đã sinh đủ quái VÀ không còn quái nào trên bản đồ
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
             _waveInProgress = false;
-            if (_currentWave >= 2) { // Bạn có thể thay 5 bằng tổng số wave của map
-                _levelWon = true;
+
+            int totalWavesForThisMap = 1;
+
+            // Tùy chỉnh tổng số wave cho các map cụ thể
+            if (getCurrentMapId() == "MAP_4") {
+                totalWavesForThisMap = 2; // Map 4 có 10 wave
+            }
+
+            
+            if (_currentWave >= totalWavesForThisMap) {
+                _levelWon = true; 
             }
             else {
+
                 _inIntermission = true;
                 _intermissionTimer = _intermissionTime;
             }
         }
     }
+
     updateEnemies(modifiedDeltaTime);
     if (_isGameOver) return;
     updateTowers(modifiedDeltaTime);
@@ -675,6 +720,7 @@ void cgame::update(sf::Time deltaTime) {
     handleCollisions();
     cleanupInactiveObjects();
     updateUpgradePanel();
+
     std::stringstream ssLives, ssMoney, ssWave;
     ssLives << _lives;
     ssMoney << _money;
@@ -682,6 +728,7 @@ void cgame::update(sf::Time deltaTime) {
     _livesText.setString(ssLives.str());
     _moneyText.setString(ssMoney.str());
     _waveText.setString(ssWave.str());
+
     if (_isGameOver) {
         _messageText.setString("GAME OVER");
     }
@@ -694,7 +741,6 @@ void cgame::update(sf::Time deltaTime) {
         _messageText.setString("");
     }
 }
-
 void cgame::render(sf::RenderWindow& window) {
     if (_map) {
         _map->render(window);
@@ -984,12 +1030,9 @@ sf::Time cgame::getLevelTime() const {
 }
 
 long cgame::calculateScore() const {
-    // Công thức tính điểm: (số quái * 100) - (thời gian tính bằng giây)
-    // Bạn có thể tùy chỉnh công thức này cho phù hợp
     long score = _enemiesDefeated * 100;
     long timePenalty = static_cast<long>(_levelTime.asSeconds());
     score -= timePenalty;
 
-    // Đảm bảo điểm không bị âm
     return std::max(0L, score);
 }
