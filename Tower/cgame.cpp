@@ -165,7 +165,7 @@ void cgame::setupEnemyTypes() {
     // --- HORSERIDER ---
 	EnemyType horserider;
     horserider.frameSize = { 96, 96 }; horserider.frameCount = 6; horserider.stride = 96;
-    horserider.health = 200; horserider.speed = 40.f; horserider.scale = 1.5f; horserider.moneyValue = 40;
+    horserider.health = 200; horserider.speed = 30.f; horserider.scale = 1.5f; horserider.moneyValue = 40;
     horserider.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U4_Walk.png";
     horserider.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D4_Walk.png";
     horserider.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S4_Walk.png";
@@ -176,7 +176,7 @@ void cgame::setupEnemyTypes() {
 
     // --- RAT ---
     EnemyType rat = horserider;
-    rat.health = 400; rat.speed = 15.f; rat.scale = 2.0f; rat.moneyValue = 50;
+    rat.health = 400; rat.speed = 20.f; rat.scale = 2.0f; rat.moneyValue = 80;
     rat.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U5_Walk.png";
     rat.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D5_Walk.png";
     rat.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S5_Walk.png";
@@ -187,7 +187,7 @@ void cgame::setupEnemyTypes() {
 
     // --- WIZARD ---
     EnemyType wizard = horserider;  
-    wizard.health = 5000; wizard.speed = 15.f; wizard.scale = 2.0f; wizard.moneyValue = 1000;
+    wizard.health = 2000; wizard.speed = 15.f; wizard.scale = 2.0f; wizard.moneyValue = 1000;
     wizard.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U6_Walk.png";
     wizard.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D6_Walk.png";
     wizard.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S6_Walk.png";
@@ -239,31 +239,41 @@ void cgame::startNextWave() {
         _levelIsActive = true;
     }
 
-    const int TOTAL_WAVES_FOR_MAP_4 = 2;
-    const bool isLastWaveOfMap4 = (getCurrentMapId() == "MAP_4" && (_currentWave + 1) == TOTAL_WAVES_FOR_MAP_4);
+    // =================== LOGIC BOSS WAVE TỔNG QUÁT ===================
 
-    _currentWave++; 
+    // 1. Xác định tổng số wave cho map hiện tại
+    int totalWavesForThisMap = 2; // Mặc định cho các map 1, 2, 3
+    if (getCurrentMapId() == "MAP_4") {
+        totalWavesForThisMap = 2; // Map 4 có 10 wave
+    }
 
+    _currentWave++; // Tăng số wave lên trước
 
-    if (isLastWaveOfMap4) {
-   
-        std::cout << "BOSS WAVE! A single powerful WIZARD appears." << std::endl;
+    // 2. Kiểm tra xem đây có phải là wave cuối không
+    const bool isFinalWave = (_currentWave == totalWavesForThisMap);
 
-        
+    if (isFinalWave) {
+        // NẾU ĐÂY LÀ WAVE CUỐI CÙNG CỦA BẤT KỲ MAP NÀO:
+        std::cout << "FINAL BOSS WAVE! A single powerful WIZARD appears." << std::endl;
+
+        // Gán loại quái là WIZARD (index = 7)
         _currentWaveEnemyTypeIndex = 7;
 
-
+        // Gán số lượng quái là 1
         _enemiesPerWave = 1;
     }
     else {
+        // CÁC WAVE THÔNG THƯỜNG:
 
+        // Lọc bỏ RAT và WIZARD khỏi danh sách quái có thể xuất hiện
         std::vector<int> allowedEnemyIndices;
         for (size_t i = 0; i < _availableEnemyTypes.size(); ++i) {
-            if (i != 6 && i != 7) { // Loại bỏ RAT và WIZARD
-                allowedEnemyIndices.push_back(static_cast<int>(i));
+            if (i != 6 && i != 7) {
+                allowedEnemyIndices.push_back(i);
             }
         }
 
+        // Chọn ngẫu nhiên loại quái từ danh sách đã lọc
         if (!allowedEnemyIndices.empty()) {
             std::uniform_int_distribution<int> dist(0, static_cast<int>(allowedEnemyIndices.size() - 1));
             int randomIndex = dist(_rng);
@@ -274,9 +284,13 @@ void cgame::startNextWave() {
             _currentWaveEnemyTypeIndex = 0;
         }
 
+        // Tính số lượng quái theo công thức như cũ
         _enemiesPerWave = 5 + _currentWave * 2;
     }
 
+    // ======================================================================
+
+    // Các thiết lập chung cho wave mới
     _enemiesSpawnedThisWave = 0;
     _waveInProgress = true;
     _timeSinceLastSpawn = sf::Time::Zero;
@@ -326,15 +340,9 @@ void cgame::handleCollisions() {
                     // Nếu hàm trả về true, ta mới tính tiền và tăng kill
                     if (wasKilledByThisHit) {
                         _money += enemy.getMoneyValue();
-                        _enemiesDefeated++; // <-- SẼ ĐƯỢC CỘNG ĐIỂM CHÍNH XÁC TẠI ĐÂY
-
-                        // In ra console để kiểm tra
-                        std::cout << "An enemy was killed! Total kills: " << _enemiesDefeated << std::endl;
-
+                        _enemiesDefeated++; 
                         SoundManager::playSoundEffect("assets/enemy_explode.ogg");
                     }
-
-                    // Thoát vòng lặp enemy vì đạn này đã trúng mục tiêu và hết tác dụng
                     break;
                 }
             }
@@ -669,12 +677,12 @@ void cgame::update(sf::Time deltaTime) {
     if (_levelWon) {
         _messageText.setString("VICTORY!");
         _timerText.setString("");
-        _levelIsActive = false; // Dừng đếm giờ khi thắng
+        _levelIsActive = false;
         return;
     }
 
     if (_isPaused || _isGameOver) {
-        if (_isGameOver) _levelIsActive = false; // Dừng đếm giờ khi thua
+        if (_isGameOver) _levelIsActive = false;
         return;
     }
 
@@ -690,23 +698,18 @@ void cgame::update(sf::Time deltaTime) {
             _timeSinceLastSpawn = sf::Time::Zero;
         }
 
-        // Kiểm tra điều kiện kết thúc wave: đã sinh đủ quái VÀ không còn quái nào trên bản đồ
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
             _waveInProgress = false;
 
-            int totalWavesForThisMap = 1;
-
-            // Tùy chỉnh tổng số wave cho các map cụ thể
+            int totalWavesForThisMap = 2; 
             if (getCurrentMapId() == "MAP_4") {
-                totalWavesForThisMap = 2; // Map 4 có 10 wave
+                totalWavesForThisMap = 2; 
             }
 
-            
             if (_currentWave >= totalWavesForThisMap) {
-                _levelWon = true; 
+                _levelWon = true;
             }
             else {
-
                 _inIntermission = true;
                 _intermissionTimer = _intermissionTime;
             }
