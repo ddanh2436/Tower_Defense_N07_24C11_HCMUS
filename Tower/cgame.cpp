@@ -239,6 +239,8 @@ void cgame::startNextWave() {
         _levelIsActive = true;
     }
 
+    
+
     // =================== LOGIC BOSS WAVE TỔNG QUÁT ===================
 
     // 1. Xác định tổng số wave cho map hiện tại
@@ -269,7 +271,7 @@ void cgame::startNextWave() {
         std::vector<int> allowedEnemyIndices;
         for (size_t i = 0; i < _availableEnemyTypes.size(); ++i) {
             if (i != 6 && i != 7) {
-                allowedEnemyIndices.push_back(i);
+                allowedEnemyIndices.push_back(static_cast<int>(i));
             }
         }
 
@@ -500,11 +502,19 @@ void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
 void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
     if (_isGameOver || !_map) return;
 
+    // --- Xử lý sự kiện bàn phím ---
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::N) {
             if (!_waveInProgress && !_inIntermission) startNextWave();
         }
         if (event.key.code == sf::Keyboard::Num1) {
+            // =================== KIỂM TRA ĐIỀU KIỆN MỚI ===================
+            if (_inIntermission) {
+                std::cout << "Khong the xay tru trong thoi gian nghi!" << std::endl;
+                return; // Chặn hành động
+            }
+            // =============================================================
+
             const auto& blueprint = _towerBlueprints.at("ArcherTower");
             int buildCost = blueprint[0].cost;
             if (buildCost > 0 && _money >= buildCost) {
@@ -537,9 +547,11 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
         }
     }
 
+    // --- Xử lý sự kiện chuột ---
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {
             sf::Vector2f mouseWorldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
             if (_pauseButtonSprite.getGlobalBounds().contains(mouseWorldPos)) {
                 setPaused(true);
                 SoundManager::playSoundEffect("assets/menu_click.wav");
@@ -550,6 +562,14 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                 _ffButtonSprite.setColor(_isFastForward ? sf::Color(100, 255, 100) : sf::Color::White);
                 return;
             }
+
+            // =================== KIỂM TRA ĐIỀU KIỆN MỚI ===================
+            if (_inIntermission) {
+                std::cout << "Khong the tuong tac voi tru trong thoi gian nghi!" << std::endl;
+                return;
+            }
+            // =============================================================
+
             if (_isUpgradePanelVisible) {
                 if (_upgradeButton.getGlobalBounds().contains(mouseWorldPos)) {
                     handleUpgrade();
@@ -668,11 +688,9 @@ void cgame::updateInterMission(sf::Time deltaTime) {
 void cgame::update(sf::Time deltaTime) {
     sf::Time modifiedDeltaTime = deltaTime * (_isFastForward ? _gameSpeedMultiplier : 1.0f);
 
-    // ================== CẬP NHẬT ĐỒNG HỒ ĐẾM GIỜ ==================
     if (_levelIsActive && !_isGameOver && !_levelWon) {
         _levelTime += modifiedDeltaTime;
     }
-    // ============================================================
 
     if (_levelWon) {
         _messageText.setString("VICTORY!");
@@ -701,9 +719,9 @@ void cgame::update(sf::Time deltaTime) {
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
             _waveInProgress = false;
 
-            int totalWavesForThisMap = 2; 
+            int totalWavesForThisMap = 8;
             if (getCurrentMapId() == "MAP_4") {
-                totalWavesForThisMap = 2; 
+                totalWavesForThisMap = 10;
             }
 
             if (_currentWave >= totalWavesForThisMap) {
@@ -712,6 +730,13 @@ void cgame::update(sf::Time deltaTime) {
             else {
                 _inIntermission = true;
                 _intermissionTimer = _intermissionTime;
+
+                // =================== BẮT ĐẦU THAY ĐỔI ===================
+                // Hủy chọn và đóng bảng nâng cấp khi thời gian nghỉ bắt đầu
+                _selectingTowerToBuild = false;
+                _selectedTower = nullptr;
+                _isUpgradePanelVisible = false;
+                // =================== KẾT THÚC THAY ĐỔI ===================
             }
         }
     }
