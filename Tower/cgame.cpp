@@ -93,35 +93,57 @@ void cgame::setupTowerTypes() {
     archerLevels.push_back(TowerLevelData{
         /*level*/ 1, /*cost*/ 50,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
-        /*texturePath*/ "assets/4.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
-        "assets/4_idle.png", 0, 6, 2.0f,
+        /*texturePath*/ "assets/2.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
+        "assets/2_idle.png", 0, 4, 2.0f,
         /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f
         });
     // Cấp 2
     archerLevels.push_back(TowerLevelData{
         /*level*/ 2, /*cost*/ 75,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
-        "assets/5.png", 2, 2, 0.4f,
-        "assets/5_idle.png", 0, 6, 1.8f,
+        "assets/3.png", 2, 2, 0.4f,
+        "assets/3_idle.png", 0, 4, 1.8f,
         175.f, 0.8f, 40, 220.f
         });
     // Cấp 3
     archerLevels.push_back(TowerLevelData{
         /*level*/ 3, /*cost*/ 100,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
-        "assets/6.png", 2, 2, 0.4f,
-        "assets/6_idle.png", 0, 6, 1.8f,
+        "assets/4.png", 2, 2, 0.4f,
+        "assets/4_idle.png", 0, 6, 1.8f,
         200.f, 0.9f, 50, 230.f
         });
-    // Cấp 4
-    archerLevels.push_back(TowerLevelData{
-        /*level*/ 4, /*cost*/ 150,
-        /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
+    _towerBlueprints["ArcherTower"] = archerLevels;
+
+    // --- CANNON TOWER (Trụ 2) ---
+    sf::Vector2i cannonFrameSize = { 70, 115 };
+    int cannonFrameOffsetY = 15;
+    std::vector<TowerLevelData> cannonLevels;
+    // Cấp 1
+    cannonLevels.push_back(TowerLevelData{
+        /*level*/ 1, /*cost*/ 50,
+        /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
+        /*texturePath*/ "assets/5.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
+        "assets/5_idle.png", 0, 6, 2.0f,
+        /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f
+        });
+    // Cấp 2
+    cannonLevels.push_back(TowerLevelData{
+        /*level*/ 2, /*cost*/ 75,
+        /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
+        "assets/6.png", 2, 2, 0.4f,
+        "assets/6_idle.png", 0, 6, 1.8f,
+        175.f, 0.8f, 40, 220.f
+        });
+    // Cấp 3
+    cannonLevels.push_back(TowerLevelData{
+        /*level*/ 3, /*cost*/ 100,
+        /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
         "assets/7.png", 2, 2, 0.4f,
         "assets/7_idle.png", 0, 6, 1.8f,
-        230.f, 1.2f, 65, 235.f
+        200.f, 0.9f, 50, 230.f
         });
-    _towerBlueprints["ArcherTower"] = archerLevels;
+    _towerBlueprints["CannonTower"] = cannonLevels;
 
 
 }
