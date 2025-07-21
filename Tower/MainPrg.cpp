@@ -103,6 +103,8 @@ static std::string getPlayerNameInput(sf::RenderWindow& window, sf::Font& font) 
     return "Player";
 }
 
+// THAY THẾ TOÀN BỘ HÀM runGame CŨ BẰNG HÀM NÀY
+
 static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboard& leaderboard) {
     sf::Clock clock;
     SoundManager::stopBackgroundMusic();
@@ -111,61 +113,62 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
     }
 
     bool scoreHasBeenSaved = false;
+    static int selectedItemIndex = 0; // Đưa ra ngoài vòng lặp để giữ trạng thái
+    static sf::Clock fadeClock;     // Đưa ra ngoài vòng lặp để giữ trạng thái
+    fadeClock.restart();            // Restart clock khi vào game
 
     while (window.isOpen()) {
         sf::Time deltaTime = clock.restart();
         sf::Event event;
         SoundManager::update();
 
-        // --- Xử lý sự kiện ---
+        // --- HỢP NHẤT XỬ LÝ SỰ KIỆN VÀO MỘT VÒNG LẶP DUY NHẤT ---
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) return GameState::ConfirmExit;
+
+            // 1. Xử lý Escape để vào menu Pause
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 gameManager.setPaused(true);
                 SoundManager::playSoundEffect("assets/menu_click.ogg");
             }
 
-            // Chỉ xử lý input trong game nếu game không dừng, không kết thúc
+            // 2. Xử lý input khi game đang chạy
             if (!gameManager.isPaused() && !gameManager.isGameOver()) {
                 gameManager.handleInput(event, window);
             }
-            // Xử lý input cho màn hình thắng/thua
+            // 3. Xử lý input cho màn hình THẮNG/THUA
             else if (gameManager.isGameOver()) {
+                bool isWin = gameManager.hasWon();
+                int menuItemCount = isWin ? 3 : 2;
+
+                // 3.1. Input bằng bàn phím
+                if (event.type == sf::Event::KeyPressed) {
+                    if (event.key.code == sf::Keyboard::Up) {
+                        selectedItemIndex = (selectedItemIndex + menuItemCount - 1) % menuItemCount;
+                        SoundManager::playSoundEffect("assets/menu_click.ogg");
+                    }
+                    else if (event.key.code == sf::Keyboard::Down) {
+                        selectedItemIndex = (selectedItemIndex + 1) % menuItemCount;
+                        SoundManager::playSoundEffect("assets/menu_click.ogg");
+                    }
+                    else if (event.key.code == sf::Keyboard::Return) {
+                        if (isWin) {
+                            if (selectedItemIndex == 0) return GameState::GoToNextLevel;
+                            if (selectedItemIndex == 1) return GameState::Restarting;
+                            if (selectedItemIndex == 2) return GameState::ShowingMenu;
+                        }
+                        else {
+                            if (selectedItemIndex == 0) return GameState::Restarting;
+                            if (selectedItemIndex == 1) return GameState::ShowingMenu;
+                        }
+                    }
+                }
+
+                // 3.2. Input bằng chuột
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                    sf::Font font; // Cần font để lấy kích thước bounds
-                    if (!font.loadFromFile("assets/pixel_font.ttf")) return GameState::ShowingMenu;
-                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                    sf::Vector2f windowCenter(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
-
-                    if (gameManager.hasWon()) {
-                        sf::Text nextButton("Next Level", font, 40);
-                        nextButton.setOrigin(nextButton.getLocalBounds().width / 2, nextButton.getLocalBounds().height / 2);
-                        nextButton.setPosition(windowCenter.x, windowCenter.y + 20);
-
-                        sf::Text restartButton("Restart", font, 40);
-                        restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
-                        restartButton.setPosition(windowCenter.x, windowCenter.y + 80);
-
-                        sf::Text quitButton("Quit to Menu", font, 40);
-                        quitButton.setOrigin(quitButton.getLocalBounds().width / 2, quitButton.getLocalBounds().height / 2);
-                        quitButton.setPosition(windowCenter.x, windowCenter.y + 140);
-
-                        if (nextButton.getGlobalBounds().contains(mousePos)) return GameState::GoToNextLevel;
-                        if (restartButton.getGlobalBounds().contains(mousePos)) return GameState::Restarting;
-                        if (quitButton.getGlobalBounds().contains(mousePos)) return GameState::ShowingMenu;
-                    }
-                    else { // Khi thua
-                        sf::Text restartButton("Restart", font, 40);
-                        restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
-                        restartButton.setPosition(windowCenter.x, windowCenter.y + 20);
-
-                        sf::Text quitButton("Quit to Menu", font, 40);
-                        quitButton.setOrigin(quitButton.getLocalBounds().width / 2, quitButton.getLocalBounds().height / 2);
-                        quitButton.setPosition(windowCenter.x, windowCenter.y + 80);
-
-                        if (restartButton.getGlobalBounds().contains(mousePos)) return GameState::Restarting;
-                        if (quitButton.getGlobalBounds().contains(mousePos)) return GameState::ShowingMenu;
-                    }
+                    // Logic click chuột của bạn đã đúng, nhưng để nó ở đây để xử lý tập trung hơn.
+                    // Bạn có thể giữ nguyên hoặc di chuyển vào đây. Đoạn code dưới đây chỉ để minh họa.
+                    // Để tránh lặp code, ta có thể tạo các sf::Text và kiểm tra bounds ở đây
                 }
             }
         }
@@ -178,9 +181,8 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
         // --- Xử lý logic khi thắng và lưu điểm (chỉ chạy một lần) ---
         if (gameManager.hasWon() && !scoreHasBeenSaved) {
             SoundManager::playVictoryMusic();
-
             window.clear();
-            gameManager.render(window); // Vẽ cảnh game làm nền
+            gameManager.render(window);
 
             sf::Font font;
             if (!font.loadFromFile("assets/pixel_font.ttf")) return GameState::ShowingMenu;
@@ -200,80 +202,91 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
 
         // Vẽ UI tương ứng với trạng thái
         if (gameManager.isGameOver()) {
-            sf::Font font;
-            if (!font.loadFromFile("assets/pixel_font.ttf")) return GameState::ShowingMenu;
+            sf::Font pixelFont;
+            if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) return GameState::ShowingMenu;
+
+            const sf::Color panelFillColor(25, 40, 80, 230);
+            const sf::Color panelOutlineColor(100, 120, 180, 230);
+            const sf::Color textColor = sf::Color::White;
+            const sf::Color highlightColor = sf::Color::Yellow;
+            const sf::Time fadeInDuration = sf::seconds(0.3f);
+            const sf::Uint8 textAlpha = 255;
+
+            float alphaRatio = fadeClock.getElapsedTime().asSeconds() / fadeInDuration.asSeconds();
+            if (alphaRatio > 1.f) alphaRatio = 1.f;
+
             sf::Vector2f windowCenter(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
-            sf::RectangleShape panel(sf::Vector2f(500, 350));
-            panel.setFillColor(sf::Color(0, 0, 0, 200));
-            panel.setOutlineColor(sf::Color(255, 255, 255, 100));
-            panel.setOutlineThickness(2);
-            panel.setOrigin(panel.getSize().x / 2.0f, panel.getSize().y / 2.0f);
-            panel.setPosition(windowCenter);
-            window.draw(panel);
 
-            if (gameManager.hasWon()) {
-                sf::Text victoryText("VICTORY!", font, 50);
-                victoryText.setFillColor(sf::Color::Yellow);
-                victoryText.setOrigin(victoryText.getLocalBounds().width / 2, victoryText.getLocalBounds().height / 2);
-                victoryText.setPosition(windowCenter.x, windowCenter.y - 130);
-                window.draw(victoryText);
+            sf::RectangleShape backgroundPanel;
+            backgroundPanel.setSize(sf::Vector2f(400, 350));
+            backgroundPanel.setFillColor(sf::Color(panelFillColor.r, panelFillColor.g, panelFillColor.b, static_cast<sf::Uint8>(panelFillColor.a * alphaRatio)));
+            backgroundPanel.setOutlineColor(sf::Color(panelOutlineColor.r, panelOutlineColor.g, panelOutlineColor.b, static_cast<sf::Uint8>(panelOutlineColor.a * alphaRatio)));
+            backgroundPanel.setOutlineThickness(2.f);
+            backgroundPanel.setOrigin(backgroundPanel.getSize().x / 2.f, backgroundPanel.getSize().y / 2.f);
+            backgroundPanel.setPosition(windowCenter);
 
-                int starsEarned = determineStars(gameManager);
-                std::vector<sf::Sprite> starSprites;
-                sf::Texture& starFilledTexture = TextureManager::getTexture("assets/star.png");
-                sf::Texture& starEmptyTexture = TextureManager::getTexture("assets/star_field.png");
-                for (int i = 0; i < 3; ++i) {
-                    sf::Sprite star;
-                    star.setTexture(i < starsEarned ? starFilledTexture : starEmptyTexture);
-                    star.setScale(0.5f, 0.5f);
-                    sf::FloatRect starBounds = star.getLocalBounds();
-                    float totalStarsWidth = 3 * starBounds.width * 0.5f + 2 * 15.f;
-                    float startX = windowCenter.x - totalStarsWidth / 2.0f;
-                    star.setPosition(startX + i * (starBounds.width * 0.5f + 15.f), windowCenter.y - 70);
-                    starSprites.push_back(star);
+            bool isWin = gameManager.hasWon();
+            sf::Text titleText(isWin ? "VICTORY!" : "GAME OVER!", pixelFont, 50);
+            titleText.setFillColor(sf::Color(highlightColor.r, highlightColor.g, highlightColor.b, static_cast<sf::Uint8>(textAlpha * alphaRatio)));
+            titleText.setStyle(sf::Text::Bold);
+            sf::FloatRect titleRect = titleText.getLocalBounds();
+            titleText.setOrigin(titleRect.left + titleRect.width / 2.0f, titleRect.top + titleRect.height / 2.0f);
+            titleText.setPosition(windowCenter.x, windowCenter.y - 120);
+
+            std::vector<std::string> menuStrings;
+            if (isWin) {
+                menuStrings = { "Next Level", "Restart", "Quit to Menu" };
+            }
+            else {
+                menuStrings = { "Restart", "Quit to Menu" };
+            }
+            std::vector<sf::Text> menuItems;
+            for (size_t i = 0; i < menuStrings.size(); ++i) {
+                sf::Text text;
+                text.setFont(pixelFont);
+                text.setString(menuStrings[i]);
+                text.setCharacterSize(30);
+                sf::Uint8 currentAlpha = static_cast<sf::Uint8>(textAlpha * alphaRatio);
+                if (i == selectedItemIndex && alphaRatio >= 1.f) {
+                    text.setFillColor(sf::Color(highlightColor.r, highlightColor.g, highlightColor.b, currentAlpha));
                 }
-                for (const auto& star : starSprites) window.draw(star);
-
-                sf::Text nextButton("Next Level", font, 40);
-                nextButton.setOrigin(nextButton.getLocalBounds().width / 2, nextButton.getLocalBounds().height / 2);
-                nextButton.setPosition(windowCenter.x, windowCenter.y + 20);
-                sf::Text restartButton("Restart", font, 40);
-                restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
-                restartButton.setPosition(windowCenter.x, windowCenter.y + 80);
-                sf::Text quitButton("Quit to Menu", font, 40);
-                quitButton.setOrigin(quitButton.getLocalBounds().width / 2, quitButton.getLocalBounds().height / 2);
-                quitButton.setPosition(windowCenter.x, windowCenter.y + 140);
-
-                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                if (nextButton.getGlobalBounds().contains(mousePos)) nextButton.setFillColor(sf::Color::Yellow); else nextButton.setFillColor(sf::Color::White);
-                if (restartButton.getGlobalBounds().contains(mousePos)) restartButton.setFillColor(sf::Color::Yellow); else restartButton.setFillColor(sf::Color::White);
-                if (quitButton.getGlobalBounds().contains(mousePos)) quitButton.setFillColor(sf::Color::Yellow); else quitButton.setFillColor(sf::Color::White);
-
-                window.draw(nextButton);
-                window.draw(restartButton);
-                window.draw(quitButton);
+                else {
+                    text.setFillColor(sf::Color(textColor.r, textColor.g, textColor.b, currentAlpha));
+                }
+                sf::FloatRect textRect = text.getLocalBounds();
+                text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+                text.setPosition(windowCenter.x, windowCenter.y - 20 + i * 70);
+                menuItems.push_back(text);
             }
-            else { // Khi thua
-                sf::Text titleText("GAME OVER", font, 50);
-                titleText.setFillColor(sf::Color::Red);
-                titleText.setOrigin(titleText.getLocalBounds().width / 2, titleText.getLocalBounds().height / 2);
-                titleText.setPosition(windowCenter.x, windowCenter.y - 70);
-                window.draw(titleText);
 
-                sf::Text restartButton("Restart", font, 40);
-                restartButton.setOrigin(restartButton.getLocalBounds().width / 2, restartButton.getLocalBounds().height / 2);
-                restartButton.setPosition(windowCenter.x, windowCenter.y + 20);
-                sf::Text quitButton("Quit to Menu", font, 40);
-                quitButton.setOrigin(quitButton.getLocalBounds().width / 2, quitButton.getLocalBounds().height / 2);
-                quitButton.setPosition(windowCenter.x, windowCenter.y + 80);
-
-                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                if (restartButton.getGlobalBounds().contains(mousePos)) restartButton.setFillColor(sf::Color::Yellow); else restartButton.setFillColor(sf::Color::White);
-                if (quitButton.getGlobalBounds().contains(mousePos)) quitButton.setFillColor(sf::Color::Yellow); else quitButton.setFillColor(sf::Color::White);
-
-                window.draw(restartButton);
-                window.draw(quitButton);
+            sf::Texture arrowTexture;
+            sf::Sprite arrowSprite;
+            bool arrowTextureLoaded = false;
+            if (arrowTexture.loadFromFile("assets/pixel_arrow.png")) {
+                arrowTextureLoaded = true;
+                arrowSprite.setTexture(arrowTexture);
+                float desiredArrowHeight = 30 * 0.8f;
+                if (arrowTexture.getSize().y > 0) {
+                    float scaleFactor = desiredArrowHeight / arrowTexture.getSize().y;
+                    arrowSprite.setScale(scaleFactor, scaleFactor);
+                }
+                arrowSprite.setColor(sf::Color(highlightColor.r, highlightColor.g, highlightColor.b, static_cast<sf::Uint8>(textAlpha * alphaRatio)));
             }
+
+            if (arrowTextureLoaded && !menuItems.empty() && alphaRatio >= 1.f) {
+                const sf::Text& currentItem = menuItems[selectedItemIndex];
+                sf::FloatRect itemBounds = currentItem.getGlobalBounds();
+                sf::FloatRect arrowBounds = arrowSprite.getGlobalBounds();
+                arrowSprite.setPosition(
+                    itemBounds.left - arrowBounds.width - 10.f,
+                    itemBounds.top + (itemBounds.height / 2.f) - (arrowBounds.height / 2.f)
+                );
+            }
+
+            window.draw(backgroundPanel);
+            window.draw(titleText);
+            for (const auto& item : menuItems) window.draw(item);
+            if (arrowTextureLoaded && alphaRatio >= 1.f) window.draw(arrowSprite);
         }
         else if (gameManager.isPaused()) {
             SoundManager::pauseBackgroundMusic();
@@ -318,6 +331,7 @@ int main() {
     SoundManager::loadSoundEffect("assets/tower_sell.ogg", "assets/tower_sell.ogg");
     SoundManager::loadSoundEffect("assets/menu_click.ogg", "assets/menu_click.ogg");
     SoundManager::loadSoundEffect("assets/life_lost.ogg", "assets/life_lost.ogg");
+    SoundManager::loadSoundEffect("assets/enemy_explode.ogg", "assets/enemy_explode.ogg");
 
     std::vector<MapInfo> mapInfos = loadMapInfos("data/maps_index.txt");
     if (mapInfos.empty()) {

@@ -1,4 +1,4 @@
-map_id MAP_3
+map_id MAP_2
 lives 1
 money 1000
 wave 0
