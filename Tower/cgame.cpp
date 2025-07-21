@@ -282,9 +282,9 @@ void cgame::startNextWave() {
     if (_currentWave == 0) {
         _levelIsActive = true;
     }
-    int totalWavesForThisMap = 2;
+    int totalWavesForThisMap = 5;
     if (getCurrentMapId() == "MAP_4") {
-        totalWavesForThisMap = 2;
+        totalWavesForThisMap = 6;
     }
     _currentWave++;
     const bool isFinalWave = (_currentWave == totalWavesForThisMap);
@@ -678,9 +678,9 @@ void cgame::update(sf::Time deltaTime) {
         }
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
             _waveInProgress = false;
-            int totalWavesForThisMap = 8;
+            int totalWavesForThisMap = 5;
             if (getCurrentMapId() == "MAP_4") {
-                totalWavesForThisMap = 10;
+                totalWavesForThisMap = 6;
             }
             if (_currentWave >= totalWavesForThisMap) {
                 _levelWon = true;
