@@ -1,4 +1,6 @@
-﻿#include "cgame.h"
+﻿// ============== BẮT ĐẦU CODE CGAME.CPP HOÀN CHỈNH ==============
+
+#include "cgame.h"
 #include "SoundManager.h"
 #include <iostream>
 #include <sstream>
@@ -27,31 +29,67 @@ cgame::~cgame() {
     }
 }
 
+// Hàm trợ giúp mới để xử lý việc chọn trụ
+void cgame::selectTowerToBuild(const std::string& typeId) {
+    if (_inIntermission) {
+        std::cout << "Khong the xay tru trong thoi gian nghi!" << std::endl;
+        return;
+    }
+
+    auto it = _towerBlueprints.find(typeId);
+    if (it == _towerBlueprints.end() || it->second.empty()) {
+        std::cerr << "Loi: Khong tim thay thong tin cho tru loai: " << typeId << std::endl;
+        return;
+    }
+
+    const auto& blueprint = it->second;
+    int buildCost = blueprint[0].cost;
+
+    if (buildCost > 0 && _money >= buildCost) {
+        _selectingTowerToBuild = true;
+        _selectedTowerType = typeId;
+
+        static sf::Texture previewTexture;
+        if (previewTexture.loadFromFile(blueprint[0].idle_texturePath)) {
+            _towerPlacementPreview.setTexture(previewTexture);
+            _towerPlacementPreview.setTextureRect(sf::IntRect(
+                blueprint[0].idle_startFrame * blueprint[0].frameSize.x, 0,
+                blueprint[0].frameSize.x, blueprint[0].frameSize.y
+            ));
+        }
+        else {
+            std::cerr << "Loi tai texture preview thap!" << std::endl;
+            _selectingTowerToBuild = false;
+            return;
+        }
+        sf::FloatRect bounds = _towerPlacementPreview.getLocalBounds();
+        _towerPlacementPreview.setOrigin(bounds.width / 2.f, bounds.height - blueprint[0].frameOffsetY);
+    }
+    else {
+        std::cout << "Khong du tien de mua tru " << typeId << "!" << std::endl;
+    }
+}
+
+
 void cgame::loadMap(const std::string& mapId, const std::string& dataFilePath) {
     std::cout << "Loading map: " << mapId << " from " << dataFilePath << std::endl;
     _currentMapId = mapId;
-    // Xóa map cũ nếu có
     if (_map) {
         delete _map;
         _map = nullptr;
     }
-
-    // Tạo map mới từ thông tin được cung cấp
     _map = new cmap(dataFilePath, mapId);
-
-    // Reset lại trạng thái game cho map mới
     resetGame();
 }
 
 void cgame::setupTowerTypes() {
     _towerBlueprints.clear();
 
+    // --- ARCHER TOWER (Trụ 1) ---
     sf::Vector2i archerFrameSize = { 70, 115 };
     int archerFrameOffsetY = 15;
-
     std::vector<TowerLevelData> archerLevels;
-
-    // ----- CẤP 1 -----
+    // Cấp 1
     archerLevels.push_back(TowerLevelData{
         /*level*/ 1, /*cost*/ 50,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
@@ -59,8 +97,7 @@ void cgame::setupTowerTypes() {
         "assets/4_idle.png", 0, 6, 2.0f,
         /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f
         });
-
-    // ----- CẤP 2 -----
+    // Cấp 2
     archerLevels.push_back(TowerLevelData{
         /*level*/ 2, /*cost*/ 75,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
@@ -68,8 +105,7 @@ void cgame::setupTowerTypes() {
         "assets/5_idle.png", 0, 6, 1.8f,
         175.f, 0.8f, 40, 220.f
         });
-
-    // ----- CẤP 3 -----
+    // Cấp 3
     archerLevels.push_back(TowerLevelData{
         /*level*/ 3, /*cost*/ 100,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
@@ -77,8 +113,7 @@ void cgame::setupTowerTypes() {
         "assets/6_idle.png", 0, 6, 1.8f,
         200.f, 0.9f, 50, 230.f
         });
-
-    // ----- CẤP 4 -----
+    // Cấp 4
     archerLevels.push_back(TowerLevelData{
         /*level*/ 4, /*cost*/ 150,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
@@ -86,8 +121,9 @@ void cgame::setupTowerTypes() {
         "assets/7_idle.png", 0, 6, 1.8f,
         230.f, 1.2f, 65, 235.f
         });
-
     _towerBlueprints["ArcherTower"] = archerLevels;
+
+
 }
 
 const TowerLevelData* cgame::getTowerNextLevelData(const std::string& typeId, int currentLevel) const {
@@ -101,10 +137,8 @@ const TowerLevelData* cgame::getTowerNextLevelData(const std::string& typeId, in
     return nullptr;
 }
 
-
 void cgame::setupEnemyTypes() {
     _availableEnemyTypes.clear();
-
     // --- GOBLIN ---
     EnemyType goblin;
     goblin.frameSize = { 48, 48 }; goblin.frameCount = 6; goblin.stride = 48;
@@ -116,7 +150,6 @@ void cgame::setupEnemyTypes() {
     goblin.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D_Death.png";
     goblin.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S_Death.png";
     _availableEnemyTypes.push_back(goblin);
-
     // --- WOLF ---
     EnemyType wolf = goblin;
     wolf.health = 60; wolf.speed = 35.f; wolf.scale = 1.2f; wolf.moneyValue = 20;
@@ -127,7 +160,6 @@ void cgame::setupEnemyTypes() {
     wolf.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D1_Death.png";
     wolf.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S1_Death.png";
     _availableEnemyTypes.push_back(wolf);
-
     // --- BEE ---
     EnemyType bee = goblin;
     bee.health = 250; bee.speed = 15.f; bee.scale = 2.0f; bee.moneyValue = 20;
@@ -138,7 +170,6 @@ void cgame::setupEnemyTypes() {
     bee.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D2_Death.png";
     bee.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S2_Death.png";
     _availableEnemyTypes.push_back(bee);
-
     // --- SLIME ---
     EnemyType slime = goblin;
     slime.health = 150; slime.speed = 20.f; slime.scale = 2.0f; slime.moneyValue = 20;
@@ -149,7 +180,6 @@ void cgame::setupEnemyTypes() {
     slime.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D3_Death.png";
     slime.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S3_Death.png";
     _availableEnemyTypes.push_back(slime);
-
     // --- SLIME 1 ---
     EnemyType slime1 = goblin;
     slime1.health = 150; slime1.speed = 20.f; slime1.scale = 2.0f; slime1.moneyValue = 20;
@@ -160,10 +190,8 @@ void cgame::setupEnemyTypes() {
     slime1.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D3_Death2.png";
     slime1.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S3_Death2.png";
     _availableEnemyTypes.push_back(slime1);
-
-
     // --- HORSERIDER ---
-	EnemyType horserider;
+    EnemyType horserider;
     horserider.frameSize = { 96, 96 }; horserider.frameCount = 6; horserider.stride = 96;
     horserider.health = 200; horserider.speed = 30.f; horserider.scale = 1.5f; horserider.moneyValue = 40;
     horserider.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U4_Walk.png";
@@ -173,7 +201,6 @@ void cgame::setupEnemyTypes() {
     horserider.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D4_Death.png";
     horserider.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S4_Death.png";
     _availableEnemyTypes.push_back(horserider);
-
     // --- RAT ---
     EnemyType rat = horserider;
     rat.health = 400; rat.speed = 20.f; rat.scale = 2.0f; rat.moneyValue = 80;
@@ -184,9 +211,8 @@ void cgame::setupEnemyTypes() {
     rat.texturePaths[EnemyState::DYING][MovementDirection::DOWN] = "assets/D5_Death.png";
     rat.texturePaths[EnemyState::DYING][MovementDirection::SIDE] = "assets/S5_Death.png";
     _availableEnemyTypes.push_back(rat);
-
     // --- WIZARD ---
-    EnemyType wizard = horserider;  
+    EnemyType wizard = horserider;
     wizard.health = 2000; wizard.speed = 15.f; wizard.scale = 2.0f; wizard.moneyValue = 1000;
     wizard.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U6_Walk.png";
     wizard.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D6_Walk.png";
@@ -217,16 +243,13 @@ void cgame::resetGameStats() {
     _isFastForward = false;
     _gameSpeedMultiplier = 2.0f;
     _ffButtonSprite.setColor(sf::Color::White);
-
     _enemies.clear();
     _towers.clear();
     _bullets.clear();
-
     _selectingTowerToBuild = false;
     _selectedTower = nullptr;
     _isUpgradePanelVisible = false;
     nextTowerId = 0;
-
     _enemiesDefeated = 0;
     _levelTime = sf::Time::Zero;
     _levelIsActive = false;
@@ -234,48 +257,27 @@ void cgame::resetGameStats() {
 
 void cgame::startNextWave() {
     if (_waveInProgress || _isGameOver || _levelWon) return;
-
     if (_currentWave == 0) {
         _levelIsActive = true;
     }
-
-    
-
-    // =================== LOGIC BOSS WAVE TỔNG QUÁT ===================
-
-    // 1. Xác định tổng số wave cho map hiện tại
-    int totalWavesForThisMap = 2; // Mặc định cho các map 1, 2, 3
+    int totalWavesForThisMap = 2;
     if (getCurrentMapId() == "MAP_4") {
-        totalWavesForThisMap = 2; // Map 4 có 10 wave
+        totalWavesForThisMap = 2;
     }
-
-    _currentWave++; // Tăng số wave lên trước
-
-    // 2. Kiểm tra xem đây có phải là wave cuối không
+    _currentWave++;
     const bool isFinalWave = (_currentWave == totalWavesForThisMap);
-
     if (isFinalWave) {
-        // NẾU ĐÂY LÀ WAVE CUỐI CÙNG CỦA BẤT KỲ MAP NÀO:
         std::cout << "FINAL BOSS WAVE! A single powerful WIZARD appears." << std::endl;
-
-        // Gán loại quái là WIZARD (index = 7)
         _currentWaveEnemyTypeIndex = 7;
-
-        // Gán số lượng quái là 1
         _enemiesPerWave = 1;
     }
     else {
-        // CÁC WAVE THÔNG THƯỜNG:
-
-        // Lọc bỏ RAT và WIZARD khỏi danh sách quái có thể xuất hiện
         std::vector<int> allowedEnemyIndices;
         for (size_t i = 0; i < _availableEnemyTypes.size(); ++i) {
             if (i != 6 && i != 7) {
                 allowedEnemyIndices.push_back(static_cast<int>(i));
             }
         }
-
-        // Chọn ngẫu nhiên loại quái từ danh sách đã lọc
         if (!allowedEnemyIndices.empty()) {
             std::uniform_int_distribution<int> dist(0, static_cast<int>(allowedEnemyIndices.size() - 1));
             int randomIndex = dist(_rng);
@@ -285,64 +287,43 @@ void cgame::startNextWave() {
             std::cerr << "Warning: No allowed enemies for this wave. Defaulting to type 0." << std::endl;
             _currentWaveEnemyTypeIndex = 0;
         }
-
-        // Tính số lượng quái theo công thức như cũ
         _enemiesPerWave = 5 + _currentWave * 2;
     }
-
-    // ======================================================================
-
-    // Các thiết lập chung cho wave mới
     _enemiesSpawnedThisWave = 0;
     _waveInProgress = true;
     _timeSinceLastSpawn = sf::Time::Zero;
     _messageText.setString("");
     _enemies.reserve(_enemiesPerWave);
     _map->calculateEnemyPath(getCurrentMapId());
-
     std::cout << "Wave " << _currentWave << " Start! Enemies to spawn: " << _enemiesPerWave << std::endl;
 }
 
 void cgame::spawnEnemy() {
     if (!_map) return;
-
     if (_enemiesSpawnedThisWave < _enemiesPerWave && _currentWaveEnemyTypeIndex != -1) {
         const auto& path = _map->getEnemyPath();
         if (path.empty()) return;
-
         const EnemyType& baseType = _availableEnemyTypes.at(_currentWaveEnemyTypeIndex);
-
         EnemyType finalType = baseType;
         finalType.health = static_cast<int>(baseType.health * std::pow(1.3, _currentWave - 1));
         finalType.speed = baseType.speed * (1.f + (_currentWave - 1) * 0.05f);
         finalType.moneyValue = baseType.moneyValue + (_currentWave * 2);
-
-        // SỬA ĐỔI: Truyền vào typeIndex để đối tượng quái biết nó là loại nào
         _enemies.emplace_back(this, finalType, _currentWaveEnemyTypeIndex, path);
-
         _enemiesSpawnedThisWave++;
     }
 }
 
-// Dán đoạn code này vào file cgame.cpp, thay thế hoàn toàn cho hàm handleCollisions cũ
-
 void cgame::handleCollisions() {
     for (auto& bullet : _bullets) {
         if (!bullet.canCollide()) continue;
-
         for (auto& enemy : _enemies) {
-            // Chỉ kiểm tra va chạm với enemy còn thực sự sống (trạng thái WALKING)
             if (enemy.isAlive()) {
                 if (bullet.getGlobalBounds().intersects(enemy.getGlobalBounds())) {
-                    bullet.setActive(false); // Vô hiệu hóa đạn ngay khi trúng
-
-                    // Hàm takeDamage giờ sẽ trả về 'true' nếu cú đánh đó giết chết enemy
+                    bullet.setActive(false);
                     bool wasKilledByThisHit = enemy.takeDamage(bullet.getDamage());
-
-                    // Nếu hàm trả về true, ta mới tính tiền và tăng kill
                     if (wasKilledByThisHit) {
                         _money += enemy.getMoneyValue();
-                        _enemiesDefeated++; 
+                        _enemiesDefeated++;
                         SoundManager::playSoundEffect("assets/enemy_explode.ogg");
                     }
                     break;
@@ -368,17 +349,14 @@ void cgame::setupUI() {
     _uiPanel.setFillColor(sf::Color(30, 30, 40, 200));
     _uiPanel.setOutlineThickness(2.f);
     _uiPanel.setOutlineColor(sf::Color(60, 60, 80, 255));
-
     const int fontSize = 22;
     const float padding = 15.f;
     const float iconSize = 24.f;
     const float yStart = 20.f;
     const float spacing = 30.f;
-
     if (!_heartIcon.loadFromFile("assets/heart_icon.png") || !_coinIcon.loadFromFile("assets/coin_icon.png") || !_waveIcon.loadFromFile("assets/wave_icon.png")) {
         std::cerr << "Warning: Failed to load UI icons" << std::endl;
     }
-
     _livesIconSprite.setTexture(_heartIcon);
     _livesIconSprite.setScale(iconSize / _heartIcon.getSize().x, iconSize / _heartIcon.getSize().y);
     _livesIconSprite.setPosition(padding + 10, yStart);
@@ -386,7 +364,6 @@ void cgame::setupUI() {
     _livesText.setCharacterSize(fontSize);
     _livesText.setFillColor(sf::Color::White);
     _livesText.setPosition(padding + iconSize + 20, yStart - 2);
-
     _moneyIconSprite.setTexture(_coinIcon);
     _moneyIconSprite.setScale(iconSize / _coinIcon.getSize().x, iconSize / _coinIcon.getSize().y);
     _moneyIconSprite.setPosition(padding + 10, yStart + spacing);
@@ -394,7 +371,6 @@ void cgame::setupUI() {
     _moneyText.setCharacterSize(fontSize);
     _moneyText.setFillColor(sf::Color(255, 215, 0));
     _moneyText.setPosition(padding + iconSize + 20, yStart + spacing - 2);
-
     _waveIconSprite.setTexture(_waveIcon);
     _waveIconSprite.setScale(iconSize / _waveIcon.getSize().x, iconSize / _waveIcon.getSize().y);
     _waveIconSprite.setPosition(padding + 10, yStart + spacing * 2);
@@ -402,27 +378,37 @@ void cgame::setupUI() {
     _waveText.setCharacterSize(fontSize);
     _waveText.setFillColor(sf::Color(120, 200, 255));
     _waveText.setPosition(padding + iconSize + 20, yStart + spacing * 2 - 2);
-
     _messageText.setFont(_gameFont);
     _messageText.setCharacterSize(50);
     _messageText.setFillColor(sf::Color::Yellow);
-
     _timerText.setFont(_gameFont);
     _timerText.setCharacterSize(50);
     _timerText.setFillColor(sf::Color::Yellow);
-
     if (!_pauseButtonTexture.loadFromFile("assets/pause_icon.png")) {
         std::cerr << "Loi: Khong the tai pause_icon.png" << std::endl;
     }
     _pauseButtonSprite.setTexture(_pauseButtonTexture);
     float pauseIconSize = 40.f;
     _pauseButtonSprite.setScale(pauseIconSize / _pauseButtonTexture.getSize().x, pauseIconSize / _pauseButtonTexture.getSize().y);
-
     if (!_ffButtonTexture.loadFromFile("assets/ff_icon.png")) {
         std::cerr << "Loi: Khong the tai ff_icon.png" << std::endl;
     }
     _ffButtonSprite.setTexture(_ffButtonTexture);
     _ffButtonSprite.setScale(pauseIconSize / _ffButtonTexture.getSize().x, pauseIconSize / _ffButtonTexture.getSize().y);
+
+    // =================== THÊM UI HƯỚNG DẪN CHỌN TRỤ ===================
+    float ui_panel_bottom = _uiPanel.getPosition().y + _uiPanel.getSize().y;
+    _towerSelectTitleText.setFont(_gameFont);
+    _towerSelectTitleText.setCharacterSize(20);
+    _towerSelectTitleText.setFillColor(sf::Color::White);
+    _towerSelectTitleText.setString("HUONG DAN DAT TRU:");
+    _towerSelectTitleText.setPosition(padding + 10, ui_panel_bottom + 20.f);
+
+    _towerSelectText1.setFont(_gameFont);
+    _towerSelectText1.setCharacterSize(18);
+    _towerSelectText1.setFillColor(sf::Color::Black);
+    _towerSelectText1.setString("NHAN 1 DE DAT TRU");
+    _towerSelectText1.setPosition(padding + 10, ui_panel_bottom + 50.f);
 }
 
 void cgame::resetGame() {
@@ -473,7 +459,6 @@ void cgame::cleanupInactiveObjects() {
     _towers.erase(std::remove_if(_towers.begin(), _towers.end(), [](const ctower& t) { return t.isPendingRemoval(); }), _towers.end());
 }
 
-
 void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
     if (!_selectingTowerToBuild || !_map) return;
     sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
@@ -498,48 +483,23 @@ void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
     }
 }
 
-
 void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
     if (_isGameOver || !_map) return;
 
-    // --- Xử lý sự kiện bàn phím ---
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::N) {
             if (!_waveInProgress && !_inIntermission) startNextWave();
         }
-        if (event.key.code == sf::Keyboard::Num1) {
-            // =================== KIỂM TRA ĐIỀU KIỆN MỚI ===================
-            if (_inIntermission) {
-                std::cout << "Khong the xay tru trong thoi gian nghi!" << std::endl;
-                return; // Chặn hành động
-            }
-            // =============================================================
 
-            const auto& blueprint = _towerBlueprints.at("ArcherTower");
-            int buildCost = blueprint[0].cost;
-            if (buildCost > 0 && _money >= buildCost) {
-                _selectingTowerToBuild = true;
-                _selectedTowerType = "ArcherTower";
-                static sf::Texture previewTexture;
-                if (previewTexture.loadFromFile(blueprint[0].idle_texturePath)) {
-                    _towerPlacementPreview.setTexture(previewTexture);
-                    _towerPlacementPreview.setTextureRect(sf::IntRect(blueprint[0].idle_startFrame * blueprint[0].frameSize.x, 0, blueprint[0].frameSize.x, blueprint[0].frameSize.y));
-                }
-                else {
-                    std::cerr << "Loi tai texture preview thap!" << std::endl;
-                    _selectingTowerToBuild = false;
-                    return;
-                }
-                sf::FloatRect bounds = _towerPlacementPreview.getLocalBounds();
-                _towerPlacementPreview.setOrigin(bounds.width / 2.f, bounds.height - blueprint[0].frameOffsetY);
-            }
-            else if (buildCost <= 0) {
-                std::cerr << "Loi: Chi phi xay dung khong hop le (" << buildCost << ")" << std::endl;
-            }
-            else {
-                std::cout << "Khong du tien de mua thap!" << std::endl;
-            }
+        // =================== CẬP NHẬT LOGIC CHỌN TRỤ ===================
+        if (event.key.code == sf::Keyboard::Num1) {
+            selectTowerToBuild("ArcherTower");
         }
+        if (event.key.code == sf::Keyboard::Num2) {
+            selectTowerToBuild("CannonTower");
+        }
+        // ==============================================================
+
         if (event.key.code == sf::Keyboard::Escape) {
             _selectingTowerToBuild = false;
             _selectedTower = nullptr;
@@ -547,39 +507,27 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
         }
     }
 
-    // --- Xử lý sự kiện chuột ---
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {
             sf::Vector2f mouseWorldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
             if (_pauseButtonSprite.getGlobalBounds().contains(mouseWorldPos)) {
-                setPaused(true);
-                SoundManager::playSoundEffect("assets/menu_click.wav");
-                return;
+                setPaused(true); SoundManager::playSoundEffect("assets/menu_click.wav"); return;
             }
             if (_ffButtonSprite.getGlobalBounds().contains(mouseWorldPos)) {
-                _isFastForward = !_isFastForward;
-                _ffButtonSprite.setColor(_isFastForward ? sf::Color(100, 255, 100) : sf::Color::White);
-                return;
+                _isFastForward = !_isFastForward; _ffButtonSprite.setColor(_isFastForward ? sf::Color(100, 255, 100) : sf::Color::White); return;
             }
 
-            // =================== KIỂM TRA ĐIỀU KIỆN MỚI ===================
             if (_inIntermission) {
                 std::cout << "Khong the tuong tac voi tru trong thoi gian nghi!" << std::endl;
                 return;
             }
-            // =============================================================
 
             if (_isUpgradePanelVisible) {
-                if (_upgradeButton.getGlobalBounds().contains(mouseWorldPos)) {
-                    handleUpgrade();
-                    return;
-                }
-                if (_sellButton.getGlobalBounds().contains(mouseWorldPos)) {
-                    handleSell();
-                    return;
-                }
+                if (_upgradeButton.getGlobalBounds().contains(mouseWorldPos)) { handleUpgrade(); return; }
+                if (_sellButton.getGlobalBounds().contains(mouseWorldPos)) { handleSell(); return; }
             }
+
             if (_selectingTowerToBuild) {
                 sf::Vector2i gridCoords = _map->getGridCoordinates(mouseWorldPos);
                 if (_map->isBuildable(gridCoords.y, gridCoords.x)) {
@@ -601,10 +549,6 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                             _selectingTowerToBuild = false;
                             _selectedTower = nullptr;
                             _isUpgradePanelVisible = false;
-                        }
-                        else if (buildCost <= 0) {
-                            std::cerr << "Loi: Chi phi xay dung khong hop le (" << buildCost << ")" << std::endl;
-                            _selectingTowerToBuild = false;
                         }
                         else {
                             std::cout << "Khong du tien de xay thap!" << std::endl;
@@ -687,60 +631,47 @@ void cgame::updateInterMission(sf::Time deltaTime) {
 
 void cgame::update(sf::Time deltaTime) {
     sf::Time modifiedDeltaTime = deltaTime * (_isFastForward ? _gameSpeedMultiplier : 1.0f);
-
     if (_levelIsActive && !_isGameOver && !_levelWon) {
         _levelTime += modifiedDeltaTime;
     }
-
     if (_levelWon) {
         _messageText.setString("VICTORY!");
         _timerText.setString("");
         _levelIsActive = false;
         return;
     }
-
     if (_isPaused || _isGameOver) {
         if (_isGameOver) _levelIsActive = false;
         return;
     }
-
     if (_inIntermission) {
         updateInterMission(modifiedDeltaTime);
         return;
     }
-
     if (_waveInProgress) {
         _timeSinceLastSpawn += modifiedDeltaTime;
         if (_timeSinceLastSpawn >= _spawnInterval && _enemiesSpawnedThisWave < _enemiesPerWave) {
             spawnEnemy();
             _timeSinceLastSpawn = sf::Time::Zero;
         }
-
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
             _waveInProgress = false;
-
             int totalWavesForThisMap = 8;
             if (getCurrentMapId() == "MAP_4") {
                 totalWavesForThisMap = 10;
             }
-
             if (_currentWave >= totalWavesForThisMap) {
                 _levelWon = true;
             }
             else {
                 _inIntermission = true;
                 _intermissionTimer = _intermissionTime;
-
-                // =================== BẮT ĐẦU THAY ĐỔI ===================
-                // Hủy chọn và đóng bảng nâng cấp khi thời gian nghỉ bắt đầu
                 _selectingTowerToBuild = false;
                 _selectedTower = nullptr;
                 _isUpgradePanelVisible = false;
-                // =================== KẾT THÚC THAY ĐỔI ===================
             }
         }
     }
-
     updateEnemies(modifiedDeltaTime);
     if (_isGameOver) return;
     updateTowers(modifiedDeltaTime);
@@ -748,7 +679,6 @@ void cgame::update(sf::Time deltaTime) {
     handleCollisions();
     cleanupInactiveObjects();
     updateUpgradePanel();
-
     std::stringstream ssLives, ssMoney, ssWave;
     ssLives << _lives;
     ssMoney << _money;
@@ -756,7 +686,6 @@ void cgame::update(sf::Time deltaTime) {
     _livesText.setString(ssLives.str());
     _moneyText.setString(ssMoney.str());
     _waveText.setString(ssWave.str());
-
     if (_isGameOver) {
         _messageText.setString("GAME OVER");
     }
@@ -769,6 +698,7 @@ void cgame::update(sf::Time deltaTime) {
         _messageText.setString("");
     }
 }
+
 void cgame::render(sf::RenderWindow& window) {
     if (_map) {
         _map->render(window);
@@ -783,6 +713,13 @@ void cgame::render(sf::RenderWindow& window) {
     window.draw(_moneyText);
     if (_waveIcon.getSize().x > 0) window.draw(_waveIconSprite);
     window.draw(_waveText);
+
+    // =================== VẼ UI HƯỚNG DẪN CHỌN TRỤ ===================
+    window.draw(_towerSelectTitleText);
+    window.draw(_towerSelectText1);
+    window.draw(_towerSelectText2);
+    // ===============================================================
+
     float pauseButtonX = window.getSize().x - _pauseButtonSprite.getGlobalBounds().width - 20.f;
     _pauseButtonSprite.setPosition(pauseButtonX, 20.f);
     float ffButtonX = pauseButtonX - _ffButtonSprite.getGlobalBounds().width - 10.f;
@@ -946,19 +883,14 @@ void cgame::saveGame(const std::string& filename) const {
         std::cerr << "Error: Could not open save file for writing: " << filename << std::endl;
         return;
     }
-
     saveFile << "map_id " << _currentMapId << std::endl;
     saveFile << "lives " << _lives << std::endl;
     saveFile << "money " << _money << std::endl;
     saveFile << "wave " << _currentWave << std::endl;
-
-    // LƯU TRẠNG THÁI CHI TIẾT CỦA WAVE
     saveFile << "wave_in_progress " << (_waveInProgress ? 1 : 0) << std::endl;
     saveFile << "wave_enemy_type " << _currentWaveEnemyTypeIndex << std::endl;
     saveFile << "enemies_spawned " << _enemiesSpawnedThisWave << std::endl;
     saveFile << "spawn_timer " << _timeSinceLastSpawn.asSeconds() << std::endl;
-
-    // Lưu trụ
     int validTowers = 0;
     for (const auto& tower : _towers) if (!tower.isPendingRemoval()) validTowers++;
     saveFile << "towers_count " << validTowers << std::endl;
@@ -968,8 +900,6 @@ void cgame::saveGame(const std::string& filename) const {
                 << tower.getPosition().x << " " << tower.getPosition().y << std::endl;
         }
     }
-
-    // LƯU TRẠNG THÁI CỦA TỪNG CON QUÁI
     saveFile << "enemies_on_map_count " << _enemies.size() << std::endl;
     for (const auto& enemy : _enemies) {
         if (enemy.isActive() && enemy.isAlive()) {
@@ -978,7 +908,6 @@ void cgame::saveGame(const std::string& filename) const {
                 << enemy.getPathIndex() << std::endl;
         }
     }
-
     std::cout << "Game saved successfully to " << filename << std::endl;
     saveFile.close();
 }
@@ -989,22 +918,18 @@ bool cgame::loadGame(const std::string& filename) {
         std::cerr << "Info: No save file found at: " << filename << std::endl;
         return false;
     }
-
     resetGameStats();
     std::string key;
     int towersCount = 0, enemiesOnMapCount = 0;
-
     while (saveFile >> key) {
         if (key == "map_id") saveFile >> _currentMapId;
         else if (key == "lives") saveFile >> _lives;
         else if (key == "money") saveFile >> _money;
         else if (key == "wave") saveFile >> _currentWave;
-        // TẢI TRẠNG THÁI CHI TIẾT CỦA WAVE
         else if (key == "wave_in_progress") { int v; saveFile >> v; _waveInProgress = (v == 1); }
         else if (key == "wave_enemy_type") saveFile >> _currentWaveEnemyTypeIndex;
         else if (key == "enemies_spawned") saveFile >> _enemiesSpawnedThisWave;
         else if (key == "spawn_timer") { float s; saveFile >> s; _timeSinceLastSpawn = sf::seconds(s); }
-        // Tải trụ
         else if (key == "towers_count") saveFile >> towersCount;
         else if (key == "tower") {
             std::string typeId; int level; float posX, posY;
@@ -1018,7 +943,6 @@ bool cgame::loadGame(const std::string& filename) {
                 }
             }
         }
-        // TẢI TỪNG CON QUÁI
         else if (key == "enemies_on_map_count") {
             saveFile >> enemiesOnMapCount;
             if (enemiesOnMapCount > 0) _enemies.reserve(enemiesOnMapCount);
@@ -1038,12 +962,10 @@ bool cgame::loadGame(const std::string& filename) {
             }
         }
     }
-
     if (_waveInProgress) {
         _enemiesPerWave = 5 + _currentWave * 2;
-        _messageText.setString(""); 
+        _messageText.setString("");
     }
-
     std::cout << "Game loaded successfully from " << filename << std::endl;
     saveFile.close();
     return true;
@@ -1061,6 +983,7 @@ long cgame::calculateScore() const {
     long score = _enemiesDefeated * 100;
     long timePenalty = static_cast<long>(_levelTime.asSeconds());
     score -= timePenalty;
-
     return std::max(0L, score);
 }
+
+// ============== KẾT THÚC CODE CGAME.CPP HOÀN CHỈNH ==============
