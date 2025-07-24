@@ -33,6 +33,7 @@ struct TowerLevelData {
     float fireRate;
     int damage;
     float bulletSpeed;
+    std::string bulletTexturePath;
 };
 
 class ctower {
@@ -51,7 +52,6 @@ private:
     sf::Sprite _sprite;
     cpoint _position;
     sf::Time _fireCooldown;
-    std::string _bulletTexturePath;
 
     State _currentState;
     int _level;
