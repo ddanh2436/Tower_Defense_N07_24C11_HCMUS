@@ -1,6 +1,4 @@
-﻿// ============== BẮT ĐẦU CODE CGAME.CPP HOÀN CHỈNH ==============
-
-#include "cgame.h"
+﻿#include "cgame.h"
 #include "SoundManager.h"
 #include <iostream>
 #include <sstream>
@@ -13,13 +11,11 @@ static int nextTowerId = 0;
 
 cgame::cgame() : _rng(std::random_device{}()) {
     _map = nullptr;
-
     loadFont();
     setupUI();
     setupEnemyTypes();
     setupTowerTypes();
     _isPaused = false;
-    resetGame();
 }
 
 cgame::~cgame() {
@@ -95,7 +91,8 @@ void cgame::setupTowerTypes() {
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
         /*texturePath*/ "assets/2.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
         "assets/2_idle.png", 0, 4, 2.0f,
-        /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f
+        /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f,
+        /*bulletTexturePath*/ "assets/bullet.png" // <--- THÊM MỚI
         });
     // Cấp 2
     archerLevels.push_back(TowerLevelData{
@@ -103,7 +100,8 @@ void cgame::setupTowerTypes() {
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
         "assets/3.png", 2, 2, 0.4f,
         "assets/3_idle.png", 0, 4, 1.8f,
-        175.f, 0.8f, 40, 220.f
+        175.f, 0.8f, 40, 220.f,
+        /*bulletTexturePath*/ "assets/bullet.png" // <--- THÊM MỚI
         });
     // Cấp 3
     archerLevels.push_back(TowerLevelData{
@@ -111,7 +109,8 @@ void cgame::setupTowerTypes() {
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
         "assets/4.png", 2, 2, 0.4f,
         "assets/4_idle.png", 0, 6, 1.8f,
-        200.f, 0.9f, 50, 230.f
+        200.f, 0.9f, 50, 230.f,
+        /*bulletTexturePath*/ "assets/bullet.png" // <--- THÊM MỚI (bạn có thể đổi nếu muốn)
         });
     _towerBlueprints["ArcherTower"] = archerLevels;
 
@@ -125,7 +124,8 @@ void cgame::setupTowerTypes() {
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
         /*texturePath*/ "assets/5.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
         "assets/5_idle.png", 0, 6, 2.0f,
-        /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f
+        /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f,
+        /*bulletTexturePath*/ "assets/fire.png" // <--- THÊM MỚI
         });
     // Cấp 2
     cannonLevels.push_back(TowerLevelData{
@@ -133,7 +133,8 @@ void cgame::setupTowerTypes() {
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
         "assets/6.png", 2, 2, 0.4f,
         "assets/6_idle.png", 0, 6, 1.8f,
-        175.f, 0.8f, 40, 220.f
+        175.f, 0.8f, 40, 220.f,
+        /*bulletTexturePath*/ "assets/fire.png" // <--- THÊM MỚI
         });
     // Cấp 3
     cannonLevels.push_back(TowerLevelData{
@@ -141,11 +142,10 @@ void cgame::setupTowerTypes() {
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
         "assets/7.png", 2, 2, 0.4f,
         "assets/7_idle.png", 0, 6, 1.8f,
-        200.f, 0.9f, 50, 230.f
+        200.f, 0.9f, 50, 230.f,
+        /*bulletTexturePath*/ "assets/fire.png" // <--- THÊM MỚI (bạn có thể đổi nếu muốn)
         });
     _towerBlueprints["CannonTower"] = cannonLevels;
-
-
 }
 
 const TowerLevelData* cgame::getTowerNextLevelData(const std::string& typeId, int currentLevel) const {

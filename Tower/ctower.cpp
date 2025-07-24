@@ -19,7 +19,6 @@ ctower::ctower(cgame* game, const std::string& typeId, const TowerLevelData& ini
     _pendingUpgradeData(nullptr),
     _target(nullptr)
 {
-    _bulletTexturePath = "assets/bullet.png";
 
     // Gọi hàm setAnimation đã được sửa lỗi để thiết lập mọi thứ
     setAnimation(initialLevelData);
@@ -131,7 +130,16 @@ void ctower::update(sf::Time deltaTime, std::vector<cenemy>& enemies, std::vecto
 
     if (_currentState == State::ATTACKING && _fireCooldown <= sf::Time::Zero && _target) {
         sf::Vector2f targetDirection = _target->getPosition() - _position.toVector2f();
-        gameBullets.emplace_back(_bulletTexturePath, _position, targetDirection, _currentLevelData.bulletSpeed, _currentLevelData.damage);
+
+        // SỬA ĐỔI TẠI ĐÂY: Lấy texture đạn từ _currentLevelData
+        gameBullets.emplace_back(
+            _currentLevelData.bulletTexturePath, // <--- THAY ĐỔI
+            _position,
+            targetDirection,
+            _currentLevelData.bulletSpeed,
+            _currentLevelData.damage
+        );
+
         _fireCooldown = sf::seconds(_currentLevelData.fireRate);
         SoundManager::playSoundEffect("assets/tower_shoot.ogg");
     }
