@@ -26,7 +26,7 @@ constexpr float GAME_MUSIC_VOLUME = 70.f;
 
 const std::string SAVE_GAME_FILENAME = "data/savegame.txt";
 
-int determineStars(const cgame& gameManager) {
+static int determineStars(const cgame& gameManager) {
     int lives = gameManager.getLives();
     int maxLives = gameManager.getMaxLives();
     if (maxLives <= 0 || lives <= 0) return 0;

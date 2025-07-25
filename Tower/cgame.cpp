@@ -418,19 +418,29 @@ void cgame::setupUI() {
     _ffButtonSprite.setTexture(_ffButtonTexture);
     _ffButtonSprite.setScale(pauseIconSize / _ffButtonTexture.getSize().x, pauseIconSize / _ffButtonTexture.getSize().y);
 
-    // =================== THÊM UI HƯỚNG DẪN CHỌN TRỤ ===================
+    // Add a proper instruction panel for better organization
     float ui_panel_bottom = _uiPanel.getPosition().y + _uiPanel.getSize().y;
+
+    // Set up the title
     _towerSelectTitleText.setFont(_gameFont);
     _towerSelectTitleText.setCharacterSize(20);
     _towerSelectTitleText.setFillColor(sf::Color::White);
     _towerSelectTitleText.setString("HUONG DAN DAT TRU:");
     _towerSelectTitleText.setPosition(padding + 10, ui_panel_bottom + 20.f);
 
+    // Set up the first tower instruction with proper styling
     _towerSelectText1.setFont(_gameFont);
     _towerSelectText1.setCharacterSize(18);
-    _towerSelectText1.setFillColor(sf::Color::Black);
-    _towerSelectText1.setString("NHAN 1 DE DAT TRU");
-    _towerSelectText1.setPosition(padding + 10, ui_panel_bottom + 50.f);
+    _towerSelectText1.setFillColor(sf::Color::Black); // Light blue-white color
+    _towerSelectText1.setString("NHAN 1: DAT TRU BAN DA");
+    _towerSelectText1.setPosition(padding + 10, ui_panel_bottom + 50.f); // Indented
+
+    // Set up the second tower instruction below the first one with padding
+    _towerSelectText2.setFont(_gameFont);
+    _towerSelectText2.setCharacterSize(18);
+    _towerSelectText2.setFillColor(sf::Color::Magenta); // Bright magenta
+    _towerSelectText2.setString("NHAN 2: DAT TRU LUA");
+    _towerSelectText2.setPosition(padding + 10, ui_panel_bottom + 80.f); // Added 30px padding between texts
 }
 
 void cgame::resetGame() {
