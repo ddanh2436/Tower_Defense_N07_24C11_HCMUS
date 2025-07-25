@@ -342,17 +342,15 @@ int main() {
     auto gameManager = std::make_unique<cgame>();
     Leaderboard leaderboard;
 
-    const auto& fullscreenModes = sf::VideoMode::getFullscreenModes();
-    sf::VideoMode selectedMode;
-    bool fullscreen = false;
-    if (!fullscreenModes.empty()) {
-        selectedMode = fullscreenModes[0];
-        fullscreen = true;
+    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+
+    // Kiểm tra xem chế độ lấy được có hợp lệ không, nếu không thì dùng độ phân giải mặc định
+    if (!desktopMode.isValid()) {
+        desktopMode = sf::VideoMode(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     }
-    else {
-        selectedMode = sf::VideoMode(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-    }
-    auto window = std::make_unique<sf::RenderWindow>(selectedMode, "Tower Defense SFML", fullscreen ? sf::Style::Fullscreen : sf::Style::Close);
+
+    // Tạo cửa sổ ở chế độ Fullscreen với độ phân giải đã lấy được
+    auto window = std::make_unique<sf::RenderWindow>(desktopMode, "Tower Defense SFML", sf::Style::Fullscreen);
     window->setFramerateLimit(60);
 
     GameState currentState = GameState::ShowingMenu;
