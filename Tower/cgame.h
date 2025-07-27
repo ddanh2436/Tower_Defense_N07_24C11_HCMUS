@@ -94,9 +94,7 @@ private:
     sf::RectangleShape _sellButton;
     sf::Text _sellText;
     sf::Text _sellValueText;
-    sf::Text _towerSelectTitleText;
-    sf::Text _towerSelectText1;
-    sf::Text _towerSelectText2;
+
     int _lives;
     int _maxLives;
     int _money;
@@ -153,6 +151,7 @@ private:
     void handleSell();
     void updateUpgradePanel();
     void selectTowerToBuild(const std::string& typeId);
+    void renderInstructionPanel(sf::RenderWindow& window);
 };
 
 #endif // CGAME_H

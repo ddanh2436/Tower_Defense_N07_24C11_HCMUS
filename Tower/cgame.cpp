@@ -235,7 +235,7 @@ void cgame::setupEnemyTypes() {
     _availableEnemyTypes.push_back(rat);
     // --- WIZARD ---
     EnemyType wizard = horserider;
-    wizard.health = 2000; wizard.speed = 15.f; wizard.scale = 2.0f; wizard.moneyValue = 1000;
+    wizard.health = 1000; wizard.speed = 15.f; wizard.scale = 2.0f; wizard.moneyValue = 1000;
     wizard.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U6_Walk.png";
     wizard.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D6_Walk.png";
     wizard.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S6_Walk.png";
@@ -418,29 +418,7 @@ void cgame::setupUI() {
     _ffButtonSprite.setTexture(_ffButtonTexture);
     _ffButtonSprite.setScale(pauseIconSize / _ffButtonTexture.getSize().x, pauseIconSize / _ffButtonTexture.getSize().y);
 
-    // Add a proper instruction panel for better organization
-    float ui_panel_bottom = _uiPanel.getPosition().y + _uiPanel.getSize().y;
-
-    // Set up the title
-    _towerSelectTitleText.setFont(_gameFont);
-    _towerSelectTitleText.setCharacterSize(20);
-    _towerSelectTitleText.setFillColor(sf::Color::White);
-    _towerSelectTitleText.setString("HUONG DAN DAT TRU:");
-    _towerSelectTitleText.setPosition(padding + 10, ui_panel_bottom + 20.f);
-
-    // Set up the first tower instruction with proper styling
-    _towerSelectText1.setFont(_gameFont);
-    _towerSelectText1.setCharacterSize(18);
-    _towerSelectText1.setFillColor(sf::Color::Black); // Light blue-white color
-    _towerSelectText1.setString("NHAN 1: DAT TRU BAN DA");
-    _towerSelectText1.setPosition(padding + 10, ui_panel_bottom + 50.f); // Indented
-
-    // Set up the second tower instruction below the first one with padding
-    _towerSelectText2.setFont(_gameFont);
-    _towerSelectText2.setCharacterSize(18);
-    _towerSelectText2.setFillColor(sf::Color::Magenta); // Bright magenta
-    _towerSelectText2.setString("NHAN 2: DAT TRU LUA");
-    _towerSelectText2.setPosition(padding + 10, ui_panel_bottom + 80.f); // Added 30px padding between texts
+   
 }
 
 void cgame::resetGame() {
@@ -651,7 +629,7 @@ void cgame::updateInterMission(sf::Time deltaTime) {
     if (_intermissionTimer > sf::Time::Zero) {
         _intermissionTimer -= deltaTime;
         std::stringstream ss;
-        ss << "Wave tiep theo sau: " << static_cast<int>(_intermissionTimer.asSeconds()) + 1;
+        ss << "Next wave after: " << static_cast<int>(_intermissionTimer.asSeconds()) + 1;
         _timerText.setString(ss.str());
     }
     else {
@@ -722,9 +700,7 @@ void cgame::update(sf::Time deltaTime) {
         _messageText.setString("GAME OVER");
     }
     else if (!_waveInProgress && !_inIntermission) {
-        std::stringstream ss;
-        ss << "Nhan 'N' de bat dau Wave " << (_currentWave + 1);
-        _messageText.setString(ss.str());
+        _messageText.setString("");
     }
     else if (!_inIntermission) {
         _messageText.setString("");
@@ -746,11 +722,10 @@ void cgame::render(sf::RenderWindow& window) {
     if (_waveIcon.getSize().x > 0) window.draw(_waveIconSprite);
     window.draw(_waveText);
 
-    // =================== VẼ UI HƯỚNG DẪN CHỌN TRỤ ===================
-    window.draw(_towerSelectTitleText);
-    window.draw(_towerSelectText1);
-    window.draw(_towerSelectText2);
-    // ===============================================================
+    if (!_waveInProgress && !_inIntermission && !_levelWon && !_isGameOver) {
+        // Gọi hàm mới, sạch sẽ và đáng tin cậy
+        renderInstructionPanel(window);
+    }
 
     float pauseButtonX = window.getSize().x - _pauseButtonSprite.getGlobalBounds().width - 20.f;
     _pauseButtonSprite.setPosition(pauseButtonX, 20.f);
@@ -847,7 +822,7 @@ void cgame::updateUpgradePanel() {
     _upgradeButton.setPosition(startX, buttonY);
     if (tower.isBusy()) {
         _upgradeButton.setFillColor(sf::Color(80, 80, 80));
-        _upgradeText.setString("BUSY...");
+        _upgradeText.setString("UPGRADING...");
         _costText.setString("");
     }
     else if (tower.canUpgrade()) {
@@ -1018,4 +993,64 @@ long cgame::calculateScore() const {
     return std::max(0L, score);
 }
 
-// ============== KẾT THÚC CODE CGAME.CPP HOÀN CHỈNH ==============
+void cgame::renderInstructionPanel(sf::RenderWindow& window) {
+    sf::Vector2f windowSize = sf::Vector2f(window.getSize());
+    sf::Vector2f windowCenter = windowSize / 2.f;
+
+    sf::RectangleShape panel;
+    panel.setSize({ windowSize.x * 0.7f, windowSize.y * 0.55f }); 
+    panel.setFillColor(sf::Color(25, 40, 80, 235));
+    panel.setOutlineColor(sf::Color(100, 120, 180, 255));
+    panel.setOutlineThickness(3.f);
+    panel.setOrigin(panel.getSize() / 2.f);
+    panel.setPosition(windowCenter);
+
+    sf::Text title;
+    title.setFont(_gameFont);
+    title.setString("INSTRUCTIONS");
+    title.setCharacterSize(48);
+    title.setStyle(sf::Text::Bold);
+    title.setFillColor(sf::Color::Yellow);
+
+    sf::FloatRect titleBounds = title.getLocalBounds();
+    title.setOrigin(titleBounds.left + titleBounds.width / 2.f, titleBounds.top + titleBounds.height / 2.f);
+    title.setPosition(windowCenter.x, panel.getPosition().y - panel.getSize().y / 2.f + 50.f);
+
+    std::vector<sf::Text> lines;
+    std::vector<std::string> instructions = {
+        "- Num 1: Select Rock Tower",
+        "- Num 2: Select Fireball Tower",
+        "- Left click into tower: Set or select existing Tower",
+        "- Click on the existing Tower: Show Upgrade / Sell menu",
+        "- Click button >>: Fast forward the game",
+        "- Press ESC: Show PAUSE Menu",
+        "",
+        "ARE YOU READY? PRESS 'N' TO START!"
+    };
+
+    float textStartY = title.getPosition().y + 80.f;
+    for (size_t i = 0; i < instructions.size(); ++i) {
+        sf::Text line;
+        line.setFont(_gameFont);
+        line.setString(instructions[i]);
+        line.setCharacterSize(28);
+        line.setFillColor(sf::Color::White);
+
+        if (i == instructions.size() - 1) {
+            line.setCharacterSize(32);
+            line.setStyle(sf::Text::Bold);
+            line.setFillColor(sf::Color(100, 255, 100));
+        }
+
+        sf::FloatRect lineBounds = line.getLocalBounds();
+        line.setOrigin(lineBounds.left + lineBounds.width / 2.f, lineBounds.top + lineBounds.height / 2.f);
+        line.setPosition(windowCenter.x, textStartY + (i * 45.f));
+        lines.push_back(line);
+    }
+
+    window.draw(panel);
+    window.draw(title);
+    for (const auto& line : lines) {
+        window.draw(line);
+    }
+}

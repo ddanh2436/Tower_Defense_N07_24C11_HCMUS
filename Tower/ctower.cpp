@@ -68,8 +68,8 @@ void ctower::setAnimation(const TowerLevelData& levelData) {
 
     // *** SỬA LỖI 2: Đặt điểm gốc (origin) dựa trên kích thước của MỘT FRAME ***
     _sprite.setOrigin(
-        _currentLevelData.frameSize.x / 2.f,
-        _currentLevelData.frameSize.y - _currentLevelData.frameOffsetY
+        static_cast<float>(_currentLevelData.frameSize.x) / 2.f,
+        static_cast<float>(_currentLevelData.frameSize.y) - static_cast<float>(_currentLevelData.frameOffsetY)
     );
 }
 
