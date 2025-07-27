@@ -37,7 +37,7 @@ GameState showMenu(sf::RenderWindow& window) {
     sf::Text gameTitleText;
     gameTitleText.setFont(pixelFont);
     gameTitleText.setString("Tower Defense");
-    gameTitleText.setCharacterSize(50);
+    gameTitleText.setCharacterSize(60);
     gameTitleText.setFillColor(sf::Color::Yellow);
     gameTitleText.setStyle(sf::Text::Bold);
 
@@ -47,9 +47,8 @@ GameState showMenu(sf::RenderWindow& window) {
     gameTitleText.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 5.0f));
 
     std::vector<sf::Text> menuItems;
-    // ================== THÊM MỚI "LEADERBOARD" VÀO MENU ==================
-    std::vector<std::string> menuStrings = { "New Game", "Load Game", "Leaderboard", "Settings", "Exit" };
-    // ===================================================================
+    std::vector<std::string> menuStrings = { "New Game", "Continue Game", "Leaderboard", "Settings", "Exit" };
+
 
     unsigned int pixelCharSize = 20;
     float itemHeight = static_cast<float>(pixelCharSize) * 1.5f;
@@ -109,7 +108,7 @@ GameState showMenu(sf::RenderWindow& window) {
                     SoundManager::playSoundEffect("assets/menu_click.ogg");
                     // ================== XỬ LÝ SỰ KIỆN CHO LEADERBOARD ==================
                     if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
-                    if (menuStrings[selectedItemIndex] == "Load Game") return GameState::LoadingGame;
+                    if (menuStrings[selectedItemIndex] == "Continue Game") return GameState::LoadingGame;
                     if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
                     if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                     if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
@@ -123,13 +122,11 @@ GameState showMenu(sf::RenderWindow& window) {
                         if (menuItems[i].getGlobalBounds().contains(mousePos)) {
                             selectedItemIndex = static_cast<int>(i);
                             SoundManager::playSoundEffect("assets/menu_click.ogg");
-                            // ================== XỬ LÝ SỰ KIỆN CHO LEADERBOARD ==================
                             if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                             if (menuStrings[selectedItemIndex] == "Load Game") return GameState::LoadingGame;
                             else if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
                             else if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                             else if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
-                            // ====================================================================
                             break;
                         }
                     }
@@ -544,9 +541,7 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
     return GameState::ShowingMenu;
 }
 
-// ========================================================================================
-// HÀM showPauseMenu ĐÃ ĐƯỢC CHỈNH SỬA HOÀN TOÀN
-// ========================================================================================
+
 GameState showPauseMenu(sf::RenderWindow& window) {
     sf::Font pixelFont;
     if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) {

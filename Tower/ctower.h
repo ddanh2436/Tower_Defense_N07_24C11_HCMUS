@@ -34,6 +34,7 @@ struct TowerLevelData {
     int damage;
     float bulletSpeed;
     std::string bulletTexturePath;
+
 };
 
 class ctower {

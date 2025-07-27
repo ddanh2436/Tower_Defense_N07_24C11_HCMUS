@@ -28,13 +28,25 @@ void Leaderboard::loadFromFile(const std::string& filename) {
         return;
     }
     _scores.clear();
+
     std::string name;
     long score;
     int enemies;
     float time;
-    while (file >> name >> score >> enemies >> time) {
+
+    // THAY ĐỔI LOGIC ĐỌC FILE
+    while (file >> score >> enemies >> time) { // Đọc các số trước
+        // Đọc phần còn lại của dòng (chính là tên người chơi)
+        std::getline(file, name);
+
+        // Xóa khoảng trắng thừa ở đầu tên (rất quan trọng)
+        if (!name.empty() && name[0] == ' ') {
+            name.erase(0, 1);
+        }
+
         _scores.push_back({ name, score, enemies, time });
     }
+
     sortScores();
 }
 
@@ -50,7 +62,7 @@ void Leaderboard::saveToFile(const std::string& filename) const {
         return;
     }
     for (const auto& entry : _scores) {
-        file << entry.playerName << " " << entry.score << " " << entry.enemiesDefeated << " " << entry.timeTaken << std::endl;
+        file << entry.score << " " << entry.enemiesDefeated << " " << entry.timeTaken << " " << entry.playerName << std::endl;
     }
     std::cout << "Leaderboard data successfully saved to " << filename << std::endl;
 }

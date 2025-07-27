@@ -10,7 +10,7 @@ cenemy::cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const 
     _path(path),
     _typeIndex(typeIndex),
     _speed(type.speed),
-    _health(type.health),
+    _health(static_cast<float>(type.health)),
     _maxHealth(type.health),
     _moneyValue(type.moneyValue),
     _isActive(true),
