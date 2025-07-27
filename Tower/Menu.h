@@ -30,6 +30,34 @@ struct MapInfo {
     std::string dataFile;
 };
 
+// Khai báo một hàm quản lí cờ để add thêm ảnh vào.
+inline void drawFlag(
+    sf::RenderWindow& window,
+    sf::Sprite& flagSprite,
+    float textX,
+    float textY,
+    float offsetX
+) {
+    // Tính kích thước thật của sprite sau khi scale
+    sf::FloatRect bounds = flagSprite.getGlobalBounds();
+    // Đặt vị trí: dịch sang phải offsetX, căn giữa theo chiều dọc so với textY
+    flagSprite.setPosition(
+        textX + offsetX,
+        textY - bounds.height / 2.f
+    );
+    window.draw(flagSprite);
+}
+
+std::vector<sf::Vector2f> getFlagPosition(const sf::Vector2u& windowSize, int amount);
+
+namespace MenuResources {
+    extern sf::Texture mapSelectionBackgroundTexture;
+    extern sf::Sprite mapSelectionBackgroundSprite;
+    extern bool resourcesInitialized;
+
+    bool initializeResource();
+}
+
 // Khai báo các hàm menu
 GameState showMenu(sf::RenderWindow& window);
 std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<MapInfo>& maps);
