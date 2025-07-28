@@ -67,7 +67,7 @@ private:
 
     TowerLevelData _currentLevelData;
     cgame* _gameInstance;
-    cenemy* _target;
+    int _targetID;
     int _totalCostInvested;
 
     sf::Time _effectTimer;
@@ -83,7 +83,7 @@ public:
     // SỬA ĐỔI: Thêm tham số 'id' vào constructor
     ctower(cgame* game, const std::string& typeId, const TowerLevelData& initialLevelData, const cpoint& position, int id);
 
-    cenemy* findTarget(std::vector<cenemy>& enemies);
+    int findTarget(std::vector<cenemy>& enemies);
     void update(sf::Time deltaTime, std::vector<cenemy>& enemies, std::vector<cbullet>& gameBullets);
     void render(sf::RenderWindow& window);
     sf::Vector2f getPosition() const;

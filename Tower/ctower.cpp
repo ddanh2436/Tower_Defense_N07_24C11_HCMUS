@@ -17,7 +17,7 @@ ctower::ctower(cgame* game, const std::string& typeId, const TowerLevelData& ini
     _totalCostInvested(initialLevelData.cost),
     _isPendingRemoval(false),
     _pendingUpgradeData(nullptr),
-    _target(nullptr)
+    _targetID(-1)
 {
 
     // Gọi hàm setAnimation đã được sửa lỗi để thiết lập mọi thứ
@@ -87,6 +87,7 @@ void ctower::upgrade() {
 }
 
 void ctower::update(sf::Time deltaTime, std::vector<cenemy>& enemies, std::vector<cbullet>& gameBullets) {
+    // Phần xử lý các trạng thái đặc biệt (giữ nguyên)
     if (_currentState == State::SELLING) {
         _effectTimer += deltaTime;
         if (_effectTimer >= _effectDuration) {
@@ -117,23 +118,36 @@ void ctower::update(sf::Time deltaTime, std::vector<cenemy>& enemies, std::vecto
         _fireCooldown -= deltaTime;
     }
 
-    _target = findTarget(enemies);
+    _targetID = findTarget(enemies);
 
-    if (_target && _currentState != State::ATTACKING) {
-        _currentState = State::ATTACKING;
-        setAnimation(_currentLevelData);
+    cenemy* currentTarget = nullptr;
+    if (_targetID != -1) {
+        for (auto& enemy : enemies) {
+            if (enemy.getId() == _targetID) {
+                currentTarget = &enemy;
+                break;
+            }
+        }
     }
-    else if (!_target && _currentState != State::IDLE) {
-        _currentState = State::IDLE;
-        setAnimation(_currentLevelData);
+
+    if (currentTarget) { // Sử dụng con trỏ tạm thời 'currentTarget'
+        if (_currentState != State::ATTACKING) {
+            _currentState = State::ATTACKING;
+            setAnimation(_currentLevelData);
+        }
+    }
+    else { 
+        if (_currentState != State::IDLE) {
+            _currentState = State::IDLE;
+            setAnimation(_currentLevelData);
+        }
     }
 
-    if (_currentState == State::ATTACKING && _fireCooldown <= sf::Time::Zero && _target) {
-        sf::Vector2f targetDirection = _target->getPosition() - _position.toVector2f();
+    if (_currentState == State::ATTACKING && _fireCooldown <= sf::Time::Zero && currentTarget) {
+        sf::Vector2f targetDirection = currentTarget->getPosition() - _position.toVector2f();
 
-        // SỬA ĐỔI TẠI ĐÂY: Lấy texture đạn từ _currentLevelData
         gameBullets.emplace_back(
-            _currentLevelData.bulletTexturePath, // <--- THAY ĐỔI
+            _currentLevelData.bulletTexturePath,
             _position,
             targetDirection,
             _currentLevelData.bulletSpeed,
@@ -187,8 +201,8 @@ void ctower::updateAnimation(sf::Time deltaTime) {
     _sprite.setTextureRect(newRect);
 }
 
-cenemy* ctower::findTarget(std::vector<cenemy>& enemies) {
-    cenemy* closestEnemy = nullptr;
+int ctower::findTarget(std::vector<cenemy>& enemies) {
+    int bestTargetId = -1;
     float minDistanceSq = _currentLevelData.range * _currentLevelData.range;
 
     for (auto& enemy : enemies) {
@@ -201,11 +215,11 @@ cenemy* ctower::findTarget(std::vector<cenemy>& enemies) {
 
             if (distanceSquared < minDistanceSq) {
                 minDistanceSq = distanceSquared;
-                closestEnemy = &enemy;
+                bestTargetId = enemy.getId(); // Lấy ID của kẻ địch
             }
         }
     }
-    return closestEnemy;
+    return bestTargetId;
 }
 
 bool ctower::canUpgrade() const {
