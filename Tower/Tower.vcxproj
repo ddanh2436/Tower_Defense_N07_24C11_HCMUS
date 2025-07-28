@@ -141,13 +141,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="carchertower.cpp" />
+    <ClCompile Include="cbasictower.cpp" />
     <ClCompile Include="cbullet.cpp" />
+    <ClCompile Include="ccannontower.cpp" />
     <ClCompile Include="cenemy.cpp" />
     <ClCompile Include="cgame.cpp" />
     <ClCompile Include="cmap.cpp" />
     <ClCompile Include="cpoint.cpp" />
     <ClCompile Include="ctool.cpp" />
-    <ClCompile Include="ctower.cpp" />
     <ClCompile Include="Leaderboard.cpp" />
     <ClCompile Include="MainPrg.cpp" />
     <ClCompile Include="Menu.cpp" />
@@ -155,13 +157,15 @@
     <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cbasictower.h" />
     <ClInclude Include="cbullet.h" />
+    <ClInclude Include="ccannontower.h" />
     <ClInclude Include="cenemy.h" />
     <ClInclude Include="cgame.h" />
     <ClInclude Include="cmap.h" />
     <ClInclude Include="cpoint.h" />
     <ClInclude Include="ctool.h" />
-    <ClInclude Include="ctower.h" />
+    <ClInclude Include="carchertower.h" />
     <ClInclude Include="Leaderboard.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="SoundManager.h" />
