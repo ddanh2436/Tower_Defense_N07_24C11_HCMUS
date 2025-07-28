@@ -37,6 +37,7 @@ public:
     bool hasReachedEnd() const;
     bool isReadyForRemoval() const;
     int getMoneyValue() const;
+    int getId() const;
 
     // --- CÁC HÀM MỚI ĐỂ HỖ TRỢ LƯU/TẢI GAME ---
     int getTypeIndex() const;
@@ -50,6 +51,9 @@ private:
     void updateMovement(sf::Time deltaTime);
     void setAnimation(EnemyState state, MovementDirection direction);
     void applyDirectionalFlip(const sf::Vector2f& directionVec);
+
+    int _id;
+    static int _nextId;
 
     cgame* _gameInstance;
     sf::Sprite _sprite;
