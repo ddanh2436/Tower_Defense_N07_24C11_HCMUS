@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <fstream>
 #include <cmath>
+#include "carchertower.h"
+#include "ccannontower.h"
 
 static int nextTowerId = 0;
 
@@ -25,7 +27,6 @@ cgame::~cgame() {
     }
 }
 
-// Hàm trợ giúp mới để xử lý việc chọn trụ
 void cgame::selectTowerToBuild(const std::string& typeId) {
     if (_inIntermission) {
         std::cout << "Khong the xay tru trong thoi gian nghi!" << std::endl;
@@ -85,32 +86,29 @@ void cgame::setupTowerTypes() {
     sf::Vector2i archerFrameSize = { 70, 115 };
     int archerFrameOffsetY = 15;
     std::vector<TowerLevelData> archerLevels;
-    // Cấp 1
     archerLevels.push_back(TowerLevelData{
         /*level*/ 1, /*cost*/ 50,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
         /*texturePath*/ "assets/2.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
         "assets/2_idle.png", 0, 4, 2.0f,
         /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f,
-        /*bulletTexturePath*/ "assets/bullet.png" // <--- THÊM MỚI
+        /*bulletTexturePath*/ "assets/bullet.png"
         });
-    // Cấp 2
     archerLevels.push_back(TowerLevelData{
         /*level*/ 2, /*cost*/ 75,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
         "assets/3.png", 2, 2, 0.4f,
         "assets/3_idle.png", 0, 4, 1.8f,
         175.f, 0.8f, 40, 220.f,
-        /*bulletTexturePath*/ "assets/bullet.png" // <--- THÊM MỚI
+        /*bulletTexturePath*/ "assets/bullet.png"
         });
-    // Cấp 3
     archerLevels.push_back(TowerLevelData{
         /*level*/ 3, /*cost*/ 100,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
         "assets/4.png", 2, 2, 0.4f,
         "assets/4_idle.png", 0, 6, 1.8f,
         200.f, 0.9f, 50, 230.f,
-        /*bulletTexturePath*/ "assets/bullet.png" // <--- THÊM MỚI (bạn có thể đổi nếu muốn)
+        /*bulletTexturePath*/ "assets/bullet.png"
         });
     _towerBlueprints["ArcherTower"] = archerLevels;
 
@@ -118,32 +116,29 @@ void cgame::setupTowerTypes() {
     sf::Vector2i cannonFrameSize = { 70, 115 };
     int cannonFrameOffsetY = 15;
     std::vector<TowerLevelData> cannonLevels;
-    // Cấp 1
     cannonLevels.push_back(TowerLevelData{
         /*level*/ 1, /*cost*/ 50,
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
         /*texturePath*/ "assets/5.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
         "assets/5_idle.png", 0, 6, 2.0f,
         /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f,
-        /*bulletTexturePath*/ "assets/fire.png" // <--- THÊM MỚI
+        /*bulletTexturePath*/ "assets/fire.png"
         });
-    // Cấp 2
     cannonLevels.push_back(TowerLevelData{
         /*level*/ 2, /*cost*/ 75,
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
         "assets/6.png", 2, 2, 0.4f,
         "assets/6_idle.png", 0, 6, 1.8f,
         175.f, 0.8f, 40, 220.f,
-        /*bulletTexturePath*/ "assets/fire.png" // <--- THÊM MỚI
+        /*bulletTexturePath*/ "assets/fire.png"
         });
-    // Cấp 3
     cannonLevels.push_back(TowerLevelData{
         /*level*/ 3, /*cost*/ 100,
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
         "assets/7.png", 2, 2, 0.4f,
         "assets/7_idle.png", 0, 6, 1.8f,
         200.f, 0.9f, 50, 230.f,
-        /*bulletTexturePath*/ "assets/fire.png" // <--- THÊM MỚI (bạn có thể đổi nếu muốn)
+        /*bulletTexturePath*/ "assets/fire.png"
         });
     _towerBlueprints["CannonTower"] = cannonLevels;
 }
@@ -417,8 +412,6 @@ void cgame::setupUI() {
     }
     _ffButtonSprite.setTexture(_ffButtonTexture);
     _ffButtonSprite.setScale(pauseIconSize / _ffButtonTexture.getSize().x, pauseIconSize / _ffButtonTexture.getSize().y);
-
-   
 }
 
 void cgame::resetGame() {
@@ -446,8 +439,9 @@ void cgame::updateEnemies(sf::Time deltaTime) {
 }
 
 void cgame::updateTowers(sf::Time deltaTime) {
+    // SỬA ĐỔI: Dùng toán tử -> cho con trỏ
     for (auto& tower : _towers) {
-        tower.update(deltaTime, _enemies, _bullets);
+        tower->update(deltaTime, _enemies, _bullets);
     }
 }
 
@@ -466,7 +460,9 @@ void cgame::updateBullets(sf::Time deltaTime) {
 void cgame::cleanupInactiveObjects() {
     _enemies.erase(std::remove_if(_enemies.begin(), _enemies.end(), [](const cenemy& e) { return e.isReadyForRemoval(); }), _enemies.end());
     _bullets.erase(std::remove_if(_bullets.begin(), _bullets.end(), [](const cbullet& b) { return !b.isActive(); }), _bullets.end());
-    _towers.erase(std::remove_if(_towers.begin(), _towers.end(), [](const ctower& t) { return t.isPendingRemoval(); }), _towers.end());
+
+    // SỬA ĐỔI: Lambda phải làm việc với unique_ptr
+    _towers.erase(std::remove_if(_towers.begin(), _towers.end(), [](const std::unique_ptr<cbasictower>& t) { return t->isPendingRemoval(); }), _towers.end());
 }
 
 void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
@@ -478,7 +474,8 @@ void cgame::updateTowerPlacementPreview(sf::RenderWindow& window) {
     _towerPlacementPreview.setPosition(tileCenterPixelPos.toVector2f());
     bool isOccupied = false;
     for (const auto& tower : _towers) {
-        if (_map->getGridCoordinates(tower.getPosition()) == gridCoords) {
+        // SỬA ĐỔI: Dùng toán tử ->
+        if (_map->getGridCoordinates(tower->getPosition()) == gridCoords) {
             isOccupied = true;
             break;
         }
@@ -500,16 +497,12 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
         if (event.key.code == sf::Keyboard::N) {
             if (!_waveInProgress && !_inIntermission) startNextWave();
         }
-
-        // =================== CẬP NHẬT LOGIC CHỌN TRỤ ===================
         if (event.key.code == sf::Keyboard::Num1) {
             selectTowerToBuild("ArcherTower");
         }
         if (event.key.code == sf::Keyboard::Num2) {
             selectTowerToBuild("CannonTower");
         }
-        // ==============================================================
-
         if (event.key.code == sf::Keyboard::Escape) {
             _selectingTowerToBuild = false;
             _selectedTower = nullptr;
@@ -543,7 +536,7 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                 if (_map->isBuildable(gridCoords.y, gridCoords.x)) {
                     bool tileIsOccupied = false;
                     for (const auto& existingTower : _towers) {
-                        if (_map->getGridCoordinates(existingTower.getPosition()) == gridCoords) {
+                        if (_map->getGridCoordinates(existingTower->getPosition()) == gridCoords) {
                             tileIsOccupied = true;
                             break;
                         }
@@ -553,7 +546,15 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                         int buildCost = blueprint[0].cost;
                         if (buildCost > 0 && _money >= buildCost) {
                             cpoint towerPosition = _map->getPixelPosition(static_cast<float>(gridCoords.y), static_cast<float>(gridCoords.x), PositionContext::TowerPlacement);
-                            _towers.emplace_back(this, _selectedTowerType, blueprint[0], towerPosition, nextTowerId++);
+
+                            // SỬA ĐỔI: Logic tạo trụ kế thừa
+                            if (_selectedTowerType == "ArcherTower") {
+                                _towers.push_back(std::make_unique<carchertower>(this, blueprint[0], towerPosition, nextTowerId++));
+                            }
+                            else if (_selectedTowerType == "CannonTower") {
+                                _towers.push_back(std::make_unique<ccannontower>(this, blueprint[0], towerPosition, nextTowerId++));
+                            }
+
                             SoundManager::playSoundEffect("assets/tower_place.wav");
                             _money -= buildCost;
                             _selectingTowerToBuild = false;
@@ -580,13 +581,15 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
 void cgame::handleTowerSelection(const sf::Vector2f& mousePos) {
     bool towerClicked = false;
     for (auto& tower : _towers) {
-        if (tower.getGlobalBounds().contains(mousePos)) {
-            if (tower.getCurrentState() == ctower::State::CONSTRUCTING && tower.getLevel() == 1) {
+        // SỬA ĐỔI: Dùng toán tử ->
+        if (tower->getGlobalBounds().contains(mousePos)) {
+            if (tower->getCurrentState() == cbasictower::State::CONSTRUCTING && tower->getLevel() == 1) {
                 _selectedTower = nullptr;
                 _isUpgradePanelVisible = false;
                 return;
             }
-            _selectedTower = &tower;
+            // SỬA ĐỔI: Lấy con trỏ thô từ unique_ptr
+            _selectedTower = tower.get();
             _isUpgradePanelVisible = true;
             towerClicked = true;
             break;
@@ -711,7 +714,8 @@ void cgame::render(sf::RenderWindow& window) {
     if (_map) {
         _map->render(window);
     }
-    for (auto& tower : _towers) tower.render(window);
+    // SỬA ĐỔI: Dùng toán tử ->
+    for (auto& tower : _towers) tower->render(window);
     for (auto& enemy : _enemies) enemy.render(window);
     for (auto& bullet : _bullets) bullet.render(window);
     window.draw(_uiPanel);
@@ -723,7 +727,6 @@ void cgame::render(sf::RenderWindow& window) {
     window.draw(_waveText);
 
     if (!_waveInProgress && !_inIntermission && !_levelWon && !_isGameOver) {
-        // Gọi hàm mới, sạch sẽ và đáng tin cậy
         renderInstructionPanel(window);
     }
 
@@ -811,7 +814,8 @@ bool cgame::isPaused() const {
 
 void cgame::updateUpgradePanel() {
     if (!_selectedTower || !_isUpgradePanelVisible) return;
-    ctower& tower = *_selectedTower;
+    // SỬA ĐỔI: Phải dùng cbasictower thay vì ctower
+    cbasictower& tower = *_selectedTower;
     sf::Vector2f towerPos = tower.getPosition();
     float buttonWidth = 90.f, buttonHeight = 35.f, buttonSpacing = 10.f;
     float totalWidth = buttonWidth * 2 + buttonSpacing;
@@ -898,15 +902,18 @@ void cgame::saveGame(const std::string& filename) const {
     saveFile << "wave_enemy_type " << _currentWaveEnemyTypeIndex << std::endl;
     saveFile << "enemies_spawned " << _enemiesSpawnedThisWave << std::endl;
     saveFile << "spawn_timer " << _timeSinceLastSpawn.asSeconds() << std::endl;
+
     int validTowers = 0;
-    for (const auto& tower : _towers) if (!tower.isPendingRemoval()) validTowers++;
+    // SỬA ĐỔI: Dùng toán tử ->
+    for (const auto& tower : _towers) if (!tower->isPendingRemoval()) validTowers++;
     saveFile << "towers_count " << validTowers << std::endl;
     for (const auto& tower : _towers) {
-        if (!tower.isPendingRemoval()) {
-            saveFile << "tower " << tower.getTypeId() << " " << tower.getLevel() << " "
-                << tower.getPosition().x << " " << tower.getPosition().y << std::endl;
+        if (!tower->isPendingRemoval()) {
+            saveFile << "tower " << tower->getTypeId() << " " << tower->getLevel() << " "
+                << tower->getPosition().x << " " << tower->getPosition().y << std::endl;
         }
     }
+
     saveFile << "enemies_on_map_count " << _enemies.size() << std::endl;
     for (const auto& enemy : _enemies) {
         if (enemy.isActive() && enemy.isAlive()) {
@@ -946,7 +953,14 @@ bool cgame::loadGame(const std::string& filename) {
                 const auto& towerLevels = it->second;
                 if (level > 0 && static_cast<size_t>(level) <= towerLevels.size()) {
                     const TowerLevelData& levelData = towerLevels[level - 1];
-                    _towers.emplace_back(this, typeId, levelData, cpoint(posX, posY), nextTowerId++);
+                    cpoint towerPosition(posX, posY);
+                    // SỬA ĐỔI: Logic tạo trụ kế thừa khi tải game
+                    if (typeId == "ArcherTower") {
+                        _towers.push_back(std::make_unique<carchertower>(this, levelData, towerPosition, nextTowerId++));
+                    }
+                    else if (typeId == "CannonTower") {
+                        _towers.push_back(std::make_unique<ccannontower>(this, levelData, towerPosition, nextTowerId++));
+                    }
                 }
             }
         }
@@ -998,7 +1012,7 @@ void cgame::renderInstructionPanel(sf::RenderWindow& window) {
     sf::Vector2f windowCenter = windowSize / 2.f;
 
     sf::RectangleShape panel;
-    panel.setSize({ windowSize.x * 0.7f, windowSize.y * 0.55f }); 
+    panel.setSize({ windowSize.x * 0.7f, windowSize.y * 0.55f });
     panel.setFillColor(sf::Color(25, 40, 80, 235));
     panel.setOutlineColor(sf::Color(100, 120, 180, 255));
     panel.setOutlineThickness(3.f);

@@ -3,7 +3,6 @@
 
 #include "cmap.h"
 #include "cenemy.h"
-#include "ctower.h"
 #include "cbullet.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -11,6 +10,11 @@
 #include <memory>
 #include <random>
 #include <sstream>
+#include "cbasictower.h"
+
+class cbasictower;
+class cenemy;
+class cbullet;
 
 // Giữ nguyên các hằng số và struct EnemyType
 const std::string FONT_PATH = "assets/pixel_font.ttf";
@@ -69,7 +73,7 @@ private:
     cmap* _map;
     std::string _currentMapId;
     std::vector<cenemy> _enemies;
-    std::vector<ctower> _towers;
+    std::vector<std::unique_ptr<cbasictower>> _towers;
     std::vector<cbullet> _bullets;
     std::map<std::string, std::vector<TowerLevelData>> _towerBlueprints;
     std::map<std::string, sf::Texture> _textureManager;
@@ -103,7 +107,7 @@ private:
     sf::Time _timeSinceLastSpawn;
     sf::Time _spawnInterval;
     int _enemiesSpawnedThisWave;
-    ctower* _selectedTower;
+    cbasictower* _selectedTower;
     bool _isGameOver;
     bool _levelWon;
     bool _waveInProgress;
