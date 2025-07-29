@@ -1,10 +1,16 @@
-map_id MAP_3
+map_id MAP_4
 lives 1
-money 1000
-wave 0
-wave_in_progress 0
-wave_enemy_type -1
-enemies_spawned 0
-spawn_timer 0
-towers_count 0
-enemies_on_map_count 0
+money 550
+wave 1
+wave_in_progress 1
+wave_enemy_type 2
+enemies_spawned 4
+spawn_timer 0.708697
+towers_count 2
+tower ArcherTower 3 330 510
+tower CannonTower 3 330 630
+enemies_on_map_count 4
+enemy 2 100 172.534 540 1
+enemy 2 250 112.364 540 1
+enemy 2 250 52.0835 540 1
+enemy 2 250 -8.25195 540 1

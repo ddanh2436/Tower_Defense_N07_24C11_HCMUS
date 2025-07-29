@@ -37,7 +37,7 @@ GameState showMenu(sf::RenderWindow& window) {
     sf::Text gameTitleText;
     gameTitleText.setFont(pixelFont);
     gameTitleText.setString("Tower Defense");
-    gameTitleText.setCharacterSize(50);
+    gameTitleText.setCharacterSize(60);
     gameTitleText.setFillColor(sf::Color::Yellow);
     gameTitleText.setStyle(sf::Text::Bold);
 
@@ -47,9 +47,8 @@ GameState showMenu(sf::RenderWindow& window) {
     gameTitleText.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 5.0f));
 
     std::vector<sf::Text> menuItems;
-    // ================== THÊM MỚI "LEADERBOARD" VÀO MENU ==================
-    std::vector<std::string> menuStrings = { "New Game", "Load Game", "Leaderboard", "Settings", "Exit" };
-    // ===================================================================
+    std::vector<std::string> menuStrings = { "New Game", "Continue Game", "Leaderboard", "Settings", "Exit" };
+
 
     unsigned int pixelCharSize = 20;
     float itemHeight = static_cast<float>(pixelCharSize) * 1.5f;
@@ -109,7 +108,7 @@ GameState showMenu(sf::RenderWindow& window) {
                     SoundManager::playSoundEffect("assets/menu_click.ogg");
                     // ================== XỬ LÝ SỰ KIỆN CHO LEADERBOARD ==================
                     if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
-                    if (menuStrings[selectedItemIndex] == "Load Game") return GameState::LoadingGame;
+                    if (menuStrings[selectedItemIndex] == "Continue Game") return GameState::LoadingGame;
                     if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
                     if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                     if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
@@ -123,13 +122,11 @@ GameState showMenu(sf::RenderWindow& window) {
                         if (menuItems[i].getGlobalBounds().contains(mousePos)) {
                             selectedItemIndex = static_cast<int>(i);
                             SoundManager::playSoundEffect("assets/menu_click.ogg");
-                            // ================== XỬ LÝ SỰ KIỆN CHO LEADERBOARD ==================
                             if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                             if (menuStrings[selectedItemIndex] == "Load Game") return GameState::LoadingGame;
                             else if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
                             else if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                             else if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
-                            // ====================================================================
                             break;
                         }
                     }
@@ -177,18 +174,51 @@ GameState showMenu(sf::RenderWindow& window) {
     return GameState::Exiting;
 }
 
+namespace menuResources {
+    sf::Texture mapSelectionBackgroundTexture;
+    sf::Sprite mapSelectionBackgroundSprite;
+    bool resourceInitialized = false;
+
+    bool initializeResources() {
+        if (!mapSelectionBackgroundTexture.loadFromFile("assets/mapSelectingScreen.png")) {
+            std::cerr << "Erorr: Could not load map selection backgorund!" << std::endl;
+            return false;
+        }
+        mapSelectionBackgroundSprite.setTexture(mapSelectionBackgroundTexture);
+        resourceInitialized = true;
+        return true;
+    }
+}
+
+std::vector<sf::Vector2f> getFlagPosition(const sf::Vector2u& winSz, size_t amount) {
+    std::vector<sf::Vector2f> flagPos;
+    flagPos.reserve(amount);
+
+    flagPos.emplace_back(355.f, 237.f); // map 1
+    flagPos.emplace_back(winSz.x * 12 / 15.f + 63.f, 242.f); // map 2
+    flagPos.emplace_back(300.f, winSz.y * 13 / 20.f); // map 3
+    flagPos.emplace_back(winSz.x / 2.f + 63.f, winSz.y * 3 / 4.f - 83.f); // map 4
+    return flagPos;
+}
 
 std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<MapInfo>& maps) {
     sf::Font pixelFont;
     if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) {
-        return "";
+        return ""; // Trả về chuỗi rỗng nếu có lỗi
     }
 
-    sf::Text title("Choose a Map", pixelFont, 40);
-    title.setFillColor(sf::Color::Yellow);
-    title.setOrigin(title.getLocalBounds().width / 2.f, title.getLocalBounds().height / 2.f);
-    title.setPosition(window.getSize().x / 2.f, window.getSize().y / 5.f);
+    if (!menuResources::resourceInitialized && !menuResources::initializeResources()) {
+        if (!menuResources::initializeResources()) {
+            std::cerr << "Failed to initialize menu resources!" << std::endl;
+        }
+    }
 
+    sf::Vector2u windowSize = window.getSize();
+    float ScaleX = static_cast<float>(windowSize.x) / menuResources::mapSelectionBackgroundTexture.getSize().x;
+    float ScaleY = static_cast<float>(windowSize.y) / menuResources::mapSelectionBackgroundTexture.getSize().y;
+    menuResources::mapSelectionBackgroundSprite.setScale(ScaleX, ScaleY);
+
+    // danh sách map
     std::vector<sf::Text> mapItems;
     for (const auto& map : maps) {
         sf::Text text(map.name, pixelFont, 25);
@@ -197,35 +227,48 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
         mapItems.push_back(text);
     }
 
-    float startY = window.getSize().y / 2.5f;
-    for (size_t i = 0; i < mapItems.size(); ++i) {
-        mapItems[i].setPosition(window.getSize().x / 2.f, startY + i * 50.f);
-    }
+    sf::RectangleShape instructionPanel;
+    instructionPanel.setSize(sf::Vector2f(2000, 70));
+    instructionPanel.setFillColor(sf::Color(72, 50, 26, 240));
+    instructionPanel.setOutlineColor(sf::Color(0, 0, 0));
+    instructionPanel.setOutlineThickness(1.f);
+    instructionPanel.setOrigin(instructionPanel.getSize().x / 2.f, instructionPanel.getSize().y / 2.f);
+    instructionPanel.setPosition(window.getSize().x / 2.f, 23.f);
 
-    sf::Text returnHint("Press Esc to go back", pixelFont, 20);
-    returnHint.setFillColor(sf::Color(200, 200, 200));
+
+    sf::Text instructionSelecting("Choose a map!", pixelFont, 50);
+    instructionSelecting.setFillColor(sf::Color(200, 200, 50));
+    sf::FloatRect instructRect = instructionSelecting.getLocalBounds();
+    instructionSelecting.setOrigin(instructRect.left + instructRect.width / 2.f, instructRect.top + instructRect.height / 2.f);
+    instructionSelecting.setPosition(window.getSize().x / 2.f, 30.f);
+
+    sf::Text returnHint("Press Esc to go back", pixelFont, 40);
+    returnHint.setFillColor(sf::Color(200, 200, 50));
     sf::FloatRect hintRect = returnHint.getLocalBounds();
     returnHint.setOrigin(hintRect.left + hintRect.width / 2.f, hintRect.top + hintRect.height / 2.f);
-    returnHint.setPosition(window.getSize().x / 2.f, window.getSize().y - 50.f);
+    returnHint.setPosition(window.getSize().x / 2.f, window.getSize().y - 37.f);
 
-    int selectedItemIndex = 0;
+    sf::Texture flagTexture;
+    sf::Sprite flagSprite;
+    bool flagSpriteLoaded = false;
+    if (!flagTexture.loadFromFile("assets/flag_map.png")) {
+        std::cout << "Error! Can not load flag asset: assets/flag_map.png" << std::endl;
+        return "";
+    }
+    flagSprite.setTexture(flagTexture);
+    flagSpriteLoaded = true;
+    const float flagDesiredHeight = 100.f;
+    // manage size of the flag
+    float flagScale = flagDesiredHeight / float(flagTexture.getSize().y);
+    flagSprite.setScale(flagScale, flagScale);
+    flagSprite.setOrigin(window.getSize().x / 2.f, window.getSize().y / 2.f);
+    float flagOffSet = 50.f;
 
-    sf::Texture arrowTexture;
-    sf::Sprite arrowSprite;
-    bool arrowTextureLoaded = false;
-    if (!arrowTexture.loadFromFile("assets/pixel_arrow.png")) {
-        std::cerr << "Loi: Khong the tai hinh mui ten: assets/pixel_arrow.png" << std::endl;
-    }
-    else {
-        arrowSprite.setTexture(arrowTexture);
-        arrowTextureLoaded = true;
-        float desiredArrowHeight = 25 * 0.8f;
-        if (arrowTexture.getSize().y > 0) {
-            float scaleFactor = desiredArrowHeight / arrowTexture.getSize().y;
-            arrowSprite.setScale(scaleFactor, scaleFactor);
-        }
-    }
-    float arrowOffset = 10.f;
+    // khai báo biến lưu vị trí cờ
+    auto flagPos = getFlagPosition(window.getSize(), maps.size());
+
+    int selectedItemIndex = -1;
+    bool clickedFlag = false;
 
     while (window.isOpen()) {
         sf::Event event;
@@ -239,70 +282,65 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
                     SoundManager::playSoundEffect("assets/menu_click.ogg");
                     return "";
                 }
-                if (event.key.code == sf::Keyboard::Up) {
-                    if (selectedItemIndex > 0) selectedItemIndex--;
-                    else selectedItemIndex = static_cast<int>(mapItems.size() - 1);
-                    SoundManager::playSoundEffect("assets/menu_click.ogg");
-                }
-                else if (event.key.code == sf::Keyboard::Down) {
-                    if (selectedItemIndex < (int)mapItems.size() - 1) selectedItemIndex++;
-                    else selectedItemIndex = 0;
-                    SoundManager::playSoundEffect("assets/menu_click.ogg");
-                }
-                else if (event.key.code == sf::Keyboard::Return) {
-                    SoundManager::playSoundEffect("assets/menu_click.ogg");
-                    if (!maps.empty()) return maps[selectedItemIndex].id;
-                }
             }
-            if (event.type == sf::Event::MouseButtonPressed) {
-                if (event.mouseButton.button == sf::Mouse::Left) {
-                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                    for (size_t i = 0; i < mapItems.size(); ++i) {
-                        if (mapItems[i].getGlobalBounds().contains(mousePos)) {
-                            SoundManager::playSoundEffect("assets/menu_click.ogg");
-                            return maps[i].id;
-                        }
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+            {
+                sf::Vector2f mp = window.mapPixelToCoords({
+                    event.mouseButton.x,
+                    event.mouseButton.y
+                    });
+
+                for (size_t i = 0; i < mapItems.size(); ++i) {
+                    flagSprite.setPosition(flagPos[i]);
+                    if (flagSprite.getGlobalBounds().contains(mp)) {
+                        // khi click:
+                        SoundManager::playSoundEffect("assets/menu_click.ogg");
+                        selectedItemIndex = static_cast<int>(i);
+                        clickedFlag = true;
+                        break;           // chỉ chọn 1 flag
                     }
+
+                }
+                if (clickedFlag) break;
+            }
+
+
+            for (size_t i = 0; i < mapItems.size(); ++i) {
+                mapItems[i].setPosition(flagPos[i].x + 63.5f, flagPos[i].y - 53.f);
+            }
+
+            // draw everything
+            window.clear();
+            window.draw(menuResources::mapSelectionBackgroundSprite);
+            for (size_t i = 0; i < maps.size(); ++i) {
+                mapItems[i].setPosition(flagPos[i].x - 48.f, flagPos[i].y - 43.f); // định vị vị trí tên map
+                if (i == selectedItemIndex) {
+                    mapItems[i].setFillColor(sf::Color::Yellow);
+                }
+                else {
+                    mapItems[i].setFillColor(sf::Color::White);
+                }
+                window.draw(mapItems[i]);
+                // vẽ cờ
+                if (flagSpriteLoaded) {
+                    float fh = flagTexture.getSize().y * flagSprite.getScale().y;
+                    flagSprite.setPosition(
+                        flagPos[i].x,
+                        flagPos[i].y
+                    );
+                    window.draw(flagSprite);
                 }
             }
-        }
-
-        sf::Vector2f mousePosView = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        for (size_t i = 0; i < mapItems.size(); ++i) {
-            if (mapItems[i].getGlobalBounds().contains(mousePosView)) {
-                selectedItemIndex = static_cast<int>(i);
+            window.draw(instructionPanel);
+            window.draw(instructionSelecting);
+            window.draw(returnHint);
+            window.display();
+            if (clickedFlag) {
+                sf::sleep(sf::milliseconds(100));
+                return maps[selectedItemIndex].id;
             }
         }
-
-        for (int i = 0; i < (int)mapItems.size(); ++i) {
-            if (i == selectedItemIndex) mapItems[i].setFillColor(sf::Color::Yellow);
-            else mapItems[i].setFillColor(sf::Color::White);
-        }
-
-        if (arrowTextureLoaded && !mapItems.empty()) {
-            const sf::Text& currentItem = mapItems[selectedItemIndex];
-            sf::FloatRect itemBounds = currentItem.getGlobalBounds();
-            sf::FloatRect arrowBounds = arrowSprite.getGlobalBounds();
-            arrowSprite.setPosition(
-                itemBounds.left - arrowBounds.width - arrowOffset,
-                itemBounds.top + (itemBounds.height / 2.f) - (arrowBounds.height / 2.f)
-            );
-            // <-- SỬA ĐỔI: Tô màu mũi tên thành vàng để đồng bộ -->
-            arrowSprite.setColor(sf::Color::Yellow);
-        }
-
-        window.clear(sf::Color(15, 30, 50));
-        window.draw(title);
-        for (const auto& item : mapItems) {
-            window.draw(item);
-        }
-        window.draw(returnHint);
-        if (arrowTextureLoaded) {
-            window.draw(arrowSprite);
-        }
-        window.display();
     }
-
     return "";
 }
 
@@ -503,9 +541,7 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
     return GameState::ShowingMenu;
 }
 
-// ========================================================================================
-// HÀM showPauseMenu ĐÃ ĐƯỢC CHỈNH SỬA HOÀN TOÀN
-// ========================================================================================
+
 GameState showPauseMenu(sf::RenderWindow& window) {
     sf::Font pixelFont;
     if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) {

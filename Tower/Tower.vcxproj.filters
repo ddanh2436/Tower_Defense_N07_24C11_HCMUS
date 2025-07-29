@@ -30,9 +30,6 @@
     <ClCompile Include="cbullet.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
-    <ClCompile Include="ctower.cpp">
-      <Filter>Resource Files</Filter>
-    </ClCompile>
     <ClCompile Include="cmap.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
@@ -51,6 +48,15 @@
     <ClCompile Include="Leaderboard.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="cbasictower.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="carchertower.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ccannontower.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cpoint.h">
@@ -63,9 +69,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cbullet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ctower.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cmap.h">
@@ -84,6 +87,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Leaderboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cbasictower.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="carchertower.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ccannontower.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,7 +11,6 @@ cbullet::cbullet(const std::string& texturePath, const cpoint& startPosition, co
     // Thiết lập gốc (origin) cho sprite ở tâm
     sf::FloatRect bounds = _sprite.getLocalBounds();
     _sprite.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-    // --- KẾT THÚC THAY ĐỔI ---
 
     _sprite.setPosition(_position.toVector2f());
 
@@ -44,7 +43,7 @@ void cbullet::render(sf::RenderWindow& window) {
         window.draw(_sprite);
     }
     else {
-        sf::CircleShape placeholder(5.f); // Kích thước đạn
+        sf::CircleShape placeholder(10.f); // Kích thước đạn
         placeholder.setFillColor(sf::Color::Yellow);
         placeholder.setOrigin(5.f, 5.f);
         placeholder.setPosition(_position.toVector2f());

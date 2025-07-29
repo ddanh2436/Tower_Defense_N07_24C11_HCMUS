@@ -3,7 +3,6 @@
 
 #include "cmap.h"
 #include "cenemy.h"
-#include "ctower.h"
 #include "cbullet.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -11,8 +10,12 @@
 #include <memory>
 #include <random>
 #include <sstream>
+#include "cbasictower.h"
 
-// Giữ nguyên các hằng số và struct EnemyType
+class cbasictower;
+class cenemy;
+class cbullet;
+
 const std::string FONT_PATH = "assets/pixel_font.ttf";
 const std::string TOWER_TEXTURE_PATH = "assets/4.png";
 const std::string BULLET_TEXTURE_PATH = "bullet.png";
@@ -69,7 +72,7 @@ private:
     cmap* _map;
     std::string _currentMapId;
     std::vector<cenemy> _enemies;
-    std::vector<ctower> _towers;
+    std::vector<std::unique_ptr<cbasictower>> _towers;
     std::vector<cbullet> _bullets;
     std::map<std::string, std::vector<TowerLevelData>> _towerBlueprints;
     std::map<std::string, sf::Texture> _textureManager;
@@ -94,6 +97,7 @@ private:
     sf::RectangleShape _sellButton;
     sf::Text _sellText;
     sf::Text _sellValueText;
+
     int _lives;
     int _maxLives;
     int _money;
@@ -102,7 +106,7 @@ private:
     sf::Time _timeSinceLastSpawn;
     sf::Time _spawnInterval;
     int _enemiesSpawnedThisWave;
-    ctower* _selectedTower;
+    cbasictower* _selectedTower;
     bool _isGameOver;
     bool _levelWon;
     bool _waveInProgress;
@@ -149,6 +153,8 @@ private:
     void renderTowerUI(sf::RenderWindow& window);
     void handleSell();
     void updateUpgradePanel();
+    void selectTowerToBuild(const std::string& typeId);
+    void renderInstructionPanel(sf::RenderWindow& window);
 };
 
 #endif // CGAME_H
