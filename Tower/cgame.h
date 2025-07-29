@@ -16,7 +16,6 @@ class cbasictower;
 class cenemy;
 class cbullet;
 
-// Giữ nguyên các hằng số và struct EnemyType
 const std::string FONT_PATH = "assets/pixel_font.ttf";
 const std::string TOWER_TEXTURE_PATH = "assets/4.png";
 const std::string BULLET_TEXTURE_PATH = "bullet.png";
