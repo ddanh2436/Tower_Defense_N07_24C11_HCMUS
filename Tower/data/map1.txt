@@ -162,7 +162,6 @@ addGrass1At 11 14
 addDecor14At 9 16
 addDecor9At 6 23
 addDecor9At 5 11
-addTree2At 5 12
 addGrass1At 0 17
 addLamp2At 7 26
 addDecor14At 3 27
