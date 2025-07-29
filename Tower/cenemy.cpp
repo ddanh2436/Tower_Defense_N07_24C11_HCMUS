@@ -4,13 +4,14 @@
 #include <cmath>
 
 const float HEALTH_BAR_Y_OFFSET = 4.f;
+int cenemy::_nextId = 0;
 
 cenemy::cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const std::vector<cpoint>& path)
     : _gameInstance(gameInstance),
     _path(path),
     _typeIndex(typeIndex),
     _speed(type.speed),
-    _health(type.health),
+    _health(static_cast<float>(type.health)),
     _maxHealth(type.health),
     _moneyValue(type.moneyValue),
     _isActive(true),
@@ -18,7 +19,7 @@ cenemy::cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const 
     _elapsedTime(sf::Time::Zero),
     _currentPathIndex(0)
 {
-
+    _id = _nextId++;
     _healthBarBackground.setSize({ 32.f, 5.f });
     _healthBarBackground.setFillColor(sf::Color(50, 50, 50, 210));
     _healthBarBackground.setOrigin(_healthBarBackground.getSize().x / 2.f, _healthBarBackground.getSize().y / 2.f);
@@ -267,4 +268,8 @@ void cenemy::setPathIndex(int newPathIndex) {
             _targetPosition = _path[_currentPathIndex];
         }
     }
+}
+
+int cenemy::getId() const {
+    return _id;
 }

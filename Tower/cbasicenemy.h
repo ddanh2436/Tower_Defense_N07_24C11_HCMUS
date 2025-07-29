@@ -1,15 +1,29 @@
-﻿#pragma once
+﻿#ifndef CBASICENEMY_H
+#define CBASICENEMY_H
+
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <map>
+#include <string>
 #include "cpoint.h"
 
-// Forward-declare cgame và EnemyType để tránh include vòng lặp
 class cgame;
-struct EnemyType;
 
+// ĐỊNH NGHĨA CÁC ENUM VÀ STRUCT Ở ĐÂY
 enum EnemyState { WALKING, DYING, DEAD };
 enum MovementDirection { UP, DOWN, SIDE };
+
+struct EnemyType {
+    float speed;
+    int health;
+    float scale;
+    int moneyValue;
+    std::map<EnemyState, std::map<MovementDirection, std::string>> texturePaths;
+    sf::Vector2i frameSize;
+    int frameCount;
+    int stride;
+    EnemyType() : speed(0.0f), health(0), scale(1.0f), moneyValue(0), frameCount(0), stride(0) {}
+};
 
 struct Animation {
     std::string texturePath;
@@ -20,40 +34,36 @@ struct Animation {
     std::vector<float> yOffsets;
 };
 
-
-class cenemy {
+class cbasicenemy {
 public:
-    // SỬA ĐỔI: Thêm typeIndex vào hàm khởi tạo
-    cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const std::vector<cpoint>& path);
+    virtual ~cbasicenemy() = default;
 
-    void update(sf::Time deltaTime);
-    void render(sf::RenderWindow& window);
+    virtual void update(sf::Time deltaTime);
+    virtual void render(sf::RenderWindow& window);
+    virtual bool takeDamage(int damage);
+
     bool isAlive() const;
-    bool takeDamage(int damage);
     sf::Vector2f getPosition() const;
     sf::FloatRect getGlobalBounds() const;
-    bool isActive() const { return _isActive; }
-    void setActive(bool active) { _isActive = active; }
+    bool isActive() const;
+    void setActive(bool active);
     bool hasReachedEnd() const;
     bool isReadyForRemoval() const;
     int getMoneyValue() const;
     int getId() const;
-
-    // --- CÁC HÀM MỚI ĐỂ HỖ TRỢ LƯU/TẢI GAME ---
     int getTypeIndex() const;
     float getHealth() const;
     size_t getPathIndex() const;
     void setHealth(float newHealth);
     void setPosition(const cpoint& pos);
-    void setPathIndex(int newPathIndex);
+    void setPathIndex(size_t newPathIndex);
 
-private:
+protected:
+    cbasicenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const std::vector<cpoint>& path);
+
     void updateMovement(sf::Time deltaTime);
     void setAnimation(EnemyState state, MovementDirection direction);
     void applyDirectionalFlip(const sf::Vector2f& directionVec);
-
-    int _id;
-    static int _nextId;
 
     cgame* _gameInstance;
     sf::Sprite _sprite;
@@ -62,11 +72,11 @@ private:
     std::vector<cpoint> _path;
     size_t _currentPathIndex;
     float _speed;
-    float _health; // SỬA ĐỔI: Chuyển sang float để lưu máu chính xác hơn
+    float _health;
     int _maxHealth;
     bool _isActive;
     int _moneyValue;
-    int _typeIndex; // THÊM MỚI: Biến để lưu chỉ số của loại quái vật
+    int _typeIndex;
     EnemyState _currentState;
     MovementDirection _currentDirection;
     std::map<EnemyState, std::map<MovementDirection, Animation>> _animations;
@@ -76,4 +86,10 @@ private:
     sf::IntRect _currentFrameRect;
     sf::RectangleShape _healthBarBackground;
     sf::RectangleShape _healthBarFill;
+
+private:
+    int _id;
+    static int _nextId;
 };
+
+#endif // CBASICENEMY_H

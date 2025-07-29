@@ -1,17 +1,10 @@
-map_id MAP_3
+map_id MAP_4
 lives 1
 money 1000
-wave 1
-wave_in_progress 1
-wave_enemy_type 3
-enemies_spawned 7
-spawn_timer 1.67226
+wave 0
+wave_in_progress 0
+wave_enemy_type -1
+enemies_spawned 0
+spawn_timer 0
 towers_count 0
-enemies_on_map_count 7
-enemy 3 150 399.562 360 3
-enemy 3 150 360 319.283 2
-enemy 3 150 359.244 240 1
-enemy 3 150 278.91 240 1
-enemy 3 150 198.367 240 1
-enemy 3 150 118.11 240 1
-enemy 3 150 37.559 240 1
+enemies_on_map_count 0
