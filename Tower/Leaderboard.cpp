@@ -82,6 +82,8 @@ void Leaderboard::draw(sf::RenderWindow& window) {
     title.setFillColor(sf::Color::Yellow);
     title.setOrigin(title.getLocalBounds().width / 2.f, title.getLocalBounds().height / 2.f);
     title.setPosition(window.getSize().x / 2.f, 80);
+    title.setOutlineColor(sf::Color::Black);
+    title.setOutlineThickness(2.f);
     window.draw(title);
 
     sf::Text rankHeader("Rank", _font, 48);
@@ -108,11 +110,20 @@ void Leaderboard::draw(sf::RenderWindow& window) {
 
 
     rankHeader.setFillColor(sf::Color::Cyan);
+    rankHeader.setOutlineColor(sf::Color::Black);
+    rankHeader.setOutlineThickness(2.f);
     nameHeader.setFillColor(sf::Color::Cyan);
+    nameHeader.setOutlineColor(sf::Color::Black);
+    nameHeader.setOutlineThickness(2.f);
     scoreHeader.setFillColor(sf::Color::Cyan);
+    scoreHeader.setOutlineColor(sf::Color::Black);
+    scoreHeader.setOutlineThickness(2.f);
     killsHeader.setFillColor(sf::Color::Cyan);
+    killsHeader.setOutlineColor(sf::Color::Black);
+    killsHeader.setOutlineThickness(2.f);
     timeHeader.setFillColor(sf::Color::Cyan);
-
+    timeHeader.setOutlineColor(sf::Color::Black);
+    timeHeader.setOutlineThickness(2.f);
     window.draw(rankHeader);
     window.draw(nameHeader);
     window.draw(scoreHeader);
@@ -136,25 +147,25 @@ void Leaderboard::draw(sf::RenderWindow& window) {
         timeText.setPosition(static_cast<float>(AlignScoreHeaderMid + 500), yPos);
    
         if (rank == 1) {
-            rankText.setFillColor(sf::Color(255, 215, 0));
-			nameText.setFillColor(sf::Color(255, 215, 0));
-			scoreText.setFillColor(sf::Color(255, 215, 0));
-			killsText.setFillColor(sf::Color(255, 215, 0));
-			timeText.setFillColor(sf::Color(255, 215, 0));
+            rankText.setFillColor(sf::Color(255, 40, 1));
+            nameText.setFillColor(sf::Color(255, 40, 1));
+            scoreText.setFillColor(sf::Color(255, 40, 1));
+            killsText.setFillColor(sf::Color(255, 40, 1));
+            timeText.setFillColor(sf::Color(255, 40, 1));
 		}
 		if (rank == 2) {
-			rankText.setFillColor(sf::Color(192, 192, 192));
-			nameText.setFillColor(sf::Color(192, 192, 192));
-			scoreText.setFillColor(sf::Color(192, 192, 192));
-			killsText.setFillColor(sf::Color(192, 192, 192));
-			timeText.setFillColor(sf::Color(192, 192, 192));
+            rankText.setFillColor(sf::Color(206, 255, 4));
+            nameText.setFillColor(sf::Color(206, 255, 4));
+            scoreText.setFillColor(sf::Color(206, 255, 4));
+            killsText.setFillColor(sf::Color(206, 255, 4));
+            timeText.setFillColor(sf::Color(206, 255, 4));
 		}
         if (rank == 3) {
-            rankText.setFillColor(sf::Color(205, 127, 50));
-            nameText.setFillColor(sf::Color(205, 127, 50));
-            scoreText.setFillColor(sf::Color(205, 127, 50));
-            killsText.setFillColor(sf::Color(205, 127, 50));
-            timeText.setFillColor(sf::Color(205, 127, 50));
+            rankText.setFillColor(sf::Color(254, 229, 199));
+            nameText.setFillColor(sf::Color(254, 229, 199));
+            scoreText.setFillColor(sf::Color(254, 229, 199));
+            killsText.setFillColor(sf::Color(254, 229, 199));
+            timeText.setFillColor(sf::Color(254, 229, 199));
         }
 
         window.draw(rankText);

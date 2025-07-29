@@ -876,6 +876,18 @@ GameState showConfirmExitScreen(sf::RenderWindow& window) {
 }
 
 GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboard) {
+    sf::Texture backgroundTexture;
+    if (!backgroundTexture.loadFromFile("assets/valley_edit.png")) {
+        std::cerr << "Can not load background asset." << std::endl;
+        return GameState::ShowingMenu;
+    }
+    sf::Sprite backgroundSprite(backgroundTexture);
+    backgroundSprite.setScale(
+        static_cast<float> (window.getSize().x) / backgroundTexture.getSize().x,
+        static_cast<float> (window.getSize().y) / backgroundTexture.getSize().y
+    );
+    backgroundSprite.setPosition(0, 0);
+
     // Vòng lặp chính cho màn hình leaderboard
     while (window.isOpen()) {
         sf::Event event;
@@ -892,10 +904,10 @@ GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboa
         }
 
         // Vẽ màn hình
-        window.clear(sf::Color(15, 30, 50)); // Màu nền tối
+        window.clear();
+        window.draw(backgroundSprite);
         leaderboard.draw(window); // Gọi hàm draw của lớp Leaderboard
         window.display();
     }
-
     return GameState::ShowingMenu; // Mặc định quay về menu
 }
