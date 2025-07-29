@@ -456,6 +456,9 @@ bool cmap::isDecorated(int row, int col) const {
     for (const auto& deco : _logs) if (deco.col == col && deco.row == row) return true;
     for (const auto& deco : _grassesOverlay) if (deco.col == col && deco.row == row) return true;
     for (const auto& deco : _fences) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _decors) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _houses) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _tents) if (deco.col == col && deco.row == row) return true;
     return false;
 }
 
