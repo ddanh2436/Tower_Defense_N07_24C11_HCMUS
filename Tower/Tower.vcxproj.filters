@@ -57,6 +57,12 @@
     <ClCompile Include="ccannontower.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="cGoblinEnemy.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cbasicenemy.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cpoint.h">
@@ -96,6 +102,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ccannontower.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cGoblinEnemy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cbasicenemy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
