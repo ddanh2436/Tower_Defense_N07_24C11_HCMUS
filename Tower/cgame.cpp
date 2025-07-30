@@ -449,10 +449,6 @@ void cgame::updateBullets(sf::Time deltaTime) {
     for (auto& bullet : _bullets) {
         if (bullet.isActive()) {
             bullet.update(deltaTime);
-            sf::Vector2f pos = bullet.getPosition();
-            if (pos.x < -50 || pos.x > 1024 + 50 || pos.y < -50 || pos.y > 768 + 50) {
-                bullet.setActive(false);
-            }
         }
     }
 }
