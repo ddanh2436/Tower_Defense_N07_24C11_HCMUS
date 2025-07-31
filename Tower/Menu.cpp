@@ -181,7 +181,7 @@ namespace menuResources {
     sf::Sprite mapSelectionBackgroundSprite;
     bool resourceInitialized = false;
 
-    bool initializeResources() {
+    static bool initializeResources() {
         if (!mapSelectionBackgroundTexture.loadFromFile("assets/mapSelectingScreen.png")) {
             std::cerr << "Erorr: Could not load map selection backgorund!" << std::endl;
             return false;
@@ -192,7 +192,7 @@ namespace menuResources {
     }
 }
 
-std::vector<sf::Vector2f> getFlagPosition(const sf::Vector2u& winSz, size_t amount) {
+static std::vector<sf::Vector2f> getFlagPosition(const sf::Vector2u& winSz, size_t amount) {
     std::vector<sf::Vector2f> flagPos;
     flagPos.reserve(amount);
 
@@ -908,22 +908,18 @@ GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboa
         // Vẽ màn hình
         window.clear();
         window.draw(backgroundSprite);
-        leaderboard.draw(window); // Gọi hàm draw của lớp Leaderboard
+        leaderboard.draw(window); 
         window.display();
     }
-    return GameState::ShowingMenu; // Mặc định quay về menu
+    return GameState::ShowingMenu; 
 }
 
 GameState showAboutUsScreen(sf::RenderWindow& window) {
-    // Tải ảnh giới thiệu
     sf::Texture aboutUsTexture;
     if (!aboutUsTexture.loadFromFile("assets/about_us.png")) {
         std::cerr << "Error: Could not load about_us.png from assets folder!" << std::endl;
-        // Nếu không tải được ảnh, quay lại menu ngay lập tức
         return GameState::ShowingMenu;
     }
-
-    // Tạo sprite và cho nó vừa với kích thước cửa sổ
     sf::Sprite aboutUsSprite(aboutUsTexture);
     sf::Vector2u textureSize = aboutUsTexture.getSize();
     sf::Vector2u windowSize = window.getSize();
@@ -934,7 +930,6 @@ GameState showAboutUsScreen(sf::RenderWindow& window) {
         aboutUsSprite.setScale(scaleX, scaleY);
     }
 
-    // Tạo một dòng chữ hướng dẫn thoát
     sf::Font pixelFont;
     sf::Text returnHint;
     if (pixelFont.loadFromFile("assets/pixel_font.ttf")) {
@@ -943,40 +938,32 @@ GameState showAboutUsScreen(sf::RenderWindow& window) {
         returnHint.setCharacterSize(24);
         returnHint.setFillColor(sf::Color::White);
 
-        // Tạo viền cho chữ để dễ đọc hơn
+        
         returnHint.setOutlineColor(sf::Color::Black);
         returnHint.setOutlineThickness(2.f);
 
-        // Đặt vị trí ở góc dưới cùng bên phải
         sf::FloatRect textRect = returnHint.getLocalBounds();
         returnHint.setOrigin(textRect.left + textRect.width, textRect.top + textRect.height);
         returnHint.setPosition(windowSize.x - 20.f, windowSize.y - 20.f);
     }
 
 
-    // Vòng lặp chính của màn hình "About Us"
+    
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
-            // Nếu người dùng đóng cửa sổ, thoát game
             if (event.type == sf::Event::Closed) {
                 return GameState::Exiting;
             }
-
-            // Nếu người dùng nhấn phím Escape, quay lại menu chính
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 SoundManager::playSoundEffect("assets/menu_click.ogg");
                 return GameState::ShowingMenu;
             }
         }
-
-        // Vẽ mọi thứ ra màn hình
         window.clear();
         window.draw(aboutUsSprite);
         window.draw(returnHint);
         window.display();
     }
-
-    // Trường hợp dự phòng nếu vòng lặp bị thoát
     return GameState::Exiting;
 }

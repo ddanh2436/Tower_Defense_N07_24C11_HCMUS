@@ -12,22 +12,22 @@
 class cgame; // Forward declaration
 
 struct TowerLevelData {
-    int level;
-    int cost;
-    sf::Vector2i frameSize;
-    int frameOffsetY;
+    int level = 0;
+    int cost = 0;
+    sf::Vector2i frameSize = { 0, 0 };
+    int frameOffsetY = 0;
     std::string texturePath;
-    int startFrame;
-    int numFramesForLevel;
-    float animationSpeed;
+    int startFrame = 0; // Initialize startFrame to 0
+    int numFramesForLevel = 0;
+    float animationSpeed = 0.0f;
     std::string idle_texturePath;
-    int idle_startFrame;
-    int idle_numFrames;
-    float idle_animationSpeed;
-    float range;
-    float fireRate;
-    int damage;
-    float bulletSpeed;
+    int idle_startFrame = 0;
+    int idle_numFrames = 0;
+    float idle_animationSpeed = 0.0f;
+    float range = 0.0f;
+    float fireRate = 0.0f;
+    int damage = 0;
+    float bulletSpeed = 0.0f;
     std::string bulletTexturePath;
 };
 

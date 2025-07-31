@@ -34,12 +34,8 @@ void Leaderboard::loadFromFile(const std::string& filename) {
     int enemies;
     float time;
 
-    // THAY ĐỔI LOGIC ĐỌC FILE
-    while (file >> score >> enemies >> time) { // Đọc các số trước
-        // Đọc phần còn lại của dòng (chính là tên người chơi)
+    while (file >> score >> enemies >> time) { 
         std::getline(file, name);
-
-        // Xóa khoảng trắng thừa ở đầu tên (rất quan trọng)
         if (!name.empty() && name[0] == ' ') {
             name.erase(0, 1);
         }
@@ -51,10 +47,8 @@ void Leaderboard::loadFromFile(const std::string& filename) {
 }
 
 void Leaderboard::saveToFile(const std::string& filename) const {
-    // Quan trọng: Đảm bảo bạn đã tạo thư mục "data" trong thư mục dự án của mình!
     std::ofstream file(filename);
     if (!file.is_open()) {
-        // Thêm cảnh báo chi tiết hơn để dễ dàng gỡ lỗi
         std::cerr << "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
         std::cerr << "FATAL ERROR: Could not open leaderboard file for writing at: " << filename << std::endl;
         std::cerr << "POSSIBLE FIX: Please create a folder named 'data' in your project's root directory." << std::endl;

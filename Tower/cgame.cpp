@@ -455,10 +455,6 @@ void cgame::updateBullets(sf::Time deltaTime) {
     for (auto& bullet : _bullets) {
         if (bullet.isActive()) {
             bullet.update(deltaTime);
-            sf::Vector2f pos = bullet.getPosition();
-            if (pos.x < -50 || pos.x > 1024 + 50 || pos.y < -50 || pos.y > 768 + 50) {
-                bullet.setActive(false);
-            }
         }
     }
 }
@@ -501,21 +497,10 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
         if (event.key.code == sf::Keyboard::N) {
             if (!_waveInProgress && !_inIntermission) startNextWave();
         }
-        // ================== BỎ ĐI: Logic chọn trụ bằng phím số ==================
-        /*
-        if (event.key.code == sf::Keyboard::Num1) {
-            selectTowerToBuild("ArcherTower");
-        }
-        if (event.key.code == sf::Keyboard::Num2) {
-            selectTowerToBuild("CannonTower");
-        }
-        */
-        // =======================================================================
         if (event.key.code == sf::Keyboard::Escape) {
             _selectingTowerToBuild = false;
             _selectedTower = nullptr;
             _isUpgradePanelVisible = false;
-            // Reset lại viền của các nút
             for (auto& button : _towerSelectionButtons) {
                 button.buttonShape.setOutlineColor(sf::Color(60, 60, 80, 255));
             }
@@ -532,15 +517,12 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
             if (_ffButtonSprite.getGlobalBounds().contains(mouseWorldPos)) {
                 _isFastForward = !_isFastForward; _ffButtonSprite.setColor(_isFastForward ? sf::Color(100, 255, 100) : sf::Color::White); return;
             }
-
-            // ================== THÊM MỚI: Xử lý click vào thanh chọn trụ ==================
             for (const auto& button : _towerSelectionButtons) {
                 if (button.buttonShape.getGlobalBounds().contains(mouseWorldPos) && button.isEnabled) {
                     selectTowerToBuild(button.towerTypeId);
                     return; // Thoát sớm để không xử lý các logic click khác
                 }
             }
-            // ============================================================================
 
             if (_inIntermission) {
                 std::cout << "Khong the tuong tac voi tru trong thoi gian nghi!" << std::endl;
@@ -580,7 +562,6 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                             _selectingTowerToBuild = false;
                             _selectedTower = nullptr;
                             _isUpgradePanelVisible = false;
-                            // Reset lại viền của các nút
                             for (auto& button : _towerSelectionButtons) {
                                 button.buttonShape.setOutlineColor(sf::Color(60, 60, 80, 255));
                             }
@@ -678,10 +659,7 @@ void cgame::update(sf::Time deltaTime) {
         if (_isGameOver) _levelIsActive = false;
         return;
     }
-
-    // ================== THÊM MỚI: Cập nhật trạng thái thanh chọn trụ ==================
     updateTowerSelectionPanel();
-    // ==============================================================================
 
     if (_inIntermission) {
         updateInterMission(modifiedDeltaTime);
@@ -762,11 +740,7 @@ void cgame::render(sf::RenderWindow& window) {
     window.draw(_ffButtonSprite);
     window.draw(_pauseButtonSprite);
     renderTowerUI(window);
-
-    // ================== THÊM MỚI: Vẽ thanh chọn trụ ==================
     renderTowerSelectionPanel(window);
-    // =================================================================
-
     sf::Vector2f windowSize = sf::Vector2f(window.getSize());
     if (!_messageText.getString().isEmpty()) {
         sf::FloatRect textBounds = _messageText.getLocalBounds();
@@ -1056,7 +1030,6 @@ void cgame::renderInstructionPanel(sf::RenderWindow& window) {
     title.setPosition(windowCenter.x, panel.getPosition().y - panel.getSize().y / 2.f + 50.f);
 
     std::vector<sf::Text> lines;
-    // SỬA ĐỔI: Cập nhật lại phần hướng dẫn
     std::vector<std::string> instructions = {
         "- Click on tower icons on the right to select a tower.",
         "- Left click on the map to build the selected tower.",
@@ -1094,21 +1067,13 @@ void cgame::renderInstructionPanel(sf::RenderWindow& window) {
     }
 }
 
-
-// =====================================================================================
-// === THAY THẾ TOÀN BỘ HÀM CŨ BẰNG PHIÊN BẢN HOÀN CHỈNH NÀY ===
-// =====================================================================================
 void cgame::setupTowerSelectionPanel(sf::RenderWindow& window) {
-    // --- BƯỚC 1: LẤY KÍCH THƯỚC CỬA SỔ HIỆN TẠI MỘT CÁCH TỰ ĐỘNG ---
-    sf::Vector2u windowSize = window.getSize(); // Dùng Vector2u cho an toàn
+    sf::Vector2u windowSize = window.getSize(); 
 
     const float panelWidth = 200.f;
     const float panelHeight = 100.f;
     const float buttonSize = 80.f;
     const float spacing = 20.f;
-
-    // --- BƯỚC 2: TÍNH TOÁN VỊ TRÍ PANEL DỰA TRÊN KÍCH THƯỚC ĐÃ LẤY ĐƯỢC ---
-    // Ép kiểu sang float để tính toán
     const float panelX = static_cast<float>(windowSize.x) - panelWidth;
     const float panelY = static_cast<float>(windowSize.y) - panelHeight;
     _towerPanel.setSize({ panelWidth, panelHeight });
@@ -1118,8 +1083,6 @@ void cgame::setupTowerSelectionPanel(sf::RenderWindow& window) {
     _towerPanel.setOutlineThickness(2.f);
 
     _towerSelectionButtons.clear();
-
-    // --- BƯỚC 3: TÍNH TOÁN VÀ ĐẶT VỊ TRÍ CHO CÁC NÚT CON (BÊN TRONG PANEL) ---
     const float totalButtonsWidth = (_towerBlueprints.size() * buttonSize) + ((_towerBlueprints.size() - 1) * spacing);
     const float buttonsStartX = panelX + (panelWidth - totalButtonsWidth) / 2.f;
     const float buttonsY = panelY + (panelHeight - buttonSize) / 2.f;
@@ -1158,7 +1121,6 @@ void cgame::setupTowerSelectionPanel(sf::RenderWindow& window) {
 }
 
 void cgame::updateTowerSelectionPanel() {
-    // Cập nhật trạng thái của các nút (có đủ tiền mua hay không)
     for (auto& button : _towerSelectionButtons) {
         const auto& levelData = _towerBlueprints.at(button.towerTypeId)[0];
         if (_money >= levelData.cost) {

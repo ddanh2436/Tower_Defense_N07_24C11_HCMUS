@@ -8,7 +8,6 @@ cbullet::cbullet(const std::string& texturePath, const cpoint& startPosition, co
 
     _sprite.setTexture(TextureManager::getTexture(texturePath));
 
-    // Thiết lập gốc (origin) cho sprite ở tâm
     sf::FloatRect bounds = _sprite.getLocalBounds();
     _sprite.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
 
