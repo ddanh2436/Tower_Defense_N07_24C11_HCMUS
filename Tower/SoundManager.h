@@ -21,9 +21,9 @@ namespace SoundManager {
     bool getGameMusicState();
     void toggleGameMusic();
 
-    // Hàm mới cho điều chỉnh âm lượng bằng +/-
-    void adjustMasterVolume(float delta); // delta có thể là +10 hoặc -10
-    float getMasterVolumeSetting();       // Lấy mức âm lượng hiện tại (0-100) để hiển thị
+ 
+    void adjustMasterVolume(float delta); 
+    float getMasterVolumeSetting();       
 
     bool playBackgroundMusic(const std::string& filePath, float baseTrackDefaultVolume = 50.f, bool loop = true);
     void stopBackgroundMusic();

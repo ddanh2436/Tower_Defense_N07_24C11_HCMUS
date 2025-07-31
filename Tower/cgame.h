@@ -36,15 +36,13 @@ struct EnemyType {
     }
 };
 
-// ================== THÊM MỚI: Cấu trúc cho một nút chọn trụ ==================
 struct TowerSelectionButton {
-    sf::RectangleShape buttonShape; // Hình dạng của nút
-    sf::Sprite towerIcon;           // Icon của trụ
-    sf::Text costText;              // Văn bản hiển thị giá tiền
-    std::string towerTypeId;        // ID của loại trụ (vd: "ArcherTower")
-    bool isEnabled;                 // Nút có sáng lên không (dựa vào tiền)
+    sf::RectangleShape buttonShape; 
+    sf::Sprite towerIcon;           
+    sf::Text costText;              
+    std::string towerTypeId;        
+    bool isEnabled = false;         
 };
-// ==============================================================================
 
 
 class cgame {
@@ -134,16 +132,11 @@ private:
     bool _isPaused;
     bool _isFastForward;
     float _gameSpeedMultiplier;
-
     int _enemiesDefeated;
     sf::Time _levelTime;
     bool _levelIsActive;
-
-    // ================== THÊM MỚI: Thanh chọn trụ ==================
     sf::RectangleShape _towerPanel;
     std::vector<TowerSelectionButton> _towerSelectionButtons;
-    // =============================================================
-
     void loadFont();
     void setupUI();
     void resetGameStats();
@@ -165,11 +158,8 @@ private:
     void updateUpgradePanel();
     void selectTowerToBuild(const std::string& typeId);
     void renderInstructionPanel(sf::RenderWindow& window);
-
-    // ================== THÊM MỚI: Các hàm cho thanh chọn trụ ==================
     void updateTowerSelectionPanel();
     void renderTowerSelectionPanel(sf::RenderWindow& window);
-    // =======================================================================
 };
 
 #endif // CGAME_H

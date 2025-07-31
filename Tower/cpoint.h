@@ -12,7 +12,7 @@ public:
     cpoint();
     cpoint(float tx, float ty, int tc = 0);
     cpoint(const sf::Vector2f& vec, int tc = 0);
-    cpoint(const cpoint& other); // <-- HÀM TẠO SAO CHÉP
+    cpoint(const cpoint& other); 
 
     float getX() const { return x; }
     float getY() const { return y; }
