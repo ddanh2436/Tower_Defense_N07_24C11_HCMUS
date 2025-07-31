@@ -917,7 +917,7 @@ GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboa
 GameState showAboutUsScreen(sf::RenderWindow& window) {
     // Tải ảnh giới thiệu
     sf::Texture aboutUsTexture;
-    if (!aboutUsTexture.loadFromFile("assets/about_us.jpg")) {
+    if (!aboutUsTexture.loadFromFile("assets/about_us.png")) {
         std::cerr << "Error: Could not load about_us.png from assets folder!" << std::endl;
         // Nếu không tải được ảnh, quay lại menu ngay lập tức
         return GameState::ShowingMenu;

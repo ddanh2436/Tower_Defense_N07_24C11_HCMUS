@@ -27,8 +27,6 @@ cgame::~cgame() {
     }
 }
 
-// ... (Toàn bộ các hàm từ selectTowerToBuild đến setupUI giữ nguyên)
-// ... (Hàm selectTowerToBuild không thay đổi)
 void cgame::selectTowerToBuild(const std::string& typeId) {
     if (_inIntermission) {
         std::cout << "Khong the xay tru trong thoi gian nghi!" << std::endl;
@@ -47,8 +45,6 @@ void cgame::selectTowerToBuild(const std::string& typeId) {
     if (buildCost > 0 && _money >= buildCost) {
         _selectingTowerToBuild = true;
         _selectedTowerType = typeId;
-
-        // Cập nhật lại màu sắc cho các nút chọn trụ
         for (auto& button : _towerSelectionButtons) {
             if (button.towerTypeId == typeId) {
                 button.buttonShape.setOutlineColor(sf::Color::Yellow);
