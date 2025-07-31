@@ -387,6 +387,15 @@ int main() {
             currentState = showLeaderboardScreen(*window, leaderboard);
             break;
         }
+        case GameState::ShowingAboutUs: {
+            // Đảm bảo nhạc nền menu vẫn phát
+            if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH) {
+                SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
+            }
+            // Gọi hàm hiển thị màn hình "About Us"
+            currentState = showAboutUsScreen(*window);
+            break;
+        }
         case GameState::Playing: {
             auto it = std::find_if(mapInfos.begin(), mapInfos.end(), [&](const MapInfo& mi) {
                 return mi.id == selectedMapId;
