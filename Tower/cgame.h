@@ -27,7 +27,6 @@ struct EnemyType {
     int moneyValue;
     std::map<EnemyState, std::map<MovementDirection, std::string>> texturePaths;
 
-    // Thêm các thuộc tính animation
     sf::Vector2i frameSize;
     int frameCount;
     int stride;
@@ -36,6 +35,16 @@ struct EnemyType {
         : speed(0.0f), health(0), scale(1.0f), moneyValue(0), frameCount(0), stride(0) {
     }
 };
+
+// ================== THÊM MỚI: Cấu trúc cho một nút chọn trụ ==================
+struct TowerSelectionButton {
+    sf::RectangleShape buttonShape; // Hình dạng của nút
+    sf::Sprite towerIcon;           // Icon của trụ
+    sf::Text costText;              // Văn bản hiển thị giá tiền
+    std::string towerTypeId;        // ID của loại trụ (vd: "ArcherTower")
+    bool isEnabled;                 // Nút có sáng lên không (dựa vào tiền)
+};
+// ==============================================================================
 
 
 class cgame {
@@ -62,12 +71,10 @@ public:
     bool loadGame(const std::string& filename);
     std::string getCurrentMapId() const;
 
-    // ================== THÊM MỚI CHO LEADERBOARD ==================
     int getEnemiesDefeated() const;
     sf::Time getLevelTime() const;
     long calculateScore() const;
-    // =============================================================
-
+    void setupTowerSelectionPanel(sf::RenderWindow& window);
 private:
     cmap* _map;
     std::string _currentMapId;
@@ -128,10 +135,13 @@ private:
     bool _isFastForward;
     float _gameSpeedMultiplier;
 
-    // ================== THÊM MỚI CHO LEADERBOARD ==================
     int _enemiesDefeated;
     sf::Time _levelTime;
     bool _levelIsActive;
+
+    // ================== THÊM MỚI: Thanh chọn trụ ==================
+    sf::RectangleShape _towerPanel;
+    std::vector<TowerSelectionButton> _towerSelectionButtons;
     // =============================================================
 
     void loadFont();
@@ -155,6 +165,11 @@ private:
     void updateUpgradePanel();
     void selectTowerToBuild(const std::string& typeId);
     void renderInstructionPanel(sf::RenderWindow& window);
+
+    // ================== THÊM MỚI: Các hàm cho thanh chọn trụ ==================
+    void updateTowerSelectionPanel();
+    void renderTowerSelectionPanel(sf::RenderWindow& window);
+    // =======================================================================
 };
 
 #endif // CGAME_H

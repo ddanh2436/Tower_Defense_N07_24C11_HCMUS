@@ -393,6 +393,7 @@ int main() {
                 });
             if (it != mapInfos.end()) {
                 gameManager->loadMap(it->id, it->dataFile);
+                gameManager->setupTowerSelectionPanel(*window);
                 currentState = runGame(*window, *gameManager, leaderboard);
             }
             else {
