@@ -11,7 +11,8 @@
 enum class GameState {
     ShowingMenu,
     ShowingMapSelection,
-    ShowingLeaderboard, // <-- THÊM MỚI
+    ShowingLeaderboard, 
+    ShowingAboutUs,
     Playing,
     SettingsScreen,
     Exiting,
@@ -68,5 +69,7 @@ GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboa
 GameState showSettingsScreen(sf::RenderWindow& window);
 GameState showPauseMenu(sf::RenderWindow& window);
 GameState showConfirmExitScreen(sf::RenderWindow& window);
+GameState showAboutUsScreen(sf::RenderWindow& window);
+
 
 #endif // MENU_H
