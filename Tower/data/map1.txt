@@ -25,6 +25,13 @@ addGrassAt 1 5
 addBushAt 2 10
 addGrass1At 1 5
 addBush3At 14 9
+addBush4At 10 3
+addBush4At 10 4
+addBush4At 10 5
+addBush4At 10 6
+addBush4At 10 7
+addBush5At 2 10
+addShadow6AndTree1At 14 15
 addShadow6AndTree1At 5 4
 addLog1At 14 5
 addComboLogCampStoneFlowerGrassAt 1 20
@@ -105,10 +112,10 @@ addComboFlowerGrassAt 13 10
 addComboFlowerGrassAt 9 21
 addComboFlowerGrassAt 12 21
 addComboFlowerGrassAt 15 21
-addComboFlowerGrassAt 6 18
 addComboFlowerGrassAt 4 16
 addComboFlowerGrassAt 6 16
 addComboFlowerGrassAt 1 1
+addComboFlowerGrassAt 1 21
 addBox3At 13 25
 addBox3At 4 27
 addStone7At 14 5

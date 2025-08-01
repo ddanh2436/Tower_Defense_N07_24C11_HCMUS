@@ -103,8 +103,6 @@ static std::string getPlayerNameInput(sf::RenderWindow& window, sf::Font& font) 
     return "Player";
 }
 
-// THAY THẾ TOÀN BỘ HÀM runGame CŨ BẰNG HÀM NÀY
-
 static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboard& leaderboard) {
     sf::Clock clock;
     SoundManager::stopBackgroundMusic();
@@ -113,35 +111,34 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
     }
 
     bool scoreHasBeenSaved = false;
-    static int selectedItemIndex = 0; // Đưa ra ngoài vòng lặp để giữ trạng thái
-    static sf::Clock fadeClock;     // Đưa ra ngoài vòng lặp để giữ trạng thái
-    fadeClock.restart();            // Restart clock khi vào game
+    static int selectedItemIndex = 0; 
+    static sf::Clock fadeClock;     
+    fadeClock.restart();            
 
     while (window.isOpen()) {
         sf::Time deltaTime = clock.restart();
         sf::Event event;
         SoundManager::update();
 
-        // --- HỢP NHẤT XỬ LÝ SỰ KIỆN VÀO MỘT VÒNG LẶP DUY NHẤT ---
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) return GameState::ConfirmExit;
 
-            // 1. Xử lý Escape để vào menu Pause
+            
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 gameManager.setPaused(true);
                 SoundManager::playSoundEffect("assets/menu_click.ogg");
             }
 
-            // 2. Xử lý input khi game đang chạy
+            
             if (!gameManager.isPaused() && !gameManager.isGameOver()) {
                 gameManager.handleInput(event, window);
             }
-            // 3. Xử lý input cho màn hình THẮNG/THUA
+           
             else if (gameManager.isGameOver()) {
                 bool isWin = gameManager.hasWon();
                 int menuItemCount = isWin ? 3 : 2;
 
-                // 3.1. Input bằng bàn phím
+                
                 if (event.type == sf::Event::KeyPressed) {
                     if (event.key.code == sf::Keyboard::Up) {
                         selectedItemIndex = (selectedItemIndex + menuItemCount - 1) % menuItemCount;
@@ -164,21 +161,18 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
                     }
                 }
 
-                // 3.2. Input bằng chuột
+               
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                    // Logic click chuột của bạn đã đúng, nhưng để nó ở đây để xử lý tập trung hơn.
-                    // Bạn có thể giữ nguyên hoặc di chuyển vào đây. Đoạn code dưới đây chỉ để minh họa.
-                    // Để tránh lặp code, ta có thể tạo các sf::Text và kiểm tra bounds ở đây
+                    
                 }
             }
         }
 
-        // --- Cập nhật trạng thái game ---
+        
         if (!gameManager.isPaused() && !gameManager.isGameOver()) {
             gameManager.update(deltaTime);
         }
 
-        // --- Xử lý logic khi thắng và lưu điểm (chỉ chạy một lần) ---
         if (gameManager.hasWon() && !scoreHasBeenSaved) {
             SoundManager::playVictoryMusic();
             window.clear();
@@ -196,11 +190,9 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
             scoreHasBeenSaved = true;
         }
 
-        // --- Vẽ mọi thứ ra màn hình ---
         window.clear(sf::Color(25, 25, 25));
-        gameManager.render(window); // Luôn vẽ game làm nền
+        gameManager.render(window); 
 
-        // Vẽ UI tương ứng với trạng thái
         if (gameManager.isGameOver()) {
             sf::Font pixelFont;
             if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) return GameState::ShowingMenu;
@@ -343,13 +335,9 @@ int main() {
     Leaderboard leaderboard;
 
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
-
-    // Kiểm tra xem chế độ lấy được có hợp lệ không, nếu không thì dùng độ phân giải mặc định
     if (!desktopMode.isValid()) {
         desktopMode = sf::VideoMode(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     }
-
-    // Tạo cửa sổ ở chế độ Fullscreen với độ phân giải đã lấy được
     auto window = std::make_unique<sf::RenderWindow>(desktopMode, "Tower Defense SFML", sf::Style::Fullscreen);
     window->setFramerateLimit(60);
 
@@ -387,12 +375,20 @@ int main() {
             currentState = showLeaderboardScreen(*window, leaderboard);
             break;
         }
+        case GameState::ShowingAboutUs: {
+            if (SoundManager::getCurrentTrackPath() != MENU_MUSIC_PATH) {
+                SoundManager::playBackgroundMusic(MENU_MUSIC_PATH, MENU_MUSIC_VOLUME);
+            }
+            currentState = showAboutUsScreen(*window);
+            break;
+        }
         case GameState::Playing: {
             auto it = std::find_if(mapInfos.begin(), mapInfos.end(), [&](const MapInfo& mi) {
                 return mi.id == selectedMapId;
                 });
             if (it != mapInfos.end()) {
                 gameManager->loadMap(it->id, it->dataFile);
+                gameManager->setupTowerSelectionPanel(*window);
                 currentState = runGame(*window, *gameManager, leaderboard);
             }
             else {
