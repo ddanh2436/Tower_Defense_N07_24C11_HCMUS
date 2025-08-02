@@ -1,4 +1,4 @@
 MAP_1,Suburban,data/map1.txt
 MAP_2,City,data/map2.txt
 MAP_3,Countryside,data/map3.txt
-MAP_4,Cctao,data/map4.txt
+MAP_4,Castle,data/map4.txt
