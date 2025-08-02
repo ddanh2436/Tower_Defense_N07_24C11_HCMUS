@@ -125,7 +125,8 @@ private:
         _decor1_Texture, _decor2_Texture, _decor3_Texture, _decor4_Texture, 
         _decor5_Texture, _decor6_Texture, _decor7_Texture, _decor8_Texture, 
         _decor9_Texture, _decor10_Texture, _decor11_Texture, _decor12_Texture, 
-        _decor13_Texture, _decor14_Texture, _decor15_Texture, _decor16_Texture, _decor17_Texture ;
+        _decor13_Texture, _decor14_Texture, _decor15_Texture, _decor16_Texture, _decor17_Texture,
+        _mainCharacterHouse_Texture;
 
     bool _texturesLoaded;
     std::vector<cpoint> _enemyPath; 
@@ -206,6 +207,7 @@ private:
     void addDecor15At(int row, int col);
     void addDecor16At(int row, int col);
     void addDecor17At(int row, int col);
+	void addMainCharacterHouseAt(int row, int col);
 public:
     cmap(const std::string& dataFilePath, const std::string& mapId);
     void calculateEnemyPath(const std::string& mapId);

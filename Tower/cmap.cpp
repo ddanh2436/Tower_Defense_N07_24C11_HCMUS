@@ -115,6 +115,7 @@ void cmap::loadMapFromTxtFile(const std::string& filePath, const std::string& ma
     decorationFuncs["addDecor15At"] = [this](int r, int c) { this->addDecor15At(r, c); };
     decorationFuncs["addDecor16At"] = [this](int r, int c) { this->addDecor16At(r, c); };
     decorationFuncs["addDecor17At"] = [this](int r, int c) { this->addDecor17At(r, c); };
+    decorationFuncs["addMainCharacterHouseAt"] = [this](int r, int c) { this->addMainCharacterHouseAt(r, c); };
 
     std::string line;
     bool inMapBlock = false, inLayoutSection = false, inDecorationsSection = false;
@@ -602,6 +603,7 @@ void cmap::loadTileTextures() {
     if (!loadTextureSFML(_decor15_Texture, "assets/Decor15.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_decor16_Texture, "assets/Decor16.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_decor17_Texture, "assets/Decor17.png")) _texturesLoaded = false;
+    if (!loadTextureSFML(_mainCharacterHouse_Texture, "assets/MainCharacter_House.png")) _texturesLoaded = false;
 }
 
 void cmap::addBushAt(int row, int col) {
@@ -962,4 +964,8 @@ void cmap::addComboFlowerGrassAt(int row, int col) {
     _grassesOverlay.emplace_back(_grassOverlay1_Texture, row + 1, col + 1, scale + 0.25f);
     _grassesOverlay.emplace_back(_grassOverlay4_Texture, row - 1, col + 1, scale + 0.25f);
     _grassesOverlay.emplace_back(_grassOverlay5_Texture, row + 1, col, scale + 0.25f);
+}
+void cmap::addMainCharacterHouseAt(int row, int col) {
+    float scale = static_cast<float>(CURRENT_TILE_SIZE) / 32.0f;
+    _houses.emplace_back(_mainCharacterHouse_Texture, row, col, scale + 0.54f);
 }
