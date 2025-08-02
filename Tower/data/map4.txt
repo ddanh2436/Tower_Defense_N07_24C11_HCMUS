@@ -21,6 +21,96 @@ layout
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 endlayout
 decorations
+addMainCharacterHouseAt 4 10
+addBush5At 4 10
+addComboFlowerGrassAt 6 14
+addComboFlowerGrassAt 7 13
+addComboFlowerGrassAt 7 15
+addComboFlowerGrassAt 7 18
+addComboFlowerGrassAt 10 13
+addComboFlowerGrassAt 10 15
+addComboFlowerGrassAt 10 18
+addComboFlowerGrassAt 7 8
+addComboFlowerGrassAt 11 8
+addComboFlowerGrassAt 10 24
+addComboFlowerGrassAt 11 21
+addComboFlowerGrassAt 8 10
+addComboFlowerGrassAt 6 23
+addComboFlowerGrassAt 11 24
+addComboFlowerGrassAt 16 1
+addComboFlowerGrassAt 13 1
+addComboFlowerGrassAt 1 1
+addComboFlowerGrassAt 4 1
+addComboFlowerGrassAt 6 1
+addComboFlowerGrassAt 1 30
+addComboFlowerGrassAt 4 30
+addComboFlowerGrassAt 6 30
+addComboFlowerGrassAt 16 30
+addComboFlowerGrassAt 13 30
+
+addFence7At 2 3
+addFence7At 3 3
+addFence7At 4 3
+addFence7At 5 3
+addFence7At 6 3
+addFence7At 7 3
+addFence7At 10 3
+addFence7At 11 3
+addFence7At 12 3
+addFence7At 13 3
+addFence7At 14 3
+addFence7At 15 3
+addFence7At 2 28
+addFence7At 3 28
+addFence7At 4 28
+addFence7At 5 28
+addFence7At 6 28
+addFence7At 7 28
+addFence7At 10 29
+addFence7At 11 29
+addFence7At 12 29
+addFence7At 13 29
+addFence7At 14 29
+addFence7At 15 29
+
+addFence1At 4 9
+addFence1At 4 11
+addDecor10At 11 16
+addShadow6AndTree1At 6 7
+addTree2At 7 10
+addDecor2At 10 10
+addCamp4At 8 9
+addStone7At 9 7
+addDecor7At 9 11
+addShadow6AndTree1At 10 7
+addLog1At 11 6
+addTent1At 11 20
+addDecor14At 7 21
+addShadow6AndTree1At 9 23
+addTree2At 10 21
+addShadow6AndTree1At 5 22
+addDecor7At 8 20
+addDecor8At 9 20
+addTent3At 11 24
+addFence1At 8 0
+addFence1At 8 1
+addFence1At 8 2
+addTree2At 11 1
+addCamp2At 6 1
+addTree2At 4 0
+addStone12At 3 1
+addDecor6At 5 1
+addStone7At 16 1
+addStone7At 4 30
+addTree2At 1 30
+addLamp1At 1 2
+addLamp1At 15 3
+addLamp2At 16 29
+addLamp2At 1 29
+addCamp4At 6 30
+addDecor14At 11 30
+addTent2At 14 30
+addTent3At 14 1
 enddecorations
 waves
 wave 0 10 1500
