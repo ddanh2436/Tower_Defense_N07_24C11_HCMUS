@@ -45,7 +45,6 @@ void cmap::loadMapFromTxtFile(const std::string& filePath, const std::string& ma
         return;
     }
 
-    // Map để ánh xạ tên decoration từ file sang hàm add tương ứng
     std::map<std::string, std::function<void(int, int)>> decorationFuncs;
     decorationFuncs["addGrassAt"] = [this](int r, int c) { this->addGrassAt(r, c); };
     decorationFuncs["addBushAt"] = [this](int r, int c) { this->addBushAt(r, c); };
@@ -456,6 +455,9 @@ bool cmap::isDecorated(int row, int col) const {
     for (const auto& deco : _logs) if (deco.col == col && deco.row == row) return true;
     for (const auto& deco : _grassesOverlay) if (deco.col == col && deco.row == row) return true;
     for (const auto& deco : _fences) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _decors) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _houses) if (deco.col == col && deco.row == row) return true;
+    for (const auto& deco : _tents) if (deco.col == col && deco.row == row) return true;
     return false;
 }
 

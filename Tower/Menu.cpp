@@ -47,7 +47,7 @@ GameState showMenu(sf::RenderWindow& window) {
     gameTitleText.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 5.0f));
 
     std::vector<sf::Text> menuItems;
-    std::vector<std::string> menuStrings = { "New Game", "Continue Game", "Leaderboard", "Settings", "Exit" };
+    std::vector<std::string> menuStrings = { "New Game", "Continue Game", "Leaderboard", "About Us", "Settings", "Exit" };
 
 
     unsigned int pixelCharSize = 20;
@@ -106,13 +106,14 @@ GameState showMenu(sf::RenderWindow& window) {
                 }
                 else if (event.key.code == sf::Keyboard::Return) {
                     SoundManager::playSoundEffect("assets/menu_click.ogg");
-                    // ================== XỬ LÝ SỰ KIỆN CHO LEADERBOARD ==================
+                    
                     if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                     if (menuStrings[selectedItemIndex] == "Continue Game") return GameState::LoadingGame;
                     if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
+                    if (menuStrings[selectedItemIndex] == "About Us") return GameState::ShowingAboutUs;
                     if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                     if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
-                    // ====================================================================
+                  
                 }
             }
             if (event.type == sf::Event::MouseButtonPressed) {
@@ -125,6 +126,7 @@ GameState showMenu(sf::RenderWindow& window) {
                             if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                             if (menuStrings[selectedItemIndex] == "Load Game") return GameState::LoadingGame;
                             else if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
+                            else if (menuStrings[selectedItemIndex] == "About Us") return GameState::ShowingAboutUs;
                             else if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                             else if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
                             break;
@@ -179,7 +181,7 @@ namespace menuResources {
     sf::Sprite mapSelectionBackgroundSprite;
     bool resourceInitialized = false;
 
-    bool initializeResources() {
+    static bool initializeResources() {
         if (!mapSelectionBackgroundTexture.loadFromFile("assets/mapSelectingScreen.png")) {
             std::cerr << "Erorr: Could not load map selection backgorund!" << std::endl;
             return false;
@@ -190,7 +192,7 @@ namespace menuResources {
     }
 }
 
-std::vector<sf::Vector2f> getFlagPosition(const sf::Vector2u& winSz, size_t amount) {
+static std::vector<sf::Vector2f> getFlagPosition(const sf::Vector2u& winSz, size_t amount) {
     std::vector<sf::Vector2f> flagPos;
     flagPos.reserve(amount);
 
@@ -876,6 +878,18 @@ GameState showConfirmExitScreen(sf::RenderWindow& window) {
 }
 
 GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboard) {
+    sf::Texture backgroundTexture;
+    if (!backgroundTexture.loadFromFile("assets/valley_edit.png")) {
+        std::cerr << "Can not load background asset." << std::endl;
+        return GameState::ShowingMenu;
+    }
+    sf::Sprite backgroundSprite(backgroundTexture);
+    backgroundSprite.setScale(
+        static_cast<float> (window.getSize().x) / backgroundTexture.getSize().x,
+        static_cast<float> (window.getSize().y) / backgroundTexture.getSize().y
+    );
+    backgroundSprite.setPosition(0, 0);
+
     // Vòng lặp chính cho màn hình leaderboard
     while (window.isOpen()) {
         sf::Event event;
@@ -892,10 +906,64 @@ GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboa
         }
 
         // Vẽ màn hình
-        window.clear(sf::Color(15, 30, 50)); // Màu nền tối
-        leaderboard.draw(window); // Gọi hàm draw của lớp Leaderboard
+        window.clear();
+        window.draw(backgroundSprite);
+        leaderboard.draw(window); 
         window.display();
     }
+    return GameState::ShowingMenu; 
+}
 
-    return GameState::ShowingMenu; // Mặc định quay về menu
+GameState showAboutUsScreen(sf::RenderWindow& window) {
+    sf::Texture aboutUsTexture;
+    if (!aboutUsTexture.loadFromFile("assets/about_us.png")) {
+        std::cerr << "Error: Could not load about_us.png from assets folder!" << std::endl;
+        return GameState::ShowingMenu;
+    }
+    sf::Sprite aboutUsSprite(aboutUsTexture);
+    sf::Vector2u textureSize = aboutUsTexture.getSize();
+    sf::Vector2u windowSize = window.getSize();
+
+    if (textureSize.x > 0 && textureSize.y > 0) {
+        float scaleX = static_cast<float>(windowSize.x) / textureSize.x;
+        float scaleY = static_cast<float>(windowSize.y) / textureSize.y;
+        aboutUsSprite.setScale(scaleX, scaleY);
+    }
+
+    sf::Font pixelFont;
+    sf::Text returnHint;
+    if (pixelFont.loadFromFile("assets/pixel_font.ttf")) {
+        returnHint.setFont(pixelFont);
+        returnHint.setString("Press Esc to return to Menu");
+        returnHint.setCharacterSize(24);
+        returnHint.setFillColor(sf::Color::White);
+
+        
+        returnHint.setOutlineColor(sf::Color::Black);
+        returnHint.setOutlineThickness(2.f);
+
+        sf::FloatRect textRect = returnHint.getLocalBounds();
+        returnHint.setOrigin(textRect.left + textRect.width, textRect.top + textRect.height);
+        returnHint.setPosition(windowSize.x - 20.f, windowSize.y - 20.f);
+    }
+
+
+    
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                return GameState::Exiting;
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                SoundManager::playSoundEffect("assets/menu_click.ogg");
+                return GameState::ShowingMenu;
+            }
+        }
+        window.clear();
+        window.draw(aboutUsSprite);
+        window.draw(returnHint);
+        window.display();
+    }
+    return GameState::Exiting;
 }

@@ -12,14 +12,13 @@ private:
     bool _textureLoaded;
 
     cpoint _position;
-    sf::Vector2f _velocity; // Hướng và tốc độ
+    sf::Vector2f _velocity; 
     float _speed;
     int _damage;
     bool _isActive;
 
-    sf::Time _gracePeriod; //Thời gian ân hạn 
+    sf::Time _gracePeriod;
 
-    //void initSprite();
 
 public:
     cbullet(const std::string& texturePath, const cpoint& startPosition, const sf::Vector2f& targetDirection, float speed, int damage);
@@ -32,7 +31,7 @@ public:
     sf::Vector2f getPosition() const;
     int getDamage() const;
     sf::FloatRect getGlobalBounds() const;
-    bool canCollide() const; //Kiểm tra xem đạn đã hết thời gian ân hạn
+    bool canCollide() const;
 };
 
 #endif // CBULLET_H

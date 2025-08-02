@@ -27,7 +27,6 @@ struct EnemyType {
     int moneyValue;
     std::map<EnemyState, std::map<MovementDirection, std::string>> texturePaths;
 
-    // Thêm các thuộc tính animation
     sf::Vector2i frameSize;
     int frameCount;
     int stride;
@@ -35,6 +34,14 @@ struct EnemyType {
     EnemyType()
         : speed(0.0f), health(0), scale(1.0f), moneyValue(0), frameCount(0), stride(0) {
     }
+};
+
+struct TowerSelectionButton {
+    sf::RectangleShape buttonShape; 
+    sf::Sprite towerIcon;           
+    sf::Text costText;              
+    std::string towerTypeId;        
+    bool isEnabled = false;         
 };
 
 
@@ -62,12 +69,10 @@ public:
     bool loadGame(const std::string& filename);
     std::string getCurrentMapId() const;
 
-    // ================== THÊM MỚI CHO LEADERBOARD ==================
     int getEnemiesDefeated() const;
     sf::Time getLevelTime() const;
     long calculateScore() const;
-    // =============================================================
-
+    void setupTowerSelectionPanel(sf::RenderWindow& window);
 private:
     cmap* _map;
     std::string _currentMapId;
@@ -127,13 +132,11 @@ private:
     bool _isPaused;
     bool _isFastForward;
     float _gameSpeedMultiplier;
-
-    // ================== THÊM MỚI CHO LEADERBOARD ==================
     int _enemiesDefeated;
     sf::Time _levelTime;
     bool _levelIsActive;
-    // =============================================================
-
+    sf::RectangleShape _towerPanel;
+    std::vector<TowerSelectionButton> _towerSelectionButtons;
     void loadFont();
     void setupUI();
     void resetGameStats();
@@ -155,6 +158,8 @@ private:
     void updateUpgradePanel();
     void selectTowerToBuild(const std::string& typeId);
     void renderInstructionPanel(sf::RenderWindow& window);
+    void updateTowerSelectionPanel();
+    void renderTowerSelectionPanel(sf::RenderWindow& window);
 };
 
 #endif // CGAME_H
