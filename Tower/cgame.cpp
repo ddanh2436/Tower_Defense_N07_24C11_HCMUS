@@ -281,6 +281,7 @@ void cgame::resetGameStats() {
 }
 
 void cgame::startNextWave() {
+    _bullets.clear();
     if (_waveInProgress || _isGameOver || _levelWon) return;
     if (_currentWave == 0) {
         _levelIsActive = true;
@@ -672,6 +673,7 @@ void cgame::update(sf::Time deltaTime) {
             _timeSinceLastSpawn = sf::Time::Zero;
         }
         if (_enemiesSpawnedThisWave >= _enemiesPerWave && _enemies.empty()) {
+            _bullets.clear();
             _waveInProgress = false;
             int totalWavesForThisMap = 5;
             if (getCurrentMapId() == "MAP_4") {
