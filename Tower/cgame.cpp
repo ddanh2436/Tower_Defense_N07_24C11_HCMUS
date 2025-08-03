@@ -187,7 +187,7 @@ void cgame::setupEnemyTypes() {
     _availableEnemyTypes.push_back(wolf);
     // --- BEE ---
     EnemyType bee = goblin;
-    bee.health = 250; bee.speed = 15.f; bee.scale = 2.0f; bee.moneyValue = 20;
+    bee.health = 250; bee.speed = 15.f; bee.scale = 1.5f; bee.moneyValue = 20;
     bee.texturePaths[EnemyState::WALKING][MovementDirection::UP] = "assets/U2_Walk.png";
     bee.texturePaths[EnemyState::WALKING][MovementDirection::DOWN] = "assets/D2_Walk.png";
     bee.texturePaths[EnemyState::WALKING][MovementDirection::SIDE] = "assets/S2_Walk.png";
@@ -250,8 +250,8 @@ void cgame::setupEnemyTypes() {
 
 void cgame::resetGameStats() {
     _isPaused = false;
-    _lives = 1;
-    _maxLives = 1;
+    _lives = 10;
+    _maxLives = 10;
     _money = 1000;
     _currentWave = 0;
     _enemiesPerWave = 5;
@@ -300,7 +300,7 @@ void cgame::startNextWave() {
     else {
         std::vector<int> allowedEnemyIndices;
         for (size_t i = 0; i < _availableEnemyTypes.size(); ++i) {
-            if (i != 6 && i != 7) {
+            if (i != 7) {
                 allowedEnemyIndices.push_back(static_cast<int>(i));
             }
         }
