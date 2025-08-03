@@ -60,12 +60,12 @@ addFence7At 12 3
 addFence7At 13 3
 addFence7At 14 3
 addFence7At 15 3
-addFence7At 2 28
-addFence7At 3 28
-addFence7At 4 28
-addFence7At 5 28
-addFence7At 6 28
-addFence7At 7 28
+addFence7At 2 29
+addFence7At 3 29
+addFence7At 4 29
+addFence7At 5 29
+addFence7At 6 29
+addFence7At 7 29
 addFence7At 10 29
 addFence7At 11 29
 addFence7At 12 29
@@ -78,8 +78,8 @@ addFence1At 4 11
 addDecor10At 11 16
 addShadow6AndTree1At 6 7
 addTree2At 7 10
-addDecor2At 10 10
-addCamp4At 8 9
+addDecor2At 9 21
+addCamp4At 10 8
 addStone7At 9 7
 addDecor7At 9 11
 addShadow6AndTree1At 10 7
@@ -111,6 +111,20 @@ addCamp4At 6 30
 addDecor14At 11 30
 addTent2At 14 30
 addTent3At 14 1
+addBush4At 0 6
+addDecor2At 0 9
+addDecor4At 0 8
+addTree2At 6 20
+addTree2At 0 24
+addDecor14At 0 22
+addCamp4At 17 23
+addCamp6At 17 22
+addLog1At 17 25
+addStone7At 17 6
+addLamp4At 17 8
+addBush3At 17 9
+addDecor9At 8 24
+addBox1At 8 23
 enddecorations
 waves
 wave 0 10 1500
