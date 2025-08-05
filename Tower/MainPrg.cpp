@@ -103,6 +103,7 @@ static std::string getPlayerNameInput(sf::RenderWindow& window, sf::Font& font) 
     return "Player";
 }
 
+
 static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboard& leaderboard) {
     sf::Clock clock;
     SoundManager::stopBackgroundMusic();
@@ -111,9 +112,9 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
     }
 
     bool scoreHasBeenSaved = false;
-    static int selectedItemIndex = 0; 
-    static sf::Clock fadeClock;     
-    fadeClock.restart();            
+    static int selectedItemIndex = 0;
+    static sf::Clock fadeClock;
+    fadeClock.restart();
 
     while (window.isOpen()) {
         sf::Time deltaTime = clock.restart();
@@ -123,17 +124,14 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) return GameState::ConfirmExit;
 
-            
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 gameManager.setPaused(true);
                 SoundManager::playSoundEffect("assets/menu_click.ogg");
             }
 
-            
             if (!gameManager.isPaused() && !gameManager.isGameOver()) {
                 gameManager.handleInput(event, window);
             }
-           
             else if (gameManager.isGameOver()) {
                 bool isWin = gameManager.hasWon();
                 int menuItemCount = isWin ? 3 : 2;
@@ -161,14 +159,55 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
                     }
                 }
 
-               
+                sf::Font pixelFont;
+                pixelFont.loadFromFile("assets/pixel_font.ttf");
+                std::vector<std::string> menuStrings;
+                if (isWin) {
+                    menuStrings = { "Next Level", "Restart", "Quit to Menu" };
+                }
+                else {
+                    menuStrings = { "Restart", "Quit to Menu" };
+                }
+
+                
+                if (event.type == sf::Event::MouseMoved) {
+                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                    for (size_t i = 0; i < menuStrings.size(); ++i) {
+                        sf::Text tempText(menuStrings[i], pixelFont, 30);
+                        sf::FloatRect textRect = tempText.getLocalBounds();
+                        tempText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+                        tempText.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f + 60 + i * 50);
+                        if (tempText.getGlobalBounds().contains(mousePos)) {
+                            selectedItemIndex = static_cast<int>(i);
+                        }
+                    }
+                }
+
+                
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                    
+                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                    for (size_t i = 0; i < menuStrings.size(); ++i) {
+                        sf::Text tempText(menuStrings[i], pixelFont, 30);
+                        sf::FloatRect textRect = tempText.getLocalBounds();
+                        tempText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+                        tempText.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f + 60 + i * 50);
+
+                        if (tempText.getGlobalBounds().contains(mousePos)) {
+                            if (isWin) {
+                                if (i == 0) return GameState::GoToNextLevel;
+                                if (i == 1) return GameState::Restarting;
+                                if (i == 2) return GameState::ShowingMenu;
+                            }
+                            else {
+                                if (i == 0) return GameState::Restarting;
+                                if (i == 1) return GameState::ShowingMenu;
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        
         if (!gameManager.isPaused() && !gameManager.isGameOver()) {
             gameManager.update(deltaTime);
         }
@@ -191,7 +230,7 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
         }
 
         window.clear(sf::Color(25, 25, 25));
-        gameManager.render(window); 
+        gameManager.render(window);
 
         if (gameManager.isGameOver()) {
             sf::Font pixelFont;
@@ -210,7 +249,7 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
             sf::Vector2f windowCenter(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
 
             sf::RectangleShape backgroundPanel;
-            backgroundPanel.setSize(sf::Vector2f(400, 350));
+            backgroundPanel.setSize(sf::Vector2f(450, 400));
             backgroundPanel.setFillColor(sf::Color(panelFillColor.r, panelFillColor.g, panelFillColor.b, static_cast<sf::Uint8>(panelFillColor.a * alphaRatio)));
             backgroundPanel.setOutlineColor(sf::Color(panelOutlineColor.r, panelOutlineColor.g, panelOutlineColor.b, static_cast<sf::Uint8>(panelOutlineColor.a * alphaRatio)));
             backgroundPanel.setOutlineThickness(2.f);
@@ -223,7 +262,17 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
             titleText.setStyle(sf::Text::Bold);
             sf::FloatRect titleRect = titleText.getLocalBounds();
             titleText.setOrigin(titleRect.left + titleRect.width / 2.0f, titleRect.top + titleRect.height / 2.0f);
-            titleText.setPosition(windowCenter.x, windowCenter.y - 120);
+            titleText.setPosition(windowCenter.x, windowCenter.y - 150);
+
+            sf::Texture starAchievedTexture, starEmptyTexture;
+            int starsToShow = 0;
+            bool starTexturesLoaded = false;
+            if (isWin) {
+                starsToShow = determineStars(gameManager);
+                if (starAchievedTexture.loadFromFile("assets/star.png") && starEmptyTexture.loadFromFile("assets/star_field.png")) {
+                    starTexturesLoaded = true;
+                }
+            }
 
             std::vector<std::string> menuStrings;
             if (isWin) {
@@ -234,12 +283,9 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
             }
             std::vector<sf::Text> menuItems;
             for (size_t i = 0; i < menuStrings.size(); ++i) {
-                sf::Text text;
-                text.setFont(pixelFont);
-                text.setString(menuStrings[i]);
-                text.setCharacterSize(30);
+                sf::Text text(menuStrings[i], pixelFont, 30);
                 sf::Uint8 currentAlpha = static_cast<sf::Uint8>(textAlpha * alphaRatio);
-                if (i == selectedItemIndex && alphaRatio >= 1.f) {
+                if (i == selectedItemIndex) { // Luôn highlight mục được chọn
                     text.setFillColor(sf::Color(highlightColor.r, highlightColor.g, highlightColor.b, currentAlpha));
                 }
                 else {
@@ -247,7 +293,7 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
                 }
                 sf::FloatRect textRect = text.getLocalBounds();
                 text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-                text.setPosition(windowCenter.x, windowCenter.y - 20 + i * 70);
+                text.setPosition(windowCenter.x, windowCenter.y + 60 + i * 50);
                 menuItems.push_back(text);
             }
 
@@ -264,7 +310,6 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
                 }
                 arrowSprite.setColor(sf::Color(highlightColor.r, highlightColor.g, highlightColor.b, static_cast<sf::Uint8>(textAlpha * alphaRatio)));
             }
-
             if (arrowTextureLoaded && !menuItems.empty() && alphaRatio >= 1.f) {
                 const sf::Text& currentItem = menuItems[selectedItemIndex];
                 sf::FloatRect itemBounds = currentItem.getGlobalBounds();
@@ -277,10 +322,39 @@ static GameState runGame(sf::RenderWindow& window, cgame& gameManager, Leaderboa
 
             window.draw(backgroundPanel);
             window.draw(titleText);
+
+            if (isWin && starTexturesLoaded) {
+                sf::Sprite starSprite;
+                const int totalStars = 3;
+                float desiredStarHeight = 48.f;
+                starSprite.setTexture(starAchievedTexture);
+                float scale = desiredStarHeight / starSprite.getLocalBounds().height;
+                starSprite.setScale(scale, scale);
+                float starWidth = starSprite.getGlobalBounds().width;
+                float spacing = 10.f;
+                float totalStarsWidth = (totalStars * starWidth) + ((totalStars - 1) * spacing);
+                float startX = windowCenter.x - totalStarsWidth / 2.f;
+                float starsY = titleText.getPosition().y + titleText.getGlobalBounds().height / 2.f + 30.f;
+                for (int i = 0; i < totalStars; ++i) {
+                    if (i < starsToShow) {
+                        starSprite.setTexture(starAchievedTexture);
+                    }
+                    else {
+                        starSprite.setTexture(starEmptyTexture);
+                    }
+                    starSprite.setPosition(startX + i * (starWidth + spacing), starsY);
+                    starSprite.setColor(sf::Color(255, 255, 255, static_cast<sf::Uint8>(255 * alphaRatio)));
+                    window.draw(starSprite);
+                }
+            }
+
             for (const auto& item : menuItems) window.draw(item);
-            if (arrowTextureLoaded && alphaRatio >= 1.f) window.draw(arrowSprite);
+            if (arrowTextureLoaded && alphaRatio >= 1.f) {
+                window.draw(arrowSprite);
+            }
         }
         else if (gameManager.isPaused()) {
+            // (Phần mã cho pause menu giữ nguyên)
             SoundManager::pauseBackgroundMusic();
             GameState pauseResult = showPauseMenu(window);
             if (pauseResult == GameState::Playing) {
