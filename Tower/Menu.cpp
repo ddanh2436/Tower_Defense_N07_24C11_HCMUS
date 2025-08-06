@@ -16,12 +16,10 @@ GameState showMenu(sf::RenderWindow& window) {
     sf::Font pixelFont;
     if (!pixelFont.loadFromFile("assets/pixel_font.ttf")) {
         std::cerr << "Error: Could not load assets/pixel_font.ttf font for menu!" << std::endl;
-        if (!pixelFont.loadFromFile("arial.ttf")) {
-            std::cerr << "Error: Could not load font Arial.ttf as fallback!" << std::endl;
-            return GameState::Exiting;
-        }
+        return GameState::Exiting;
     }
 
+    
     sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile("assets/menu_background.png")) {
         std::cerr << "Error: Unable to download menu image: assets/menu_background.png" << std::endl;
@@ -34,102 +32,94 @@ GameState showMenu(sf::RenderWindow& window) {
         );
     }
 
-    sf::Text gameTitleText;
-    gameTitleText.setFont(pixelFont);
-    gameTitleText.setString("Tower Defense");
-    gameTitleText.setCharacterSize(60);
+    
+    sf::Text gameTitleText("Tower Defense", pixelFont, 60);
     gameTitleText.setFillColor(sf::Color::Yellow);
     gameTitleText.setStyle(sf::Text::Bold);
-
     sf::FloatRect titleRect_showMenu = gameTitleText.getLocalBounds();
-    gameTitleText.setOrigin(titleRect_showMenu.left + titleRect_showMenu.width / 2.0f,
-        titleRect_showMenu.top + titleRect_showMenu.height / 2.0f);
+    gameTitleText.setOrigin(titleRect_showMenu.left + titleRect_showMenu.width / 2.0f, titleRect_showMenu.top + titleRect_showMenu.height / 2.0f);
     gameTitleText.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 5.0f));
 
-    std::vector<sf::Text> menuItems;
+    
     std::vector<std::string> menuStrings = { "New Game", "Continue Game", "Leaderboard", "About Us", "Settings", "Exit" };
-
-
-    unsigned int pixelCharSize = 20;
-    float itemHeight = static_cast<float>(pixelCharSize) * 1.5f;
-    float spacingBetweenItems = static_cast<float>(pixelCharSize) * 1.0f;
-    float menuBlockStartY = window.getSize().y / 2.5f;
-    float initialY = menuBlockStartY;
-
+    std::vector<sf::Text> menuItems;
+    float initialY = window.getSize().y / 2.5f;
     for (size_t i = 0; i < menuStrings.size(); ++i) {
-        sf::Text text;
-        text.setFont(pixelFont);
-        text.setString(menuStrings[i]);
-        text.setCharacterSize(pixelCharSize);
+        sf::Text text(menuStrings[i], pixelFont, 20);
         text.setFillColor(sf::Color::White);
         sf::FloatRect textRect = text.getLocalBounds();
-        text.setOrigin(textRect.left + textRect.width / 2.0f,
-            textRect.top + textRect.height / 2.0f);
-        text.setPosition(sf::Vector2f(window.getSize().x / 2.0f, initialY + i * (itemHeight + spacingBetweenItems)));
+        text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+        text.setPosition(sf::Vector2f(window.getSize().x / 2.0f, initialY + i * 50.f));
         menuItems.push_back(text);
     }
 
     int selectedItemIndex = 0;
+
+    
     sf::Texture arrowTexture;
     sf::Sprite arrowSprite;
     bool arrowTextureLoaded = false;
-    if (!arrowTexture.loadFromFile("assets/pixel_arrow.png")) {
-        std::cerr << "Loi: Khong the tai hinh mui ten: assets/pixel_arrow.png" << std::endl;
-    }
-    else {
-        arrowSprite.setTexture(arrowTexture);
+    if (arrowTexture.loadFromFile("assets/pixel_arrow.png")) {
         arrowTextureLoaded = true;
-        float desiredArrowHeight = static_cast<float>(pixelCharSize) * 0.8f;
+        arrowSprite.setTexture(arrowTexture);
+        float desiredArrowHeight = 20 * 0.8f;
         if (arrowTexture.getSize().y > 0) {
             float scaleFactor = desiredArrowHeight / arrowTexture.getSize().y;
             arrowSprite.setScale(scaleFactor, scaleFactor);
         }
     }
-    float arrowOffset = 5.f;
 
+    
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 return GameState::Exiting;
             }
+
+            
             if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Up) {
-                    if (selectedItemIndex > 0) selectedItemIndex--;
-                    else selectedItemIndex = static_cast<int>(menuItems.size() - 1);
+                    selectedItemIndex = (selectedItemIndex + static_cast<int>(menuItems.size()) - 1) % static_cast<int>(menuItems.size());
                     SoundManager::playSoundEffect("assets/menu_click.ogg");
                 }
                 else if (event.key.code == sf::Keyboard::Down) {
-                    if (selectedItemIndex < static_cast<int>(menuItems.size()) - 1) selectedItemIndex++;
-                    else selectedItemIndex = 0;
+                    selectedItemIndex = static_cast<int>((selectedItemIndex + 1) % static_cast<int>(menuItems.size()));
                     SoundManager::playSoundEffect("assets/menu_click.ogg");
                 }
                 else if (event.key.code == sf::Keyboard::Return) {
                     SoundManager::playSoundEffect("assets/menu_click.ogg");
-                    
                     if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
                     if (menuStrings[selectedItemIndex] == "Continue Game") return GameState::LoadingGame;
-                    if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
+                    if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard;
                     if (menuStrings[selectedItemIndex] == "About Us") return GameState::ShowingAboutUs;
                     if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
                     if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
-                  
                 }
             }
+
+
+            if (event.type == sf::Event::MouseMoved) {
+                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                for (size_t i = 0; i < menuItems.size(); ++i) {
+                    if (menuItems[i].getGlobalBounds().contains(mousePos)) {
+                        selectedItemIndex = static_cast<int>(i); 
+                    }
+                }
+            }
+                                                
             if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
                     for (size_t i = 0; i < menuItems.size(); ++i) {
                         if (menuItems[i].getGlobalBounds().contains(mousePos)) {
-                            selectedItemIndex = static_cast<int>(i);
                             SoundManager::playSoundEffect("assets/menu_click.ogg");
-                            if (menuStrings[selectedItemIndex] == "New Game") return GameState::ShowingMapSelection;
-                            if (menuStrings[selectedItemIndex] == "Load Game") return GameState::LoadingGame;
-                            else if (menuStrings[selectedItemIndex] == "Leaderboard") return GameState::ShowingLeaderboard; // <-- THÊM MỚI
-                            else if (menuStrings[selectedItemIndex] == "About Us") return GameState::ShowingAboutUs;
-                            else if (menuStrings[selectedItemIndex] == "Settings") return GameState::SettingsScreen;
-                            else if (menuStrings[selectedItemIndex] == "Exit") return GameState::Exiting;
-                            break;
+                            if (menuStrings[i] == "New Game") return GameState::ShowingMapSelection;
+                            if (menuStrings[i] == "Continue Game") return GameState::LoadingGame;
+                            if (menuStrings[i] == "Leaderboard") return GameState::ShowingLeaderboard;
+                            if (menuStrings[i] == "About Us") return GameState::ShowingAboutUs;
+                            if (menuStrings[i] == "Settings") return GameState::SettingsScreen;
+                            if (menuStrings[i] == "Exit") return GameState::Exiting;
                         }
                     }
                 }
@@ -142,28 +132,22 @@ GameState showMenu(sf::RenderWindow& window) {
             }
             else {
                 menuItems[i].setFillColor(sf::Color::White);
-                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                if (menuItems[i].getGlobalBounds().contains(mousePos)) {
-                    menuItems[i].setFillColor(sf::Color(220, 220, 180));
-                }
             }
         }
 
-        if (arrowTextureLoaded && !menuItems.empty() && selectedItemIndex >= 0 && selectedItemIndex < static_cast<int>(menuItems.size())) {
+        if (arrowTextureLoaded) {
             const sf::Text& currentItem = menuItems.at(selectedItemIndex);
             sf::FloatRect itemBounds = currentItem.getGlobalBounds();
             sf::FloatRect arrowBounds = arrowSprite.getGlobalBounds();
             arrowSprite.setPosition(
-                itemBounds.left - arrowBounds.width - arrowOffset,
+                itemBounds.left - arrowBounds.width - 10.f,
                 itemBounds.top + (itemBounds.height / 2.f) - (arrowBounds.height / 2.f)
             );
             arrowSprite.setColor(sf::Color::Yellow);
         }
 
         window.clear();
-        if (backgroundTexture.getSize().x > 0) {
-            window.draw(backgroundSprite);
-        }
+        window.draw(backgroundSprite);
         window.draw(gameTitleText);
         for (const auto& item : menuItems) {
             window.draw(item);
