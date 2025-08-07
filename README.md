@@ -1,5 +1,9 @@
 🚩 TOWER DEFENSE_N07_24C11_HCMUS
+
+
 Đây là một dự án game Tower Defense cổ điển được xây dựng bằng ngôn ngữ C++ và thư viện đồ họa SFML (Simple and Fast Multimedia Library). Người chơi sẽ phải sử dụng tư duy chiến thuật để xây dựng các tháp phòng thủ, ngăn chặn các đợt tấn công của kẻ thù.
+
+[![Menu chính của game](https://i.postimg.cc/W3cscQWn/Screenshot-2025-08-07-223557.png)](https://postimg.cc/4KPDzFT7)
 
 ✨ TÍNH NĂNG NỔI BẬT
    Lối chơi chiến thuật: Xây dựng và nâng cấp các loại tháp khác nhau để chống lại từng loại kẻ thù.
@@ -23,7 +27,8 @@ Tháp: Hiện tại có tháp cung thủ (Archer Tower) và tháp pháo binh (Ca
 🖥️ Giao diện người dùng (UI) đầy đủ: Bao gồm menu chính, màn hình chọn bản đồ, màn hình cài đặt, menu tạm dừng trong game và các thông báo khác.
 
 🛠️ CÀI ĐẶT VÀ YÊU CẦU
-Yêu cầu hệ thống
+
+Yêu cầu hệ thống:
 
 🖥 Hệ điều hành: Windows.
 
@@ -113,4 +118,6 @@ Người chơi có thể xây và bán tháp trước khi trận đấu bắt đ
 
 Ngăn chặn kẻ thù đi đến cuối con đường. Mỗi kẻ thù lọt qua sẽ làm bạn mất một mạng. Bạn sẽ thua cuộc khi mất hết mạng. ❤️
 
-Sống sót qua tất cả các đợt tấn công để chiến thắng màn chơi! 💥
+Sống sót qua tất cả các đợt tấn công để chiến thắng màn chơi! 
+
+![](https://i.postimg.cc/RF2KmVrY/Readme-Image.png)
