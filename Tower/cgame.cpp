@@ -557,6 +557,18 @@ void cgame::handleInput(const sf::Event& event, sf::RenderWindow& window) {
                             else if (_selectedTowerType == "CannonTower") {
                                 _towers.push_back(std::make_unique<ccannontower>(this, blueprint[0], towerPosition, nextTowerId++));
                             }
+                            
+                            for (int i = 0; i < _towers.size() - 1; i++)
+                            {
+                                for (int y = i + 1; y < _towers.size(); y++)
+                                {
+                                    if (_towers[i]->getPosition().y > _towers[y]->getPosition().y)
+                                    {
+                                        std::swap(_towers[i], _towers[y]);
+                                    }
+                                }
+                            }
+
 
                             SoundManager::playSoundEffect("assets/tower_place.wav");
                             _money -= buildCost;
