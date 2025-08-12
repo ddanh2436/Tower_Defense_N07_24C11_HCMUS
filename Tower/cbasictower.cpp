@@ -30,11 +30,17 @@ void cbasictower::setAnimation(const TowerLevelData& levelData) {
         _numFramesInLoop = _currentLevelData.idle_numFrames;
         _timePerFrame = (_numFramesInLoop > 0 && _currentLevelData.idle_animationSpeed > 0) ? sf::seconds(_currentLevelData.idle_animationSpeed / _numFramesInLoop) : sf::Time::Zero;
     }
+    else if (_currentState == State::ATTACKING && !_currentLevelData.attack_texturePath.empty()) {
+        _sprite.setTexture(_gameInstance->getTexture(_currentLevelData.attack_texturePath));
+        _animationStartFrame = _currentLevelData.attack_startFrame;
+        _numFramesInLoop = _currentLevelData.attack_numFrames;
+        _timePerFrame = (_numFramesInLoop > 0 && _currentLevelData.attack_animationSpeed > 0) ? sf::seconds(_currentLevelData.attack_animationSpeed / _numFramesInLoop) : sf::Time::Zero;
+    }
     else {
-        _sprite.setTexture(_gameInstance->getTexture(_currentLevelData.texturePath));
-        _animationStartFrame = _currentLevelData.startFrame;
-        _numFramesInLoop = _currentLevelData.numFramesForLevel;
-        _timePerFrame = (_numFramesInLoop > 0 && _currentLevelData.animationSpeed > 0) ? sf::seconds(_currentLevelData.animationSpeed / _numFramesInLoop) : sf::Time::Zero;
+        _sprite.setTexture(_gameInstance->getTexture(_currentLevelData.build_texturePath));
+        _animationStartFrame = _currentLevelData.build_startFrame;
+        _numFramesInLoop = _currentLevelData.build_numFrames;
+        _timePerFrame = (_numFramesInLoop > 0 && _currentLevelData.build_animationSpeed > 0) ? sf::seconds(_currentLevelData.build_animationSpeed / _numFramesInLoop) : sf::Time::Zero;
     }
     _currentFrame = 0;
     _elapsedTime = sf::Time::Zero;

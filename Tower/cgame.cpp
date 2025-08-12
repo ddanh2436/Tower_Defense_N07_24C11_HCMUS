@@ -97,7 +97,8 @@ void cgame::setupTowerTypes() {
     archerLevels.push_back(TowerLevelData{
         /*level*/ 1, /*cost*/ 50,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
-        /*texturePath*/ "assets/2.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
+        /*texturePath*/ "assets/2.png", /*startFrame*/ 0, /*numFrames*/ 3, /*speed*/ 0.5f,
+		"assets/2.png", 2, 2, 0.5f,
         "assets/2_idle.png", 0, 4, 2.0f,
         /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f,
         /*bulletTexturePath*/ "assets/bullet.png"
@@ -105,6 +106,7 @@ void cgame::setupTowerTypes() {
     archerLevels.push_back(TowerLevelData{
         /*level*/ 2, /*cost*/ 75,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
+        "assets/3.png", 0, 3, 0.4f,
         "assets/3.png", 2, 2, 0.4f,
         "assets/3_idle.png", 0, 4, 1.8f,
         175.f, 0.8f, 40, 220.f,
@@ -113,6 +115,7 @@ void cgame::setupTowerTypes() {
     archerLevels.push_back(TowerLevelData{
         /*level*/ 3, /*cost*/ 100,
         /*frameSize*/ archerFrameSize, /*frameOffsetY*/ archerFrameOffsetY,
+        "assets/4.png", 0, 3, 0.4f,
         "assets/4.png", 2, 2, 0.4f,
         "assets/4_idle.png", 0, 6, 1.8f,
         200.f, 0.9f, 50, 230.f,
@@ -127,6 +130,7 @@ void cgame::setupTowerTypes() {
     cannonLevels.push_back(TowerLevelData{
         /*level*/ 1, /*cost*/ 50,
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
+        /*texturePath*/ "assets/5.png", /*startFrame*/ 0, /*numFrames*/ 3, /*speed*/ 0.5f,
         /*texturePath*/ "assets/5.png", /*startFrame*/ 2, /*numFrames*/ 2, /*speed*/ 0.5f,
         "assets/5_idle.png", 0, 6, 2.0f,
         /*range*/ 150.f, /*fireRate*/ 1.0f, /*damage*/ 25, /*bulletSpeed*/ 200.f,
@@ -135,6 +139,7 @@ void cgame::setupTowerTypes() {
     cannonLevels.push_back(TowerLevelData{
         /*level*/ 2, /*cost*/ 75,
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
+        "assets/6.png", 0, 3, 0.4f,
         "assets/6.png", 2, 2, 0.4f,
         "assets/6_idle.png", 0, 6, 1.8f,
         175.f, 0.8f, 40, 220.f,
@@ -143,6 +148,7 @@ void cgame::setupTowerTypes() {
     cannonLevels.push_back(TowerLevelData{
         /*level*/ 3, /*cost*/ 100,
         /*frameSize*/ cannonFrameSize, /*frameOffsetY*/ cannonFrameOffsetY,
+        "assets/7.png", 0, 3, 0.4f,
         "assets/7.png", 2, 2, 0.4f,
         "assets/7_idle.png", 0, 6, 1.8f,
         200.f, 0.9f, 50, 230.f,
