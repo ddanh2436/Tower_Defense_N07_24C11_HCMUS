@@ -16,10 +16,14 @@ struct TowerLevelData {
     int cost = 0;
     sf::Vector2i frameSize = { 0, 0 };
     int frameOffsetY = 0;
-    std::string texturePath;
-    int startFrame = 0; // Initialize startFrame to 0
-    int numFramesForLevel = 0;
-    float animationSpeed = 0.0f;
+    std::string build_texturePath;
+    int build_startFrame = 0; // Initialize startFrame to 0
+    int build_numFrames = 0;
+    float build_animationSpeed = 0.0f;
+    std::string attack_texturePath;
+    int attack_startFrame = 0; 
+    int attack_numFrames = 0;
+    float attack_animationSpeed = 0.0f;
     std::string idle_texturePath;
     int idle_startFrame = 0;
     int idle_numFrames = 0;
