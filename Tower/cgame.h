@@ -21,10 +21,13 @@ const std::string TOWER_TEXTURE_PATH = "assets/4.png";
 const std::string BULLET_TEXTURE_PATH = "bullet.png";
 
 struct EnemyType {
+    std::string name;
     float speed;
     int health;
     float scale;
     int moneyValue;
+    int armour;     // Flat damage soaked per hit.
+    int livesCost;  // Lives lost if this one gets through.
     std::map<EnemyState, std::map<MovementDirection, std::string>> texturePaths;
 
     sf::Vector2i frameSize;
@@ -32,15 +35,32 @@ struct EnemyType {
     int stride;
 
     EnemyType()
-        : speed(0.0f), health(0), scale(1.0f), moneyValue(0), frameCount(0), stride(0) {
+        : name("Enemy"), speed(0.0f), health(0), scale(1.0f), moneyValue(0),
+        armour(0), livesCost(1), frameCount(0), stride(0) {
     }
+};
+
+// A short-lived expanding ring, drawn where the player calls down the strike.
+struct AbilityBlast {
+    sf::Vector2f position;
+    float radius = 0.f;
+    sf::Time elapsed;
+    sf::Time duration = sf::seconds(0.45f);
+};
+
+// Small rising label used for gold pickups and wave bonuses.
+struct FloatingText {
+    sf::Text text;
+    sf::Time remaining;
+    float riseSpeed = 42.f;
 };
 
 struct TowerSelectionButton {
     sf::RectangleShape buttonShape; 
     sf::Sprite towerIcon;           
-    sf::Text costText;              
-    std::string towerTypeId;        
+    sf::Text costText;
+    sf::Text nameText;
+    std::string towerTypeId;
     bool isEnabled = false;         
 };
 
@@ -69,6 +89,16 @@ public:
     bool loadGame(const std::string& filename);
     std::string getCurrentMapId() const;
 
+    // Returns true if it consumed the request (a pending build or an open
+    // tower panel), so the caller knows whether ESC should open the pause menu.
+    bool cancelPendingAction();
+
+    // Player ability, in the spirit of Kingdom Rush's Rain of Fire: a manually
+    // aimed area strike on a cooldown, giving the player something to do while
+    // a wave is running instead of only watching.
+    bool isAbilityReady() const;
+    float getAbilityCooldownRatio() const;
+
     int getEnemiesDefeated() const;
     sf::Time getLevelTime() const;
     long calculateScore() const;
@@ -77,6 +107,8 @@ private:
     cmap* _map;
     std::string _currentMapId;
     std::vector<cenemy> _enemies;
+    // Scratch buffer of depth-sorted enemies, rebuilt each frame for drawing.
+    std::vector<cenemy*> _renderOrder;
     std::vector<std::unique_ptr<cbasictower>> _towers;
     std::vector<cbullet> _bullets;
     std::map<std::string, std::vector<TowerLevelData>> _towerBlueprints;
@@ -105,6 +137,29 @@ private:
 
     int _lives;
     int _maxLives;
+    // Enemy types queued for the current wave, in spawn order.
+    std::vector<int> _spawnQueue;
+    bool _instructionsDismissed;
+    int _totalWaves;
+    sf::Text _hintText;
+    sf::Text _waveProgressText;
+    sf::RectangleShape _startWaveButton;
+    sf::Text _startWaveText;
+    sf::Text _speedLabel;
+    int _speedStep;
+    // Ability state.
+    sf::Time _abilityCooldown;
+    sf::Time _abilityMaxCooldown;
+    bool _selectingAbilityTarget;
+    sf::RectangleShape _abilityButton;
+    sf::RectangleShape _abilityCooldownBar;
+    sf::Text _abilityText;
+    std::vector<AbilityBlast> _abilityBlasts;
+    // Feedback and preview.
+    std::vector<FloatingText> _floatingTexts;
+    std::vector<int> _pendingWaveQueue;
+    int _pendingWaveNumber;
+    sf::Text _wavePreviewText;
     int _money;
     int _currentWave;
     int _enemiesPerWave;
@@ -160,6 +215,22 @@ private:
     void renderInstructionPanel(sf::RenderWindow& window);
     void updateTowerSelectionPanel();
     void renderTowerSelectionPanel(sf::RenderWindow& window);
+    void renderBuildableTiles(sf::RenderWindow& window);
+    void buildWaveComposition();
+    int totalWavesForCurrentMap() const;
+    void applySplashDamage(const sf::Vector2f& center, float radius, int damage,
+        int alreadyHitEnemyId, bool ignoreArmour = false);
+    void awardWaveClearBonus();
+    void requestNextWave();
+    void updateHudText();
+    std::vector<int> makeWaveComposition(int waveNumber);
+    void ensurePendingWave();
+    std::string describeWave(const std::vector<int>& queue) const;
+    void castAbilityAt(const sf::Vector2f& target);
+    void updateEffects(sf::Time deltaTime);
+    void renderEffects(sf::RenderWindow& window);
+    void spawnFloatingText(const sf::Vector2f& position, const std::string& label, const sf::Color& color);
+    void onEnemyKilled(cenemy& enemy);
 };
 
 #endif // CGAME_H

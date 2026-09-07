@@ -129,7 +129,12 @@ private:
         _mainCharacterHouse_Texture;
 
     bool _texturesLoaded;
-    std::vector<cpoint> _enemyPath; 
+    std::vector<cpoint> _enemyPath;
+    // One flag per tile, filled in once after the decorations are loaded.
+    // isDecorated used to walk eighteen decoration vectors on every call, and
+    // isBuildable calls it for every tile of the map each frame.
+    std::vector<std::vector<char>> _decoratedMask;
+    void buildDecorationMask();
 
     // --- Private Methods ---
     void loadTileTextures();

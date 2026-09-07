@@ -10,11 +10,31 @@
 
 🗺️ Nhiều bản đồ: Game hỗ trợ nhiều bản đồ với các đường đi của quái vật khác nhau, đòi hỏi chiến thuật riêng cho từng màn.
 
+🌊 Hệ thống wave: 8 đợt tấn công mỗi màn (10 đợt ở Mansion). Mỗi đợt là hỗn hợp nhiều loại quái, danh sách quái mở rộng dần theo đợt, và đợt cuối là boss Wizard kèm quân hộ tống.
+
+💰 Kinh tế: Bắt đầu với 260 vàng. Dọn xong mỗi đợt được thưởng vàng, và gọi đợt tiếp theo sớm (phím N) được thưởng thêm theo số giây bỏ qua.
+
+🛡️ Giáp (Armour): Mỗi loại quái có chỉ số giáp trừ thẳng vào **từng phát bắn**. Rider có giáp 9 nên mũi tên 18 sát thương chỉ còn 9, trong khi đạn pháo 46 vẫn vào 37. Đây là lý do bạn phải trộn cả hai loại trụ chứ không spam một loại.
+
+🔮 Kỹ năng Rain of Fire: Lấy cảm hứng từ Kingdom Rush - nhấn **R** (hoặc nút góc dưới trái) rồi click lên bản đồ để gọi một đòn sát thương diện rộng **bỏ qua giáp**, hồi chiêu 25 giây. Rất hợp để cứu một đợt quái giáp dày đang sắp lọt.
+
+👀 Xem trước đợt tới: Banner trên đỉnh màn hình liệt kê chính xác đợt sau gồm những loại quái nào, bao nhiêu con, giáp bao nhiêu - để bạn chọn trụ theo đúng thứ sắp tới.
+
+💀 Boss lọt lưới mất nhiều mạng hơn: Rider/Rat mất 2 mạng, Wizard Boss mất 5 mạng.
+
+🖥️ Tự động vừa mọi độ phân giải: Game được thiết kế trên khung 1920x1080 và tự letterbox vào màn hình thật, nên giao diện không bị lệch hay tràn ra ngoài trên máy có độ phân giải khác.
+
 ♞♜ Đa dạng kẻ thù và tháp:
 
 Kẻ thù: Nhiều loại quái vật với các chỉ số máu, tốc độ, và giá trị tiền thưởng khác nhau (Goblin, Sói, Ong, Slime, v.v.).
 
-Tháp: Hiện tại có tháp cung thủ (Archer Tower) và tháp pháo binh (Cannon Tower) với nhiều cấp độ nâng cấp, thay đổi về sức mạnh và hình ảnh.
+Tháp: Hai loại tháp có vai trò khác hẳn nhau, mỗi loại 3 cấp nâng cấp:
+
+  • Archer Tower (60 vàng): rẻ, tầm xa, bắn nhanh, sát thương đơn mục tiêu.
+
+  • Cannon Tower (110 vàng): đắt, tầm gần, bắn chậm, gây sát thương lan (splash) cho cả nhóm quái đứng gần điểm nổ.
+
+Đạn tự động bám theo mục tiêu, nên tháp không còn bắn hụt vào quái đang di chuyển. Tháp luôn ưu tiên bắn con quái đi xa nhất trên đường - con nguy hiểm nhất.
 
 💾 Hệ thống lưu/tải game: Người chơi có thể lưu lại tiến trình của mình và tiếp tục chơi sau.
 
@@ -51,6 +71,8 @@ Tower/
 |-- cgame.h
 |-- cmap.cpp
 |-- cmap.h
+|-- GameView.cpp
+|-- GameView.h
 |-- ... (các file .cpp và .h khác)
 |
 |-- assets/
@@ -100,23 +122,23 @@ Exit: Thoát khỏi trò chơi.
 
 ⚔️⚔️ Trong game:
 
-♜ Xây tháp: Có 1 thanh hiển thị danh sách trụ ở bên dưới, góc phải màn hình game. Có hai loại trụ để người chơi chọn lựa,
+♜ Xây tháp: Thanh chọn trụ nằm ở góc dưới bên phải. Nhấn vào một loại trụ (di chuột lên trụ để xem bảng chỉ số: giá, sát thương, tầm bắn, tốc độ bắn, bán kính nổ), khi đó toàn bộ các ô có thể xây sẽ sáng lên màu xanh lá, kèm vòng tròn hiển thị tầm bắn tại vị trí con trỏ. Nhấn chuột trái vào một ô xanh để đặt tháp.
 
-lần lượt là "Archer Tower" và "Cannon Tower". Người chơi đặt trụ bằng cách nhấn chuột vào một trong các loại trụ, di chuyển chuột đến vị trí có thể xây (ô màu xanh lá) và nhấn chuột trái để đặt tháp.
+Người chơi có thể xây, nâng cấp và bán tháp bất cứ lúc nào - kể cả trong lúc đang có đợt tấn công và trong thời gian nghỉ giữa hai đợt.
 
-Người chơi có thể xây và bán tháp trước khi trận đấu bắt đầu.
+⚒ Nâng cấp/Bán tháp: Nhấn chuột trái vào một tháp đã xây để hiện bảng điều khiển, vòng tròn tầm bắn và chỉ số của tháp. Nút UPGRADE sẽ bị làm mờ nếu bạn chưa đủ vàng.
 
-⚒ Nâng cấp/Bán tháp: Nhấn chuột trái vào một tháp đã xây để hiện ra bảng điều khiển. Tại đây bạn có thể chọn nâng cấp hoặc bán tháp.
+▶️ Bắt đầu đợt tấn công: Nhấn phím N hoặc nhấn nút "START WAVE" ở giữa phía dưới màn hình. Gọi đợt sớm trong lúc nghỉ sẽ được thưởng vàng.
 
-▶️ Bắt đầu đợt tấn công: Nhấn phím N khi sẵn sàng để bắt đầu đợt tấn công tiếp theo.
+⏸ Tạm dừng: Nhấn Esc. Nếu đang chọn trụ hoặc đang mở bảng điều khiển tháp, Esc sẽ hủy thao tác đó trước; nhấn Esc lần nữa mới mở menu tạm dừng.
 
-⏸ Tạm dừng: Nhấn phím Esc để tạm dừng game. Trong menu tạm dừng, bạn có thể tiếp tục, khởi động lại hoặc thoát ra menu chính (với tùy chọn lưu game).
+⏩ Tua nhanh: Nhấn phím Space hoặc nút tua nhanh ở góc trên bên phải để đổi tốc độ giữa 1x / 2x / 3x. Tốc độ hiện tại hiển thị ngay dưới nút.
 
-⏩ Tua nhanh: Nhấn vào nút tua nhanh ở góc trên bên phải để tăng tốc độ game.
+🔥 Rain of Fire: Nhấn **R** hoặc nút ở góc dưới bên trái để kích hoạt, sau đó click vào vị trí muốn đánh. Vòng tròn đỏ theo con trỏ cho biết phạm vi. Nút hiển thị thời gian hồi chiêu còn lại.
 
 🎯 Mục tiêu:
 
-Ngăn chặn kẻ thù đi đến cuối con đường. Mỗi kẻ thù lọt qua sẽ làm bạn mất một mạng. Bạn sẽ thua cuộc khi mất hết mạng. ❤️
+Ngăn chặn kẻ thù đi đến cuối con đường. Mỗi kẻ thù lọt qua sẽ làm bạn mất một mạng (bạn có 15 mạng). Bạn sẽ thua cuộc khi mất hết mạng. ❤️
 
 Sống sót qua tất cả các đợt tấn công để chiến thắng màn chơi! 
 

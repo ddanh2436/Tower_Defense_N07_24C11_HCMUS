@@ -1,4 +1,4 @@
-#include "cbasictower.h"
+﻿#include "cbasictower.h"
 #include "cgame.h"
 #include "SoundManager.h"
 #include <iostream>
@@ -16,7 +16,14 @@ cbasictower::cbasictower(cgame* game, const std::string& typeId, const TowerLeve
     _totalCostInvested(initialLevelData.cost),
     _isPendingRemoval(false),
     _pendingUpgradeData(nullptr),
-    _targetID(-1)
+    _targetID(-1),
+    _effectTimer(sf::Time::Zero),
+    _effectDuration(sf::seconds(0.2f)),
+    _currentFrame(0),
+    _animationStartFrame(0),
+    _numFramesInLoop(0),
+    _timePerFrame(sf::Time::Zero),
+    _elapsedTime(sf::Time::Zero)
 {
     setAnimation(initialLevelData);
     _sprite.setPosition(_position.toVector2f());
@@ -119,24 +126,35 @@ void cbasictower::update(sf::Time deltaTime, std::vector<cenemy>& enemies, std::
 
 void cbasictower::fireBullet(std::vector<cbullet>& gameBullets, cenemy* target) {
     sf::Vector2f targetDirection = target->getPosition() - _position.toVector2f();
-    gameBullets.emplace_back(_currentLevelData.bulletTexturePath, _position, targetDirection, _currentLevelData.bulletSpeed, _currentLevelData.damage);
+    gameBullets.emplace_back(_currentLevelData.bulletTexturePath, _position, targetDirection,
+        _currentLevelData.bulletSpeed, _currentLevelData.damage,
+        target->getId(), _currentLevelData.splashRadius);
     SoundManager::playSoundEffect("assets/tower_shoot.ogg");
 }
 
+// Targets the enemy that is furthest along the path, which is the one closest
+// to costing the player a life. Picking the nearest enemy instead (the old
+// behaviour) let leaders walk through while towers re-shot the stragglers.
 int cbasictower::findTarget(std::vector<cenemy>& enemies) {
     int bestTargetId = -1;
-    float minDistanceSq = _currentLevelData.range * _currentLevelData.range;
+    size_t bestProgress = 0;
+    bool haveTarget = false;
+    const float rangeSquared = _currentLevelData.range * _currentLevelData.range;
+
     for (auto& enemy : enemies) {
-        if (enemy.isActive() && enemy.isAlive()) {
-            sf::Vector2f enemyPos = enemy.getPosition();
-            sf::Vector2f towerPos = _position.toVector2f();
-            float dx = enemyPos.x - towerPos.x;
-            float dy = enemyPos.y - towerPos.y;
-            float distanceSquared = dx * dx + dy * dy;
-            if (distanceSquared < minDistanceSq) {
-                minDistanceSq = distanceSquared;
-                bestTargetId = enemy.getId();
-            }
+        if (!enemy.isActive() || !enemy.isAlive()) continue;
+
+        const sf::Vector2f enemyPos = enemy.getPosition();
+        const sf::Vector2f towerPos = _position.toVector2f();
+        const float dx = enemyPos.x - towerPos.x;
+        const float dy = enemyPos.y - towerPos.y;
+        if (dx * dx + dy * dy > rangeSquared) continue;
+
+        const size_t progress = enemy.getPathIndex();
+        if (!haveTarget || progress > bestProgress) {
+            haveTarget = true;
+            bestProgress = progress;
+            bestTargetId = enemy.getId();
         }
     }
     return bestTargetId;

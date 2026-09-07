@@ -7,7 +7,8 @@
 class ccannontower : public cbasictower {
 public:
     ccannontower(cgame* game, const TowerLevelData& initialLevelData, const cpoint& position, int id);
-    void fireBullet(std::vector<cbullet>& gameBullets, cenemy* target) override;
+    // The cannon no longer needs its own fireBullet: what makes it a cannon is
+    // the splash radius in its level data, which the base class already applies.
 };
 
 #endif // CCANNONTOWER_H

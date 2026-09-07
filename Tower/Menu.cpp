@@ -1,4 +1,5 @@
 ﻿#include "Menu.h"
+#include "GameView.h"
 #include "SoundManager.h"
 #include <iostream>
 #include <Windows.h>
@@ -27,8 +28,8 @@ GameState showMenu(sf::RenderWindow& window) {
     sf::Sprite backgroundSprite(backgroundTexture);
     if (backgroundTexture.getSize().x > 0 && backgroundTexture.getSize().y > 0) {
         backgroundSprite.setScale(
-            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
-            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
+            static_cast<float>(viewSizeU(window).x) / backgroundTexture.getSize().x,
+            static_cast<float>(viewSizeU(window).y) / backgroundTexture.getSize().y
         );
     }
 
@@ -38,18 +39,18 @@ GameState showMenu(sf::RenderWindow& window) {
     gameTitleText.setStyle(sf::Text::Bold);
     sf::FloatRect titleRect_showMenu = gameTitleText.getLocalBounds();
     gameTitleText.setOrigin(titleRect_showMenu.left + titleRect_showMenu.width / 2.0f, titleRect_showMenu.top + titleRect_showMenu.height / 2.0f);
-    gameTitleText.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 5.0f));
+    gameTitleText.setPosition(sf::Vector2f(viewSizeU(window).x / 2.0f, viewSizeU(window).y / 5.0f));
 
     
     std::vector<std::string> menuStrings = { "New Game", "Continue Game", "Leaderboard", "About Us", "Settings", "Exit" };
     std::vector<sf::Text> menuItems;
-    float initialY = window.getSize().y / 2.5f;
+    float initialY = viewSizeU(window).y / 2.5f;
     for (size_t i = 0; i < menuStrings.size(); ++i) {
         sf::Text text(menuStrings[i], pixelFont, 20);
         text.setFillColor(sf::Color::White);
         sf::FloatRect textRect = text.getLocalBounds();
         text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-        text.setPosition(sf::Vector2f(window.getSize().x / 2.0f, initialY + i * 50.f));
+        text.setPosition(sf::Vector2f(viewSizeU(window).x / 2.0f, initialY + i * 50.f));
         menuItems.push_back(text);
     }
 
@@ -73,6 +74,9 @@ GameState showMenu(sf::RenderWindow& window) {
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
+            // Keep the 1920x1080 design letterboxed into whatever size the
+            // window is; otherwise the layout drifts off screen.
+            if (event.type == sf::Event::Resized) applyLetterboxView(window);
             if (event.type == sf::Event::Closed) {
                 return GameState::Exiting;
             }
@@ -199,7 +203,7 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
         }
     }
 
-    sf::Vector2u windowSize = window.getSize();
+    sf::Vector2u windowSize = viewSizeU(window);
     float ScaleX = static_cast<float>(windowSize.x) / menuResources::mapSelectionBackgroundTexture.getSize().x;
     float ScaleY = static_cast<float>(windowSize.y) / menuResources::mapSelectionBackgroundTexture.getSize().y;
     menuResources::mapSelectionBackgroundSprite.setScale(ScaleX, ScaleY);
@@ -219,20 +223,20 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
     instructionPanel.setOutlineColor(sf::Color(0, 0, 0));
     instructionPanel.setOutlineThickness(1.f);
     instructionPanel.setOrigin(instructionPanel.getSize().x / 2.f, instructionPanel.getSize().y / 2.f);
-    instructionPanel.setPosition(window.getSize().x / 2.f, 23.f);
+    instructionPanel.setPosition(viewSizeU(window).x / 2.f, 23.f);
 
 
     sf::Text instructionSelecting("Choose a map!", pixelFont, 50);
     instructionSelecting.setFillColor(sf::Color(200, 200, 50));
     sf::FloatRect instructRect = instructionSelecting.getLocalBounds();
     instructionSelecting.setOrigin(instructRect.left + instructRect.width / 2.f, instructRect.top + instructRect.height / 2.f);
-    instructionSelecting.setPosition(window.getSize().x / 2.f, 30.f);
+    instructionSelecting.setPosition(viewSizeU(window).x / 2.f, 30.f);
 
     sf::Text returnHint("Press Esc to go back", pixelFont, 40);
     returnHint.setFillColor(sf::Color(200, 200, 50));
     sf::FloatRect hintRect = returnHint.getLocalBounds();
     returnHint.setOrigin(hintRect.left + hintRect.width / 2.f, hintRect.top + hintRect.height / 2.f);
-    returnHint.setPosition(window.getSize().x / 2.f, window.getSize().y - 37.f);
+    returnHint.setPosition(viewSizeU(window).x / 2.f, viewSizeU(window).y - 37.f);
 
     sf::Texture flagTexture;
     sf::Sprite flagSprite;
@@ -247,11 +251,11 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
     // manage size of the flag
     float flagScale = flagDesiredHeight / float(flagTexture.getSize().y);
     flagSprite.setScale(flagScale, flagScale);
-    flagSprite.setOrigin(window.getSize().x / 2.f, window.getSize().y / 2.f);
+    flagSprite.setOrigin(viewSizeU(window).x / 2.f, viewSizeU(window).y / 2.f);
     float flagOffSet = 50.f;
 
     // khai báo biến lưu vị trí cờ
-    auto flagPos = getFlagPosition(window.getSize(), maps.size());
+    auto flagPos = getFlagPosition(viewSizeU(window), maps.size());
 
     int selectedItemIndex = -1;
     bool clickedFlag = false;
@@ -259,6 +263,9 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
+            // Keep the 1920x1080 design letterboxed into whatever size the
+            // window is; otherwise the layout drifts off screen.
+            if (event.type == sf::Event::Resized) applyLetterboxView(window);
             if (event.type == sf::Event::Closed) {
                 window.close();
                 return "";
@@ -289,8 +296,12 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
                 }
                 if (clickedFlag) break;
             }
+        }
 
-
+        // Drawing used to sit inside the event loop, so the screen only
+        // repainted when an event happened to arrive - leaving the map picker
+        // blank or stale whenever the player held still.
+        {
             for (size_t i = 0; i < mapItems.size(); ++i) {
                 mapItems[i].setPosition(flagPos[i].x + 63.5f, flagPos[i].y - 53.f);
             }
@@ -321,7 +332,7 @@ std::string showMapSelectionScreen(sf::RenderWindow& window, const std::vector<M
             window.draw(instructionSelecting);
             window.draw(returnHint);
             window.display();
-            if (clickedFlag) {
+            if (clickedFlag && selectedItemIndex >= 0) {
                 sf::sleep(sf::milliseconds(100));
                 return maps[selectedItemIndex].id;
             }
@@ -344,9 +355,9 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
     settingsTitleText.setFillColor(sf::Color::Yellow);
     sf::FloatRect titleRect_showSettings = settingsTitleText.getLocalBounds();
     settingsTitleText.setOrigin(titleRect_showSettings.left + titleRect_showSettings.width / 2.0f, titleRect_showSettings.top + titleRect_showSettings.height / 2.0f);
-    settingsTitleText.setPosition(window.getSize().x / 2.0f, window.getSize().y / 7.0f);
+    settingsTitleText.setPosition(viewSizeU(window).x / 2.0f, viewSizeU(window).y / 7.0f);
 
-    float currentY = window.getSize().y / 3.5f;
+    float currentY = viewSizeU(window).y / 3.5f;
     float verticalSpacing = 60.f;
     float labelToControlSpacing = 10.f;
     float controlInternalSpacing = 20.f;
@@ -355,8 +366,8 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
     unsigned int charSizeVolumeValue = 22;
     unsigned int charSizePlusMinus = 28;
 
-    float labelRightAlignX = window.getSize().x / 2.f - labelToControlSpacing;
-    float controlBlockLeftAlignX = window.getSize().x / 2.f + labelToControlSpacing;
+    float labelRightAlignX = viewSizeU(window).x / 2.f - labelToControlSpacing;
+    float controlBlockLeftAlignX = viewSizeU(window).x / 2.f + labelToControlSpacing;
 
     sf::Text globalSoundLabelText("Global Sound:", pixelFont, charSizeSettingItems);
     globalSoundLabelText.setFillColor(sf::Color::White);
@@ -433,7 +444,7 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
     sf::Text returnText("Press Esc to return", pixelFont, 25);
     returnText.setFillColor(sf::Color::Yellow);
     centerTextOrigin(returnText);
-    returnText.setPosition(window.getSize().x / 2.0f, window.getSize().y * (4.5f / 5.0f));
+    returnText.setPosition(viewSizeU(window).x / 2.0f, viewSizeU(window).y * (4.5f / 5.0f));
 
     sf::Texture settingsBackgroundTexture;
     sf::Sprite settingsBackgroundSprite;
@@ -442,8 +453,8 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
         settingsBackgroundSprite.setTexture(settingsBackgroundTexture);
         if (settingsBackgroundTexture.getSize().x > 0) {
             settingsBackgroundSprite.setScale(
-                static_cast<float>(window.getSize().x) / settingsBackgroundTexture.getSize().x,
-                static_cast<float>(window.getSize().y) / settingsBackgroundTexture.getSize().y
+                static_cast<float>(viewSizeU(window).x) / settingsBackgroundTexture.getSize().x,
+                static_cast<float>(viewSizeU(window).y) / settingsBackgroundTexture.getSize().y
             );
             settingsBgLoaded = true;
         }
@@ -452,6 +463,9 @@ GameState showSettingsScreen(sf::RenderWindow& window) {
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
+            // Keep the 1920x1080 design letterboxed into whatever size the
+            // window is; otherwise the layout drifts off screen.
+            if (event.type == sf::Event::Resized) applyLetterboxView(window);
             if (event.type == sf::Event::Closed) {
                 return GameState::Exiting;
             }
@@ -551,7 +565,7 @@ GameState showPauseMenu(sf::RenderWindow& window) {
     backgroundPanel.setOutlineColor(sf::Color(panelOutlineColor.r, panelOutlineColor.g, panelOutlineColor.b, 0));
     backgroundPanel.setOutlineThickness(2.f);
     backgroundPanel.setOrigin(backgroundPanel.getSize().x / 2.f, backgroundPanel.getSize().y / 2.f);
-    backgroundPanel.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f);
+    backgroundPanel.setPosition(viewSizeU(window).x / 2.f, viewSizeU(window).y / 2.f);
 
     sf::Text pauseTitleText("Game Paused", pixelFont, 50);
     pauseTitleText.setFillColor(sf::Color(highlightColor.r, highlightColor.g, highlightColor.b, 0));
@@ -614,6 +628,9 @@ GameState showPauseMenu(sf::RenderWindow& window) {
 
         sf::Event event;
         while (window.pollEvent(event)) {
+            // Keep the 1920x1080 design letterboxed into whatever size the
+            // window is; otherwise the layout drifts off screen.
+            if (event.type == sf::Event::Resized) applyLetterboxView(window);
             if (event.type == sf::Event::Closed) { return GameState::ConfirmExit; }
             if (alphaRatio >= 1.f) {
                 if (event.type == sf::Event::KeyPressed) {
@@ -715,7 +732,7 @@ GameState showConfirmExitScreen(sf::RenderWindow& window) {
     backgroundPanel.setOutlineColor(sf::Color(panelOutlineColor.r, panelOutlineColor.g, panelOutlineColor.b, 0));
     backgroundPanel.setOutlineThickness(2.f);
     backgroundPanel.setOrigin(backgroundPanel.getSize().x / 2.f, backgroundPanel.getSize().y / 2.f);
-    backgroundPanel.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f);
+    backgroundPanel.setPosition(viewSizeU(window).x / 2.f, viewSizeU(window).y / 2.f);
 
     sf::Text questionText("Do you want to save your progress?", pixelFont, 35);
     questionText.setFillColor(sf::Color(textColor.r, textColor.g, textColor.b, 0));
@@ -777,6 +794,9 @@ GameState showConfirmExitScreen(sf::RenderWindow& window) {
 
         sf::Event event;
         while (window.pollEvent(event)) {
+            // Keep the 1920x1080 design letterboxed into whatever size the
+            // window is; otherwise the layout drifts off screen.
+            if (event.type == sf::Event::Resized) applyLetterboxView(window);
             if (event.type == sf::Event::Closed) {
                 return GameState::Exiting;
             }
@@ -869,8 +889,8 @@ GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboa
     }
     sf::Sprite backgroundSprite(backgroundTexture);
     backgroundSprite.setScale(
-        static_cast<float> (window.getSize().x) / backgroundTexture.getSize().x,
-        static_cast<float> (window.getSize().y) / backgroundTexture.getSize().y
+        static_cast<float> (viewSizeU(window).x) / backgroundTexture.getSize().x,
+        static_cast<float> (viewSizeU(window).y) / backgroundTexture.getSize().y
     );
     backgroundSprite.setPosition(0, 0);
 
@@ -879,6 +899,9 @@ GameState showLeaderboardScreen(sf::RenderWindow& window, Leaderboard& leaderboa
         sf::Event event;
         // Xử lý sự kiện
         while (window.pollEvent(event)) {
+            // Keep the 1920x1080 design letterboxed into whatever size the
+            // window is; otherwise the layout drifts off screen.
+            if (event.type == sf::Event::Resized) applyLetterboxView(window);
             if (event.type == sf::Event::Closed) {
                 return GameState::Exiting; // Thoát game nếu người dùng đóng cửa sổ
             }
@@ -906,7 +929,7 @@ GameState showAboutUsScreen(sf::RenderWindow& window) {
     }
     sf::Sprite aboutUsSprite(aboutUsTexture);
     sf::Vector2u textureSize = aboutUsTexture.getSize();
-    sf::Vector2u windowSize = window.getSize();
+    sf::Vector2u windowSize = viewSizeU(window);
 
     if (textureSize.x > 0 && textureSize.y > 0) {
         float scaleX = static_cast<float>(windowSize.x) / textureSize.x;
@@ -936,6 +959,9 @@ GameState showAboutUsScreen(sf::RenderWindow& window) {
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
+            // Keep the 1920x1080 design letterboxed into whatever size the
+            // window is; otherwise the layout drifts off screen.
+            if (event.type == sf::Event::Resized) applyLetterboxView(window);
             if (event.type == sf::Event::Closed) {
                 return GameState::Exiting;
             }

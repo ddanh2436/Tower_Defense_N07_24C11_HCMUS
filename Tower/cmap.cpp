@@ -34,6 +34,7 @@ cmap::cmap(const std::string& dataFilePath, const std::string& mapId) : _texture
     loadMapFromTxtFile(dataFilePath, mapId);
     initializeGridFromMapData();
     assignTileTextures();
+    buildDecorationMask();
     calculateEnemyPath(mapId);
 }
 
@@ -163,8 +164,20 @@ void cmap::initializeGridFromMapData() {
         return;
     }
 
-    int H= static_cast<int>(_mapData.size());
-    int W = static_cast<int>(_mapData[0].size());
+    int H = static_cast<int>(_mapData.size());
+    // The layout rows in the data files are not all the same length (map1 has
+    // three 33-column rows among 32-column ones). Taking row 0's width read
+    // past the end of any shorter row, so use the shortest row instead and
+    // treat anything beyond it as empty ground.
+    size_t narrowest = _mapData[0].size();
+    for (const auto& row : _mapData) {
+        if (row.size() < narrowest) narrowest = row.size();
+    }
+    int W = static_cast<int>(narrowest);
+    if (W <= 0) {
+        std::cerr << "Error: Map data has an empty row. Cannot initialize grid." << std::endl;
+        return;
+    }
 
     _grid.assign(H, std::vector<MapTile>(W));
 
@@ -440,27 +453,80 @@ cpoint cmap::getEnemyStartLocation() const {
     return getPixelPosition(static_cast<float>(getMapHeightTiles()) / 2.0f, -1.0f);
 }
 
-bool cmap::isDecorated(int row, int col) const {
-    for (const auto& deco : _bushes) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _grasses) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _trees) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _shadows) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _camps) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _stones) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _lamps) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _pointers) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _boxes) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _flowers) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _dirts) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _placesForTowers) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _logs) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _grassesOverlay) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _fences) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _decors) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _houses) if (deco.col == col && deco.row == row) return true;
-    for (const auto& deco : _tents) if (deco.col == col && deco.row == row) return true;
-    return false;
+void cmap::buildDecorationMask() {
+    const int height = getMapHeightTiles();
+    const int width = getMapWidthTiles();
+    _decoratedMask.assign(height, std::vector<char>(width, 0));
+
+    const float tile = static_cast<float>(CURRENT_TILE_SIZE);
+    // A tile counts as occupied once a decoration covers this much of it.
+    // Sprites carry transparent padding, so the bounding box overestimates the
+    // art; a fairly high bar keeps that from blocking visibly free grass.
+    const float COVERAGE_THRESHOLD = 0.45f;
+    // Only art bigger than roughly one tile gets a multi-tile footprint.
+    // Everything smaller keeps the original anchor-tile-only behaviour.
+    const float LARGE_DECORATION_SIZE = tile * 1.25f;
+
+    auto markFootprint = [&](const Decoration& deco) {
+        // Always claim the anchor tile, even for tiny decorations.
+        if (deco.row >= 0 && deco.row < height && deco.col >= 0 && deco.col < width) {
+            _decoratedMask[deco.row][deco.col] = 1;
+        }
+
+        // Then claim every tile a large sprite actually covers. Decorations
+        // like House1 span ~2.7 tiles, but only their anchor tile used to be
+        // blocked, so towers could be built standing inside the building.
+        const sf::FloatRect bounds = deco.sprite.getGlobalBounds();
+        if (bounds.width <= 0.f || bounds.height <= 0.f) return;
+        if (bounds.width < LARGE_DECORATION_SIZE && bounds.height < LARGE_DECORATION_SIZE) return;
+
+        const int firstCol = static_cast<int>(std::floor(bounds.left / tile));
+        const int lastCol = static_cast<int>(std::floor((bounds.left + bounds.width - 0.001f) / tile));
+        const int firstRow = static_cast<int>(std::floor(bounds.top / tile));
+        const int lastRow = static_cast<int>(std::floor((bounds.top + bounds.height - 0.001f) / tile));
+
+        for (int r = std::max(0, firstRow); r <= std::min(height - 1, lastRow); ++r) {
+            for (int c = std::max(0, firstCol); c <= std::min(width - 1, lastCol); ++c) {
+                const float overlapLeft = std::max(bounds.left, c * tile);
+                const float overlapTop = std::max(bounds.top, r * tile);
+                const float overlapRight = std::min(bounds.left + bounds.width, (c + 1) * tile);
+                const float overlapBottom = std::min(bounds.top + bounds.height, (r + 1) * tile);
+
+                const float overlapArea = std::max(0.f, overlapRight - overlapLeft) *
+                    std::max(0.f, overlapBottom - overlapTop);
+                if (overlapArea >= COVERAGE_THRESHOLD * tile * tile) {
+                    _decoratedMask[r][c] = 1;
+                }
+            }
+        }
+    };
+
+    auto markAll = [&](const auto& decorations) {
+        for (const auto& deco : decorations) markFootprint(deco);
+    };
+
+    markAll(_bushes);      markAll(_grasses);        markAll(_trees);
+    markAll(_shadows);     markAll(_camps);          markAll(_stones);
+    markAll(_lamps);       markAll(_pointers);       markAll(_boxes);
+    markAll(_flowers);     markAll(_dirts);          markAll(_placesForTowers);
+    markAll(_logs);        markAll(_grassesOverlay); markAll(_fences);
+    markAll(_decors);      markAll(_houses);         markAll(_tents);
+
+    int buildable = 0;
+    for (int r = 0; r < height; ++r) {
+        for (int c = 0; c < width; ++c) {
+            if (isBuildable(r, c)) buildable++;
+        }
+    }
+    std::cout << "Buildable tiles on this map: " << buildable << std::endl;
 }
+
+bool cmap::isDecorated(int row, int col) const {
+    if (row < 0 || row >= static_cast<int>(_decoratedMask.size())) return false;
+    if (col < 0 || col >= static_cast<int>(_decoratedMask[row].size())) return false;
+    return _decoratedMask[row][col] != 0;
+}
+
 
 // Chép toàn bộ các hàm add...At và loadTileTextures của bạn vào đây.
 
@@ -486,7 +552,10 @@ void cmap::loadTileTextures() {
     if (!loadTextureSFML(_pathStyle56_Texture, "assets/FieldsTile_56.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_pathStyle60_Texture, "assets/FieldsTile_60.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_bush_Texture, "assets/Bush_10.png")) _texturesLoaded = false;
-    if (!loadTextureSFML(_grass_Texture, "assets/Grass.png")) _texturesLoaded = false;
+    // assets/Grass.png does not ship with the project, so this failed on every
+    // single map load. addGrassAt is unused by the map files anyway; point it
+    // at a real tuft texture so the code path is valid.
+    if (!loadTextureSFML(_grass_Texture, "assets/GrassOverlay_1.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_bush1_Texture, "assets/BushOverlay_1.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_bush2_Texture, "assets/BushOverlay_2.png")) _texturesLoaded = false;
     if (!loadTextureSFML(_bush3_Texture, "assets/BushOverlay_3.png")) _texturesLoaded = false;
