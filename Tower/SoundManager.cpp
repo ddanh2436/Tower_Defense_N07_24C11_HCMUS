@@ -3,17 +3,21 @@
 #include <algorithm> 
 #include <iomanip> 
 #include <map>
+#include <deque>
 
 namespace SoundManager {
 
     sf::Music backgroundMusic;
     std::map<std::string, sf::SoundBuffer> soundEffectBuffers;
-    std::vector<sf::Sound> playingSoundEffects;
+    std::deque<sf::Sound> playingSoundEffects;
     bool isGlobalSoundEnabled = true;
 
     static bool gameMusicOn = true;
     static std::string currentTrackPath = "";
-    static float masterVolumeSetting = 50.f; 
+    static float masterVolumeSetting = 50.f;
+    // A deque is required here: sf::Sound must not be relocated while it plays,
+    // and a vector would move every live sound whenever it grew.
+    static const size_t MAX_CONCURRENT_EFFECTS = 32;
 
     const std::string GAME_MUSIC_FILEPATH = "assets/game_music.ogg"; 
     const std::string MENU_MUSIC_FILEPATH = "assets/menu_music.ogg";
@@ -22,8 +26,9 @@ namespace SoundManager {
         
 
     void applyAllVolumeSettings() {
-        if (backgroundMusic.getStatus() == sf::Music::Stopped) return;
-
+        // This used to bail out while the track was stopped. Because
+        // playBackgroundMusic applies the volume before calling play(), the
+        // volume setting was silently ignored and every track started at 100.
         float volumeToApply = masterVolumeSetting;
 
         if (!isGlobalSoundEnabled) {
@@ -97,9 +102,8 @@ namespace SoundManager {
         currentTrackPath = filePath;
         backgroundMusic.setLoop(loop);
 
-        applyAllVolumeSettings();
-
         backgroundMusic.play();
+        applyAllVolumeSettings();
         std::cout << "Playing background music: " << filePath
             << ". Effective volume: " << backgroundMusic.getVolume() << std::endl;
         return true;
@@ -134,19 +138,31 @@ namespace SoundManager {
         return true;
     }
 
+    // Sound effects follow the master volume slider, scaled by the per-call
+    // volume so a caller can still make one effect quieter than the rest.
+    float getEffectVolume() {
+        return isGlobalSoundEnabled ? masterVolumeSetting : 0.f;
+    }
+
     void playSoundEffect(const std::string& id, float volume) {
         if (!isGlobalSoundEnabled) {
             return;
         }
         auto it = soundEffectBuffers.find(id);
-        if (it != soundEffectBuffers.end()) {
-            playingSoundEffects.emplace_back(it->second);
-            playingSoundEffects.back().setVolume(volume);
-            playingSoundEffects.back().play();
-        }
-        else {
+        if (it == soundEffectBuffers.end()) {
             std::cerr << "Error: Sound effect '" << id << "' not found or not loaded." << std::endl;
+            return;
         }
+
+        // Drop the oldest finished sounds first so a burst of hits cannot grow
+        // this list without bound.
+        while (playingSoundEffects.size() >= MAX_CONCURRENT_EFFECTS) {
+            playingSoundEffects.pop_front();
+        }
+
+        playingSoundEffects.emplace_back(it->second);
+        playingSoundEffects.back().setVolume(getEffectVolume() * (volume / 100.f));
+        playingSoundEffects.back().play();
     }
 
     void playVictoryMusic() {

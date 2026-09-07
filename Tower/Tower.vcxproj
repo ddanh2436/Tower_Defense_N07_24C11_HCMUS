@@ -149,6 +149,7 @@
     <ClCompile Include="cgame.cpp" />
     <ClCompile Include="cmap.cpp" />
     <ClCompile Include="cpoint.cpp" />
+    <ClCompile Include="GameView.cpp" />
     <ClCompile Include="ctool.cpp" />
     <ClCompile Include="Leaderboard.cpp" />
     <ClCompile Include="MainPrg.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="cgame.h" />
     <ClInclude Include="cmap.h" />
     <ClInclude Include="cpoint.h" />
+    <ClInclude Include="GameView.h" />
     <ClInclude Include="ctool.h" />
     <ClInclude Include="carchertower.h" />
     <ClInclude Include="Leaderboard.h" />

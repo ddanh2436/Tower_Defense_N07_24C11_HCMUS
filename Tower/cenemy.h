@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <map>
+#include <string>
 #include "cpoint.h"
 
 // Forward-declare cgame và EnemyType để tránh include vòng lặp
@@ -27,9 +28,20 @@ public:
     cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const std::vector<cpoint>& path);
 
     void update(sf::Time deltaTime);
+    // Split into two passes so the game can draw every enemy body first and
+    // every health bar afterwards. Drawing each enemy's bar right after its
+    // own sprite meant a bar could be painted over the enemy standing in
+    // front of it, and hidden behind the one behind it.
     void render(sf::RenderWindow& window);
+    void renderHealthBar(sf::RenderWindow& window);
+    float getRenderDepth() const;
     bool isAlive() const;
-    bool takeDamage(int damage);
+    // Armour subtracts a flat amount from every hit, so a few heavy shots beat
+    // many light ones. ignoreArmour is used by the player ability.
+    bool takeDamage(int damage, bool ignoreArmour = false);
+    int getArmour() const;
+    int getLivesCost() const;
+    const std::string& getName() const;
     sf::Vector2f getPosition() const;
     sf::FloatRect getGlobalBounds() const;
     bool isActive() const { return _isActive; }
@@ -66,6 +78,9 @@ private:
     int _maxHealth;
     bool _isActive;
     int _moneyValue;
+    int _armour;
+    int _livesCost;   // Lives lost if this enemy reaches the end.
+    std::string _name;
     int _typeIndex; // THÊM MỚI: Biến để lưu chỉ số của loại quái vật
     EnemyState _currentState;
     MovementDirection _currentDirection;

@@ -5,12 +5,12 @@
 #include <SFML/Audio.hpp>
 #include <string>
 #include <map>
-#include <vector> 
+#include <deque>
 
 namespace SoundManager {
     extern sf::Music backgroundMusic;
     extern std::map<std::string, sf::SoundBuffer> soundEffectBuffers;
-    extern std::vector<sf::Sound> playingSoundEffects;
+    extern std::deque<sf::Sound> playingSoundEffects;
 
     extern bool isGlobalSoundEnabled;
     void initialize();
@@ -33,6 +33,7 @@ namespace SoundManager {
 
     bool loadSoundEffect(const std::string& id, const std::string& filePath);
     void playSoundEffect(const std::string& id, float volume = 100.f);
+    float getEffectVolume();
     void playVictoryMusic();
     void playLoseMusic();
     void update();

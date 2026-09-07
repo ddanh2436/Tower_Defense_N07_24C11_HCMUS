@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef CBASICTOWER_H
 #define CBASICTOWER_H
 
@@ -33,6 +33,7 @@ struct TowerLevelData {
     int damage = 0;
     float bulletSpeed = 0.0f;
     std::string bulletTexturePath;
+    float splashRadius = 0.0f; // > 0 makes the shot damage everything in a blast radius.
 };
 
 class cbasictower {
@@ -67,6 +68,9 @@ public:
     // Public actions
     void upgrade();
     void sell();
+    // Restores the accumulated build+upgrade spend when a tower is rebuilt
+    // from a save file, so its sell value matches what the player paid.
+    void restoreInvestment(int totalCost) { _totalCostInvested = totalCost; }
 
 protected:
     cbasictower(cgame* game, const std::string& typeId, const TowerLevelData& initialLevelData, const cpoint& position, int id);

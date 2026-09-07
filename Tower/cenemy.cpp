@@ -2,6 +2,7 @@
 #include "cgame.h"
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 const float HEALTH_BAR_Y_OFFSET = 4.f;
 int cenemy::_nextId = 0;
@@ -14,16 +15,24 @@ cenemy::cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const 
     _health(static_cast<float>(type.health)),
     _maxHealth(type.health),
     _moneyValue(type.moneyValue),
+    _armour(type.armour),
+    _livesCost(type.livesCost),
+    _name(type.name),
     _isActive(true),
     _currentFrame(0),
     _elapsedTime(sf::Time::Zero),
     _currentPathIndex(0)
 {
     _id = _nextId++;
-    _healthBarBackground.setSize({ 32.f, 5.f });
+    // The bar used to be a fixed 32px, so it was far too narrow on the big
+    // enemies and overhung the small ones. Scale it with the sprite instead.
+    const float barWidth = std::max(26.f, type.frameSize.x * type.scale * 0.6f);
+    _healthBarBackground.setSize({ barWidth, 5.f });
     _healthBarBackground.setFillColor(sf::Color(50, 50, 50, 210));
+    _healthBarBackground.setOutlineThickness(1.f);
+    _healthBarBackground.setOutlineColor(sf::Color(20, 20, 20, 200));
     _healthBarBackground.setOrigin(_healthBarBackground.getSize().x / 2.f, _healthBarBackground.getSize().y / 2.f);
-    _healthBarFill.setSize({ 32.f, 5.f });
+    _healthBarFill.setSize({ barWidth, 5.f });
     _healthBarFill.setFillColor(sf::Color::Green);
     _healthBarFill.setOrigin(0, _healthBarFill.getSize().y / 2.f);
 
@@ -67,12 +76,15 @@ cenemy::cenemy(cgame* gameInstance, const EnemyType& type, int typeIndex, const 
 // =========================================================================
 // HÀM TAKE DAMAGE ĐÃ ĐƯỢC VIẾT LẠI HOÀN TOÀN ĐỂ SỬA LỖI
 // =========================================================================
-bool cenemy::takeDamage(int damage) {
+bool cenemy::takeDamage(int damage, bool ignoreArmour) {
     if (!isAlive()) { // Nếu đã chết hoặc đang trong trạng thái chết, không nhận thêm sát thương
         return false;
     }
 
-    _health -= damage;
+    // Armour always leaves at least a scratch, so a badly matched tower is
+    // weak rather than completely useless.
+    const int effectiveDamage = ignoreArmour ? damage : std::max(1, damage - _armour);
+    _health -= effectiveDamage;
 
     // Cập nhật thanh máu
     float healthPercent = (_maxHealth > 0) ? (static_cast<float>(_health) / _maxHealth) : 0.0f;
@@ -160,24 +172,38 @@ void cenemy::update(sf::Time deltaTime) {
 void cenemy::render(sf::RenderWindow& window) {
     if (isReadyForRemoval()) return;
     window.draw(_sprite);
-    if (isAlive()) { // Chỉ vẽ thanh máu khi còn sống
-        auto it_state = _animations.find(_currentState);
-        if (it_state == _animations.end()) return;
-        auto it_dir = it_state->second.find(_currentDirection);
-        if (it_dir == it_state->second.end()) return;
-        const Animation& currentAnim = it_dir->second;
+}
 
-        sf::Vector2f basePosition = _currentPosition.toVector2f();
-        float spriteHalfHeight = (currentAnim.frameSize.y * _sprite.getScale().y) / 2.f;
-        float healthBarX = basePosition.x;
-        float healthBarY = basePosition.y - spriteHalfHeight - HEALTH_BAR_Y_OFFSET;
+void cenemy::renderHealthBar(sf::RenderWindow& window) {
+    if (isReadyForRemoval() || !isAlive()) return;
 
-        _healthBarBackground.setPosition(healthBarX, healthBarY);
-        _healthBarFill.setPosition(healthBarX - _healthBarBackground.getSize().x / 2.f, healthBarY);
+    // Undamaged enemies show no bar at all. A wave of full-health monsters
+    // used to drag a wall of green bars across the map, which is exactly the
+    // clutter that made bars overlap neighbouring enemies.
+    if (_maxHealth <= 0 || _health >= static_cast<float>(_maxHealth)) return;
 
-        window.draw(_healthBarBackground);
-        window.draw(_healthBarFill);
-    }
+    auto it_state = _animations.find(_currentState);
+    if (it_state == _animations.end()) return;
+    auto it_dir = it_state->second.find(_currentDirection);
+    if (it_dir == it_state->second.end()) return;
+    const Animation& currentAnim = it_dir->second;
+
+    const sf::Vector2f basePosition = _currentPosition.toVector2f();
+    const float spriteHalfHeight = (currentAnim.frameSize.y * std::abs(_sprite.getScale().y)) / 2.f;
+    const float healthBarX = basePosition.x;
+    const float healthBarY = basePosition.y - spriteHalfHeight - HEALTH_BAR_Y_OFFSET;
+
+    _healthBarBackground.setPosition(healthBarX, healthBarY);
+    _healthBarFill.setPosition(healthBarX - _healthBarBackground.getSize().x / 2.f, healthBarY);
+
+    window.draw(_healthBarBackground);
+    window.draw(_healthBarFill);
+}
+
+// Enemies are painted back-to-front by their feet, so the one lower on the
+// screen correctly overlaps the one behind it.
+float cenemy::getRenderDepth() const {
+    return _currentPosition.y;
 }
 
 void cenemy::updateMovement(sf::Time deltaTime) {
@@ -185,7 +211,9 @@ void cenemy::updateMovement(sf::Time deltaTime) {
         _isActive = false;
         return;
     }
-    float remainingMoveDistance = _speed * deltaTime.asSeconds() * 2.f; // Nhân 2.f có thể là để bù trừ logic nào đó, giữ nguyên
+    // The x2 is baked into the tuned speed values in setupEnemyTypes, so it
+    // stays: an enemy at speed 20 covers 40 px/s, one third of a tile.
+    float remainingMoveDistance = _speed * deltaTime.asSeconds() * 2.f;
     while (remainingMoveDistance > 0 && !hasReachedEnd()) {
         sf::Vector2f vectorToTarget = _targetPosition.toVector2f() - _currentPosition.toVector2f();
         float distanceToTarget = std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
@@ -273,3 +301,7 @@ void cenemy::setPathIndex(int newPathIndex) {
 int cenemy::getId() const {
     return _id;
 }
+
+int cenemy::getArmour() const { return _armour; }
+int cenemy::getLivesCost() const { return _livesCost; }
+const std::string& cenemy::getName() const { return _name; }
